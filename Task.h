@@ -27,7 +27,7 @@ struct dyld_image_info_32 {
     NSNumber* pid;
     
     //uid
-    uid_t uid;
+    //uid_t uid;
     
     //main binary
     Binary* binary;

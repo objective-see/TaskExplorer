@@ -433,8 +433,15 @@ NSImage* getCodeSigningIcon(Binary* binary)
     //set signature status icon
     if(nil != binary.signingInfo)
     {
+        //binary is signed by apple
+        if(YES == [binary.signingInfo[KEY_SIGNING_IS_APPLE] boolValue])
+        {
+            //set
+            codeSignIcon = [NSImage imageNamed:@"signedAppleIcon"];
+        }
+        
         //binary is signed
-        if(STATUS_SUCCESS == [binary.signingInfo[KEY_SIGNATURE_STATUS] integerValue])
+        else if(STATUS_SUCCESS == [binary.signingInfo[KEY_SIGNATURE_STATUS] integerValue])
         {
             //set
             codeSignIcon = [NSImage imageNamed:@"signed"];
@@ -676,7 +683,10 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
         goto bail;
     }
     
-    //set icon
+    //reset icon
+    connectionCell.imageView.image = nil;
+    
+    //set icon for TCP sockets
     //TODO: (re)set default icon!?
     if(nil != connection.state)
     {
@@ -692,6 +702,14 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
             //set
             connectionCell.imageView.image = [NSImage imageNamed:@"connectedIcon"];
         }
+    }
+    
+    //set icon for UDP sockets
+    // ->can't listen, so just show em as streaming
+    else if(YES == [connection.type isEqualToString:@"SOCK_DGRAM"])
+    {
+        //set
+        connectionCell.imageView.image = [NSImage imageNamed:@"streamIcon"];
     }
     
     //default
@@ -715,10 +733,21 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
     [connectionCell.textField setStringValue:endpoints];
     
     //set details
+    // ->TCP socket
     if(nil != connection.state)
     {
         //add state
         [details appendString:connection.state];
+    }
+    //set details
+    // ->UDP socket
+    else if(YES == [connection.type isEqualToString:@"SOCK_DGRAM"])
+    {
+        //bound
+        // ->add state
+        [details appendString:@"bound (UDP) socket"];
+        
+        //TODO: connected UDP socket?
     }
     
     //set details

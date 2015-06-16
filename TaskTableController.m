@@ -40,7 +40,17 @@
 -(void)awakeFromNib
 {
     self.selectedRow = -1;
+    
+    /*
+    NSString *title = @"[ all tasks ]";
+    NSTableColumn *yourColumn = self.itemView.tableColumns.lastObject;
+    [yourColumn.headerCell setStringValue:title];
+    
+    [self.itemView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:self.itemView.tableColumns.lastObject];
+     
+    */
 }
+
 
 /*
 //invoked automatically while nib is loaded

@@ -529,6 +529,11 @@ bail:
 }
 
 
+- (NSComparisonResult)compare:(Task*)otherTask
+{
+    return [self.binary.name compare:otherTask.binary.name options:NSCaseInsensitiveSearch];
+}
+
 
 
 

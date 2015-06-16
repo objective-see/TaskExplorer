@@ -36,6 +36,9 @@
 		CD4D541F1B2CE6C400008030 /* Queue.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4D541E1B2CE6C400008030 /* Queue.m */; };
 		CD4D54221B2CE6F200008030 /* NSMutableArray+QueueAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4D54211B2CE6F200008030 /* NSMutableArray+QueueAdditions.m */; };
 		CD4D54241B2D082300008030 /* DylibInfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD4D54231B2D082300008030 /* DylibInfoWindow.xib */; };
+		CD4D54261B2EA94C00008030 /* streamIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D54251B2EA94C00008030 /* streamIcon.png */; };
+		CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */; };
+		CD4D543F1B2FF32C00008030 /* signedAppleIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */; };
 		CD6095731A87067D00E091CD /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD6095721A87067D00E091CD /* Security.framework */; };
 		CD6E54FF1B1162B5007953AB /* ItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6E54FE1B1162B5007953AB /* ItemView.m */; };
 		CD7B9F4D1ACB959200DF3C71 /* logoAppleOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD7B9F4C1ACB959200DF3C71 /* logoAppleOver.png */; };
@@ -171,6 +174,9 @@
 		CD4D54201B2CE6F200008030 /* NSMutableArray+QueueAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+QueueAdditions.h"; sourceTree = "<group>"; };
 		CD4D54211B2CE6F200008030 /* NSMutableArray+QueueAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+QueueAdditions.m"; sourceTree = "<group>"; };
 		CD4D54231B2D082300008030 /* DylibInfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DylibInfoWindow.xib; path = UI/DylibInfoWindow.xib; sourceTree = "<group>"; };
+		CD4D54251B2EA94C00008030 /* streamIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = streamIcon.png; path = images/streamIcon.png; sourceTree = SOURCE_ROOT; };
+		CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = NetworkInfoWindow.xib; path = UI/NetworkInfoWindow.xib; sourceTree = "<group>"; };
+		CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = signedAppleIcon.png; path = images/signedAppleIcon.png; sourceTree = SOURCE_ROOT; };
 		CD6095721A87067D00E091CD /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		CD6E54FD1B1162B5007953AB /* ItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ItemView.h; sourceTree = "<group>"; };
 		CD6E54FE1B1162B5007953AB /* ItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ItemView.m; sourceTree = "<group>"; };
@@ -378,6 +384,8 @@
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */,
+				CD4D54251B2EA94C00008030 /* streamIcon.png */,
 				CD4D53D11B23ED4300008030 /* listeningIcon.png */,
 				CD4D53CF1B23ED3900008030 /* connectedIcon.png */,
 				CD4D53C91B20296E00008030 /* unknown.png */,
@@ -493,6 +501,7 @@
 		CDA81E621AA020E8009790E2 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */,
 				CD4D54231B2D082300008030 /* DylibInfoWindow.xib */,
 				CDA5F6C01B16E1D6003CE340 /* RequestRootWindow.xib */,
 				CD3F4D151AF89066002A2647 /* TreeView.xib */,
@@ -614,9 +623,11 @@
 				CD7B9FA81ACCAE5E00DF3C71 /* stopScanOver.png in Resources */,
 				CDA81D701A95B4E9009790E2 /* stopScan.png in Resources */,
 				CDF08CF01ACA677B009B3423 /* kernelIcon.png in Resources */,
+				CD4D54261B2EA94C00008030 /* streamIcon.png in Resources */,
 				CDF08CD01AC4C6E8009B3423 /* settingsBG.png in Resources */,
 				CD0219551AD34E4C005148A2 /* kkIcon.png in Resources */,
 				CD0219591AD37748005148A2 /* unsigned2.png in Resources */,
+				CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */,
 				CDA81D5C1A95B4B4009790E2 /* MainMenu.xib in Resources */,
 				CD7B9F4D1ACB959200DF3C71 /* logoAppleOver.png in Resources */,
 				CD0219581AD37748005148A2 /* signed2.png in Resources */,
@@ -634,6 +645,7 @@
 				CDAB98A31AEB413C00C75B4B /* dylibIcon.png in Resources */,
 				CDF08CC31AC3E98D009B3423 /* infoOver.png in Resources */,
 				CDF08CF41ACA6864009B3423 /* loginIcon.png in Resources */,
+				CD4D543F1B2FF32C00008030 /* signedAppleIcon.png in Resources */,
 				CD3F4D161AF89066002A2647 /* TreeView.xib in Resources */,
 				CD0219501AD34D8B005148A2 /* PrefsWindow.xib in Resources */,
 				CDA81D6C1A95B4E9009790E2 /* showBG.png in Resources */,

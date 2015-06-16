@@ -150,7 +150,13 @@ NSDictionary* extractSigningInfo(NSString* path)
             //bail
             goto bail;
         }
+        
+        //determine if binary is signed by Apple
+        signingStatus[KEY_SIGNING_IS_APPLE] = [NSNumber numberWithBool:isApple(path)];
     }
+    
+    //TODO: bail, unsigned?
+    
     
     //init array for certificate names
     signingStatus[KEY_SIGNING_AUTHORITIES] = [NSMutableArray array];

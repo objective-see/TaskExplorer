@@ -36,4 +36,7 @@
 - (NSEnumerator *)reverseKeyEnumerator;
 -(void)reverse;
 
+//sort, by object key
+-(void)sort:(NSString*)sortKey;
+
 @end

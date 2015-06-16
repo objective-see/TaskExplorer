@@ -97,9 +97,6 @@
 // ->call back into app delegate to update task (top) table
 //   call every x # of seconds~
 
-//TODO: re-enumerate dylibs for everytime!
-//      only need to update task.dylibs list (not global one, unless its new!)
-
 -(void)enumerateTasks
 {
     //(new) task item
@@ -137,10 +134,11 @@
         //[newTask enumerateDylibs:self.xpcConnection allDylibs:self.dylibs];
         
         //add new task
-        // TODO: ordering!?
         [self.tasks setObject:newTask forKey:newTask.pid];
         
-    }
+    }//add new tasks
+    
+    //sort by name!
     
     //reload table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
@@ -166,79 +164,6 @@
     
     return;
 }
-
-/*
-//determine if dylibs should be (re)enumerated
-// ->generally yes, unless the first enumeration (of all tasks) is not complete
--(BOOL)shouldEnumDylibs
-{
-    //flag
-    BOOL shouldEnum = NO;
-    
-    //task key
-    NSNumber* taskKey = nil;
-    
-    //Task
-    Task* task = nil;
-    
-    for(NSInteger i = self.tasks.count-1; i>=0; i--)
-    {
-        taskKey = [self.tasks keyAtIndex:i];
-        
-        task = self.tasks[taskKey];
-        
-        //skip dead procs
-        if(YES != isAlive([task.pid unsignedIntValue]))
-        {
-            continue;
-        }
-        
-        //alive
-        // ->does it have dylibs?
-        if(0 != task.dylibs.count)
-        {
-            //a end task has dylibs
-            // ->indicates all done?
-            shouldEnum = YES;
-            
-            //bail
-            break;
-        }
-        else
-        {
-           shouldEnum = NO;
-            
-            break;
-        }
-    }
-    
-    return shouldEnum;
-}
-*/
-
-/*
-//TODO: only do this once!
-//      ->otherwise done JIT (on click)
-//TODO: sync!!
-//iterate over all tasks
-// ->invoke task's emun method to get all files/network (via XPC)
--(void)enumerateFiles
-{
-    //Task
-    Task* task =  nil;
-    
-    //iterate over all tasks
-    // ->invoke method to enumerate files
-    for(NSNumber* key in self.tasks)
-    {
-        //get task
-        task = self.tasks[key];
-        
-        //enumerate files
-        [task enumerateFiles:self.xpcConnection];
-    }
-}
-*/
 
 //get list of all pids
 -(OrderedDictionary*)getAllTasks
@@ -336,9 +261,8 @@
     //add kernel task
     [allTasks setObject:task forKey:@0];
     
-    //reverse array
-    // ->want order to go from 0 -> ...
-    [allTasks reverse];
+    //sort all tasks alphabetically
+    [allTasks sort:@"name"];
     
 //bail
 bail:

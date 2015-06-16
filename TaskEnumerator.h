@@ -59,7 +59,7 @@
 
 //determine if dylibs should be (re)enumerated
 // ->generally yes, unless the first enumeration (of all tasks) is not complete
--(BOOL)shouldEnumDylibs;
+//-(BOOL)shouldEnumDylibs;
 
 
 @end

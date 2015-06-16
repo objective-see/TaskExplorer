@@ -412,8 +412,35 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
+                                                    <button toolTip="show file info" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="105" translatesAutoresizingMaskIntoConstraints="NO" id="ajd-Yb-p6i">
+                                                        <rect key="frame" x="1265" y="16" width="15" height="15"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="15" id="hAL-Nd-GfV"/>
+                                                            <constraint firstAttribute="width" constant="15" id="pQu-Dd-9Ib"/>
+                                                        </constraints>
+                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="only" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="bO6-PR-DSy">
+                                                            <behavior key="behavior" lightByContents="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="showInfo:" target="-2" id="18o-m3-bUC"/>
+                                                        </connections>
+                                                    </button>
+                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="YYR-6I-wYA">
+                                                        <rect key="frame" x="1259" y="3" width="25" height="12"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="12" id="NRE-yK-7X4"/>
+                                                        </constraints>
+                                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="info" id="bNN-kN-4zL">
+                                                            <font key="font" size="9" name="Menlo-Regular"/>
+                                                            <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                    </textField>
                                                 </subviews>
                                                 <constraints>
+                                                    <constraint firstAttribute="trailing" secondItem="ajd-Yb-p6i" secondAttribute="trailing" constant="15" id="4j1-1P-atZ"/>
+                                                    <constraint firstAttribute="trailing" secondItem="YYR-6I-wYA" secondAttribute="trailing" constant="13" id="MHU-AY-rcs"/>
                                                     <constraint firstItem="n84-aN-dS4" firstAttribute="leading" secondItem="vkh-K9-CiP" secondAttribute="leading" constant="5" id="iJH-Aa-QGY"/>
                                                     <constraint firstItem="clK-51-yQN" firstAttribute="leading" secondItem="n84-aN-dS4" secondAttribute="trailing" constant="8" id="zd5-Ae-yYB"/>
                                                 </constraints>
@@ -437,7 +464,7 @@
                         <rect key="frame" x="1" y="298" width="480" height="16"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
-                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="mini" horizontal="NO" id="cwi-rA-cqP">
+                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="mini" horizontal="NO" id="cwi-rA-cqP">
                         <rect key="frame" x="224" y="17" width="15" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>

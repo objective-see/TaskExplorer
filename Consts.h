@@ -30,6 +30,7 @@
 //keys for signing stuff
 #define KEY_SIGNATURE_STATUS @"signatureStatus"
 #define KEY_SIGNING_AUTHORITIES @"signingAuthorities"
+#define KEY_SIGNING_IS_APPLE @"signedByApple"
 
 //OS version x
 #define OS_MAJOR_VERSION_X 10

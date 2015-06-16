@@ -133,6 +133,23 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
     array = [[[array reverseObjectEnumerator] allObjects] mutableCopy];
 }
 
+//sort, by object key
+-(void)	:(NSString*)sortKey
+{
+    //task sorted by name
+    NSArray* sortedTasks = nil;
+    
+    //sort task by binary name
+    sortedTasks = [[dictionary allValues] sortedArrayUsingSelector:@selector(compare:)];
+    
+    //extract pids into array
+    array = [[sortedTasks valueForKey:@"pid"] mutableCopy];
+    
+    return;
+}
+
+
+
 /*
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level
 {
