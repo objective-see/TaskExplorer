@@ -12,7 +12,6 @@
 #import "Filter.h"
 #import "VirusTotal.h"
 #import "TaskTableController.h"
-#import "TreeViewController.h"
 
 #import "AboutWindowController.h"
 #import "PrefsWindowController.h"
@@ -49,10 +48,14 @@
 @property (nonatomic, retain)TaskTableController *taskTableController;
 
 //tree (outline) controller
-@property (nonatomic, retain)TreeViewController* treeViewController;
+//@property (nonatomic, retain)TreeViewController* treeViewController;
 
 //array to hold binary objects that are in array
 //@property (nonatomic, retain)NSMutableArray *tableContents;
+
+//current task view format
+// ->flat or tree
+@property NSUInteger taskViewFormat;
 
 //drop-down view selector
 

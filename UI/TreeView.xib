@@ -6,7 +6,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="TreeViewController">
+        <customObject id="-2" userLabel="File's Owner" customClass="TaskTableController">
             <connections>
                 <outlet property="itemView" destination="Wr1-No-lg2" id="74i-TW-N6D"/>
                 <outlet property="view" destination="T1P-b9-TzF" id="pja-1o-aue"/>
@@ -25,7 +25,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="40" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="cLW-QZ-CYz" id="Wr1-No-lg2">
-                                <rect key="frame" x="0.0" y="0.0" width="1298" height="0.0"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1304" height="0.0"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -44,7 +44,7 @@
                                         </textFieldCell>
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         <prototypeCellViews>
-                                            <tableCellView identifier="ImageCell" id="7xB-nb-n5O" customClass="kkRowCell">
+                                            <tableCellView identifier="TaskCell" id="7xB-nb-n5O" customClass="kkRowCell">
                                                 <rect key="frame" x="1" y="1" width="1295" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>

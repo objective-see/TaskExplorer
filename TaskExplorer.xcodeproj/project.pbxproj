@@ -29,7 +29,6 @@
 		CD3F4CFF1AF72BC4002A2647 /* TaskInfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD3F4CFE1AF72BC4002A2647 /* TaskInfoWindow.xib */; };
 		CD3F4D141AF85088002A2647 /* FlatView.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD3F4D131AF85088002A2647 /* FlatView.xib */; };
 		CD3F4D161AF89066002A2647 /* TreeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD3F4D151AF89066002A2647 /* TreeView.xib */; };
-		CD3F4D1C1AFADD36002A2647 /* TreeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3F4D1B1AFADD36002A2647 /* TreeViewController.m */; };
 		CD4D53CA1B20296E00008030 /* unknown.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D53C91B20296E00008030 /* unknown.png */; };
 		CD4D53D01B23ED3900008030 /* connectedIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D53CF1B23ED3900008030 /* connectedIcon.png */; };
 		CD4D53D21B23ED4300008030 /* listeningIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D53D11B23ED4300008030 /* listeningIcon.png */; };
@@ -164,8 +163,6 @@
 		CD3F4CFE1AF72BC4002A2647 /* TaskInfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = TaskInfoWindow.xib; path = UI/TaskInfoWindow.xib; sourceTree = "<group>"; };
 		CD3F4D131AF85088002A2647 /* FlatView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = FlatView.xib; path = UI/FlatView.xib; sourceTree = "<group>"; };
 		CD3F4D151AF89066002A2647 /* TreeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = TreeView.xib; path = UI/TreeView.xib; sourceTree = "<group>"; };
-		CD3F4D1A1AFADD36002A2647 /* TreeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TreeViewController.h; sourceTree = "<group>"; };
-		CD3F4D1B1AFADD36002A2647 /* TreeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TreeViewController.m; sourceTree = "<group>"; };
 		CD4D53C91B20296E00008030 /* unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = unknown.png; path = images/unknown.png; sourceTree = SOURCE_ROOT; };
 		CD4D53CF1B23ED3900008030 /* connectedIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = connectedIcon.png; path = images/connectedIcon.png; sourceTree = SOURCE_ROOT; };
 		CD4D53D11B23ED4300008030 /* listeningIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = listeningIcon.png; path = images/listeningIcon.png; sourceTree = SOURCE_ROOT; };
@@ -465,8 +462,6 @@
 			children = (
 				CDA5F6C21B16E20E003CE340 /* RequestRootWindowController.h */,
 				CDA5F6C31B16E20E003CE340 /* RequestRootWindowController.m */,
-				CD3F4D1A1AFADD36002A2647 /* TreeViewController.h */,
-				CD3F4D1B1AFADD36002A2647 /* TreeViewController.m */,
 				CD6E54FD1B1162B5007953AB /* ItemView.h */,
 				CD6E54FE1B1162B5007953AB /* ItemView.m */,
 				CD02195F1AD39A83005148A2 /* ResultsWindowController.h */,
@@ -697,7 +692,6 @@
 				CDA81D7B1A95D29B009790E2 /* TaskTableController.m in Sources */,
 				CDF08CCA1AC4C678009B3423 /* PrefsWindowController.m in Sources */,
 				CDA81DEA1A997BF1009790E2 /* InfoWindowController.m in Sources */,
-				CD3F4D1C1AFADD36002A2647 /* TreeViewController.m in Sources */,
 				CD02195C1AD38823005148A2 /* kkRowCell.m in Sources */,
 				CDF08CE61AC89FE1009B3423 /* HyperlinkTextField.m in Sources */,
 				CDA81D4F1A95B492009790E2 /* AppDelegate.m in Sources */,

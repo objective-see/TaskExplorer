@@ -41,6 +41,18 @@
 {
     self.selectedRow = -1;
     
+    //for outline (tree) view
+    // ->expand
+    if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
+    {
+        [(NSOutlineView*)self.itemView expandItem:nil expandChildren:YES];
+        
+        //TODO: do this in IB?
+        //[itemView setTarget:self];
+    }
+    
+    NSLog(@"item view: %@", self.itemView);
+    
     /*
     NSString *title = @"[ all tasks ]";
     NSTableColumn *yourColumn = self.itemView.tableColumns.lastObject;
@@ -96,40 +108,7 @@
     
     return rows;
     
-    /*
-    
-     
-     
-    //plugin object
-    PluginBase* selectedPluginObj = nil;
-    
-    //set selected plugin
-    selectedPluginObj =  ((AppDelegate*)[[NSApplication sharedApplication] delegate]).selectedPlugin;
-    
-    //invoke helper function to get array
-    // ->then grab count
-    rows = [[self getTableItems] count];
-    
-    //if not items have been found
-    // ->display 'not found' msg
-    if( (0 == rows) &&
-        (nil != selectedPluginObj) )
-    {
-        //set string (to include plugin's name)
-        [self.noItemsLabel setStringValue:[NSString stringWithFormat:@"no %@ found", [selectedPluginObj.name lowercaseString]]];
-        
-        //show label
-        self.noItemsLabel.hidden = NO;
     }
-    else
-    {
-        //hide label
-        self.noItemsLabel.hidden = YES;
-    }
-
-    return rows;
-    */
-}
 
 //automatically invoked when user selects row
 // ->only care about for top pane, trigger load bottom view
@@ -958,16 +937,44 @@ bail:
 // ->open Finder to show item
 -(IBAction)showInFinder:(id)sender
 {
-    //task
-    Task* task =  nil;
+    //item
+    // ->task, dylib, file, etc
+    id item =  nil;
     
-    //get task
-    //TODO: this used to be called w/ nil
-    task = [self taskForRow:sender];
+    //path to binary
+    NSString* path = nil;
     
+    //for top pane
+    // ->get task
+    if(YES != self.isBottomPane)
+    {
+        //get task
+        item = [self taskForRow:sender];
+        
+        //get path
+        path = ((Task*)item).binary.path;
+    }
+    
+    //bottom pane
+    else
+    {
+        //get item
+        item = [self itemForRow:sender];
+        
+        //get path
+        path = ((Binary*)item).path;
+    }
+    
+    //sanity check
+    if(nil == path)
+    {
+        //bail
+        goto bail;
+    }
+
     //open Finder
     // ->will reveal binary
-    [[NSWorkspace sharedWorkspace] selectFile:task.binary.path inFileViewerRootedAtPath:nil];
+    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:nil];
     
 //bail
 bail:
@@ -976,7 +983,7 @@ bail:
 }
 
 //automatically invoked when user clicks the 'info' icon
-// ->create/configure/display info window
+// ->create/configure/display info window for task/dylib/file/etc
 -(IBAction)showInfo:(id)sender
 {
     //item
@@ -1067,5 +1074,220 @@ bail:
     return;
 }
 
+
+//OUTLINE VIEW STUFFZ
+
+-(NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
+{
+    //tasks
+    OrderedDictionary* tasks = nil;
+    
+    //grab tasks
+    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    
+    //number of children
+    NSUInteger numberOfChildren = 0;
+    
+    //when item is nil
+    // ->count is number of root items children
+    if(nil == item)
+    {
+        //kids
+        numberOfChildren = ((Task*)[tasks objectForKey:@0]).children.count;
+    }
+    //otherwise
+    // ->give number of item's kids
+    else
+    {
+        //kids
+        numberOfChildren = [((Task*)item).children count];
+    }
+    
+    return numberOfChildren;
+}
+
+-(BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
+{
+    //only no for leafs
+    // ->items w/o kids
+    if( (nil != item) &&
+       (0 == [[item children] count]) )
+    {
+        return NO;
+    }
+    else
+    {
+        return YES;
+    }
+    //return !item ? YES : [[item children] count] != 0;
+}
+
+//TODO: sort children!!!
+
+//return child
+-(id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
+{
+    //tasks
+    OrderedDictionary* tasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //grab all tasks
+    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    
+    //root item
+    if(nil == item)
+    {
+        //root
+        task = [tasks objectForKey:@0];
+    }
+    //non-root items
+    // ->return *their* child!
+    else
+    {
+        task = [tasks objectForKey:[(Task*)item children][index]];
+    }
+    
+    return task;
+}
+
+
+//TODO: combine logic - and make taskForRow method work for flat and tree views :)
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+{
+    //tasks
+    __block OrderedDictionary* tasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //newly selected row (index)
+    __block NSInteger newlySelectedRow = -1;
+    
+    //selected row cell
+    NSTableCellView* selectedView = nil;
+    
+    //ignore events for bottom-pane
+    if(YES == self.isBottomPane)
+    {
+        //ignore
+        goto bail;
+    }
+    
+    //get index of newly selected row
+    newlySelectedRow = [self.itemView selectedRow];
+    
+    //get row that's about to be selected
+    selectedView = [self.itemView viewAtColumn:0 row:newlySelectedRow makeIfNecessary:YES];
+    
+    //grab task
+    task = [self taskForRow:nil];
+    
+    //check if task is dead
+    if(YES != isAlive([task.pid intValue]))
+    {
+        //make it red
+        ((kkRowCell*)selectedView).color = [NSColor redColor];
+        
+        //draw
+        [selectedView setNeedsDisplay:YES];
+        
+        //make hide it after 1/4th second
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            //reset color
+            ((kkRowCell*)selectedView).color = nil;
+            
+            //get tasks
+            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+            
+            //remove (now dead) task
+            [tasks removeObjectForKey:task.pid];
+            
+            //reload table
+            [self.itemView reloadData];
+            
+            //sanity check
+            // ->make sure removed task wasn't last
+            if(tasks.count <= newlySelectedRow)
+            {
+                //reset to (new) last
+                newlySelectedRow = tasks.count - 1;
+            }
+            //sanity check
+            // ->reset to first item on other errors
+            else if(-1 == newlySelectedRow)
+            {
+                //set to first
+                newlySelectedRow = 0;
+            }
+            
+            //re-select
+            [self.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:newlySelectedRow] byExtendingSelection:NO];
+            
+        });
+        
+        //bail
+        goto bail;
+        
+    }
+    
+    //ignore if row selection didn't change
+    if([self.itemView selectedRow] == self.selectedRow)
+    {
+        //ignore
+        goto bail;
+    }
+    
+    //save newly selected row index
+    self.selectedRow = [self.itemView selectedRow];
+    
+    //save currently selected task
+    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask = task;
+    
+    //reload bottom pane
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    
+    
+    //bail
+bail:
+    
+    return;
+}
+
+//table delegate method
+// ->return cell for row
+-(NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+    return createItemView(outlineView, self, (Task*)item);
+}
+
+//automatically invoked
+// ->create custom (sub-classed) NSTableRowView
+-(NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
+{
+    //row view
+    KKRow* rowView = nil;
+    
+    //row ID
+    static NSString* const kRowIdentifier = @"RowView";
+    
+    //try grab existing row view
+    rowView = [outlineView makeViewWithIdentifier:kRowIdentifier owner:self];
+    
+    //make new if needed
+    if(nil == rowView)
+    {
+        //create new
+        // ->size doesn't matter
+        rowView = [[KKRow alloc] initWithFrame:NSZeroRect];
+        
+        //set row ID
+        rowView.identifier = kRowIdentifier;
+    }
+    
+    return rowView;
+}
 
 @end

@@ -293,6 +293,12 @@
 //connected socket
 #define SOCKET_ESTABLISHED @"connected"
 
+//sort by pid
+#define SORT_BY_PID 0x0
+
+//sort by name
+#define SORT_BY_NAME 0x1
+
 
 
 

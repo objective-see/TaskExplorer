@@ -138,9 +138,7 @@
         
     }//add new tasks
     
-    //sort by name!
-    
-    //reload table
+    //reload task table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
     
     //now generate signing info
@@ -260,9 +258,6 @@
     
     //add kernel task
     [allTasks setObject:task forKey:@0];
-    
-    //sort all tasks alphabetically
-    [allTasks sort:@"name"];
     
 //bail
 bail:

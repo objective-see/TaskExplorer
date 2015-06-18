@@ -260,10 +260,11 @@ BOOL isApple(NSString* path)
         goto bail;
     }
     
-    //check if file is signed by apple
-    // ->i.e. it conforms to req string
+    //check if file is signed by apple by checking if it conforms to req string
+    // note: ignore 'errSecCSBadResource' as lots of signed apple files return this issue :/
     status = SecStaticCodeCheckValidity(staticCode, kSecCSDefaultFlags, requirementRef);
-    if(STATUS_SUCCESS != status)
+    if( (STATUS_SUCCESS != status) &&
+        (errSecCSBadResource != status) )
     {
         //bail
         // ->just means app isn't signed by apple

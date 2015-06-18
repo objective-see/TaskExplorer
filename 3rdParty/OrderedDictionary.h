@@ -36,7 +36,8 @@
 - (NSEnumerator *)reverseKeyEnumerator;
 -(void)reverse;
 
-//sort, by object key
--(void)sort:(NSString*)sortKey;
+//sort
+// ->by pid, name, etc
+-(void)sort:(NSUInteger)sortBy;
 
 @end

@@ -328,6 +328,13 @@ bail:
     //alloc array for new dylibs
     newDylibs = [NSMutableArray array];
     
+    //sync
+    @synchronized(self.dylibs)
+    {
+        //reset existing dylibs
+        [self.dylibs removeAllObjects];
+    }
+    
     //invoke XPC service (running as r00t)
     // ->will enumerate dylibs, then invoke reply block to save into iVar
     [[xpcConnection remoteObjectProxy] enumerateDylibs:self.pid withReply:^(NSMutableArray* dylibPaths) {
@@ -393,6 +400,18 @@ bail:
             }
         }
         
+        //sync to sort
+        @synchronized(self.dylibs)
+        {
+            //sort by name
+            self.dylibs = [[self.dylibs sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+            {
+                //sort
+                return [[(Binary*)a name] compare:[(Binary*)b name] options:NSCaseInsensitiveSearch];
+                
+            }] mutableCopy];
+        }
+        
         //reload bottom pane now
         // ->this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
@@ -406,7 +425,7 @@ bail:
         }
         
         //any new dylibs?
-        // ->reload bottom pane
+        // ->reload bottom pane to update signing info, etc
         if(0 != newDylibs.count)
         {
             //reload
@@ -435,6 +454,13 @@ bail:
     //alloc array for new files
     newFiles = [NSMutableArray array];
     
+    //sync
+    @synchronized(self.files)
+    {
+        //reset existing files
+        [self.files removeAllObjects];
+    }
+    
     //invoke XPC service (running as r00t)
     // ->will enumerate files, then invoke reply block so can save into iVar
     [[xpcConnection remoteObjectProxy] enumerateFiles:self.pid withReply:^(NSMutableArray* fileDescriptors) {
@@ -455,9 +481,13 @@ bail:
                 //next
                 continue;
             }
-                
-            //add to task's files
-            [self.files addObject:file];
+        
+            //sync
+            @synchronized(self.files)
+            {
+                //add to task's files
+                [self.files addObject:file];
+            }
             
             //save new files
             // ->will be processed below
@@ -466,6 +496,18 @@ bail:
                 //save as new
                 [newFiles addObject:file];
             }
+        }
+        
+        //sync to sort
+        @synchronized(self.files)
+        {
+            //sort by name
+            self.files = [[self.files sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+            {
+                //sort
+                return [[(File*)a name] compare:[(File*)b name] options:NSCaseInsensitiveSearch];
+                
+            }] mutableCopy];
         }
         
         //reload bottom pane

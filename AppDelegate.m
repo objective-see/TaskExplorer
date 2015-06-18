@@ -31,7 +31,7 @@
 @synthesize bottomViewController;
 @synthesize currentTask;
 @synthesize requestRootWindowController;
-
+@synthesize taskViewFormat;
 
 @synthesize scannerThread;
 @synthesize versionString;
@@ -39,7 +39,7 @@
 
 @synthesize topPane;
 @synthesize taskEnumerator;
-@synthesize treeViewController;
+//@synthesize treeViewController;
 @synthesize currentViewController;
 @synthesize viewSelector;
 
@@ -144,10 +144,12 @@
     }
     */
     
+    //set default top pane view to flat
+    self.taskViewFormat = FLAT_VIEW;
     
     //set initial view for top pane
     // ->default is flat (non-tree) view
-    [self changeViewController:FLAT_VIEW];
+    [self changeViewController];
     
     //alloc/init bottom pane controller
     self.bottomViewController = [[TaskTableController alloc] initWithNibName:@"FlatView" bundle:nil];
@@ -312,7 +314,7 @@
 
 //change top pane
 // ->switch between either flat (default) or tree-based (hierachical) view
--(void)changeViewController:(NSInteger)whichViewTag
+-(void)changeViewController
 {
     //remove old view
     if([self.currentViewController view] != nil)
@@ -321,7 +323,7 @@
         [[self.currentViewController view] removeFromSuperview];
     }
     
-    switch (whichViewTag)
+    switch(self.taskViewFormat)
     {
         case FLAT_VIEW:
         {
@@ -337,11 +339,11 @@
         case TREE_VIEW:
         {
             //alloc/init
-            treeViewController = [[TreeViewController alloc] initWithNibName:@"TreeView" bundle:nil];
-            if(self.treeViewController != nil)
+            taskTableController = [[TaskTableController alloc] initWithNibName:@"TreeView" bundle:nil];
+            if(self.taskTableController != nil)
             {
                 //update iVar
-                self.currentViewController = self.treeViewController;
+                self.currentViewController = self.taskTableController;
             }
             break;
         }
@@ -616,6 +618,22 @@ bail:
 // invoke custom refresh method on main thread
 -(void)reloadTaskTable
 {
+    //sort tasks
+    // ->flat view, sort by name
+    if(FLAT_VIEW == self.taskViewFormat)
+    {
+        //sort
+        [self.taskEnumerator.tasks sort:SORT_BY_NAME];
+    }
+    //sort tasks
+    // ->tree view, sort by pid
+    else
+    {
+        //sort
+        [self.taskEnumerator.tasks sort:SORT_BY_PID];
+    }
+    
+    
     //when exec'ing on background thread
     // ->exec on main thread
     if(YES != [NSThread isMainThread])
@@ -634,8 +652,10 @@ bail:
     // ->just refresh
     else
     {
+        //TODO: currentViewCont?!?
         //refresh
-        [(id)self.taskTableController refresh];
+        //[(id)self.taskTableController refresh];
+        [(id)self.currentViewController refresh];
     }
     
     return;
@@ -1342,8 +1362,14 @@ bail:
 // ->invoke helper function to change view
 -(IBAction)switchView:(id)sender
 {
-    //switch (top) view
-    [self changeViewController: [[sender selectedCell] tag]];
+    //save selected view
+    self.taskViewFormat = [[sender selectedCell] tag];
+
+    //switch (top) view/pane
+    [self changeViewController];
+    
+    //reload top pane
+    [self reloadTaskTable];
     
     return;
 }

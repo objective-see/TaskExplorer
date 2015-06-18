@@ -21,6 +21,7 @@
 //     distribution.
 //
 
+#import "Consts.h"
 #import "OrderedDictionary.h"
 
 NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
@@ -133,17 +134,31 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
     array = [[[array reverseObjectEnumerator] allObjects] mutableCopy];
 }
 
-//sort, by object key
--(void)	:(NSString*)sortKey
+//sort
+// ->by pid, name, etc
+-(void)sort:(NSUInteger)sortBy
 {
     //task sorted by name
     NSArray* sortedTasks = nil;
     
-    //sort task by binary name
-    sortedTasks = [[dictionary allValues] sortedArrayUsingSelector:@selector(compare:)];
+    //
+    if(SORT_BY_PID == sortBy)
+    {
+        [array sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            return [obj1 compare:obj2];
+        }];
+    }
+    else if(SORT_BY_NAME == sortBy)
+    {
+        //get array of tasks, sorted by binary name
+        // ->invokes Task class's compare method
+        sortedTasks = [[dictionary allValues] sortedArrayUsingSelector:@selector(compare:)];
+        
+        //extract sorted pids into array
+        array = [[sortedTasks valueForKey:@"pid"] mutableCopy];
+        
+    }
     
-    //extract pids into array
-    array = [[sortedTasks valueForKey:@"pid"] mutableCopy];
     
     return;
 }
