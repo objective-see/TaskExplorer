@@ -32,7 +32,7 @@
 }
 
 //@property (readonly) NSViewController *currentViewController;
-@property(nonatomic, retain)NSViewController *currentViewController;
+//@property(nonatomic, retain)NSViewController *currentViewController;
 
 //(current) bottom view controller
 @property(nonatomic, retain)TaskTableController *bottomViewController;
@@ -125,20 +125,10 @@
 // ->provide mouse over effects
 -(void)initTrackingAreas;
 
-//create instances of all registered plugins
-//-(NSMutableArray*)instantiatePlugins;
-
-//callback method, invoked by plugin(s) when item is found
-// ->update the 'total' count and the item table (if active plugin is selected in UI)
--(void)itemFound:(Task*)task;
-
 //callback method, invoked by virus total when plugin's items have been processed
 // ->reload table if plugin matches active plugin
 //-(void)itemsProcessed:(PluginBase*)plugin;
 
-//callback method, invoked by category table controller when user selects category
-// ->save the selected plugin & reload the item table
--(void)categorySelected:(NSUInteger)rowIndex;
 
 //callback when user has updated prefs
 // ->reload table, etc
@@ -181,6 +171,10 @@
 
 //begin task enumeration
 -(void)exploreTasks;
+
+//sort tasks
+// ->either name (flat view) or pid (tree view)
+-(void)sortTasksForView:(OrderedDictionary*)tasks;
 
 
 @end

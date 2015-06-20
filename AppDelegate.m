@@ -40,7 +40,7 @@
 @synthesize topPane;
 @synthesize taskEnumerator;
 //@synthesize treeViewController;
-@synthesize currentViewController;
+//@synthesize currentViewController;
 @synthesize viewSelector;
 
 
@@ -317,10 +317,10 @@
 -(void)changeViewController
 {
     //remove old view
-    if([self.currentViewController view] != nil)
+    if([self.taskTableController view] != nil)
     {
         //remove
-        [[self.currentViewController view] removeFromSuperview];
+        [[self.taskTableController view] removeFromSuperview];
     }
     
     switch(self.taskViewFormat)
@@ -329,35 +329,39 @@
         {
             //alloc/init
             taskTableController = [[TaskTableController alloc] initWithNibName:@"FlatView" bundle:nil];
-            if(self.taskTableController != nil)
+            /*if(self.taskTableController != nil)
             {
                 //update iVar
                 self.currentViewController = self.taskTableController;
-            }
+            }*/
             break;
         }
         case TREE_VIEW:
         {
             //alloc/init
             taskTableController = [[TaskTableController alloc] initWithNibName:@"TreeView" bundle:nil];
-            if(self.taskTableController != nil)
+            
+            
+            
+            /*if(self.taskTableController != nil)
             {
                 //update iVar
                 self.currentViewController = self.taskTableController;
-            }
+            }*/
             break;
         }
     }
     
     //add subview
-    [self.topPane addSubview:[self.currentViewController view]];
+    [self.topPane addSubview:[self.taskTableController view]];
     
     //set frame
-    [[self.currentViewController view] setFrame:[self.topPane bounds]];
+    [[self.taskTableController view] setFrame:[self.topPane bounds]];
     
     return;
 }
 
+//TODO: add checks to make sure or handle switch to tree view!!!!
 //reload (to re-draw) a specific row in table
 -(void)reloadRow:(Task*)task item:(ItemBase*)item pane:(NSUInteger)pane
 {
@@ -371,31 +375,55 @@
     if(PANE_TOP == pane)
     {
         //get row that task is loaded in
-        tableView = [((id)self.currentViewController) itemView];
+        tableView = [((id)self.taskTableController) itemView];
         
-        //get index where task is
-        // TODO: doesn't account for filtering, etc!!!
-        row = [self.taskEnumerator.tasks indexOfKey:task.pid];
-        if(NSNotFound == row)
+        //reloadItem
+        // ->flat view
+        if(YES != [tableView isKindOfClass:[NSOutlineView class]])
         {
-            //bail
-            goto bail;
+            //get index where task is
+            // TODO: doesn't account for filtering, etc!!!
+            row = [self.taskEnumerator.tasks indexOfKey:task.pid];
+            if(NSNotFound == row)
+            {
+                //bail
+                goto bail;
+            }
+            
+            //reload just the row
+            // ->on main thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                //begin updates
+                [tableView beginUpdates];
+                
+                //reload row
+                [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+                
+                //end updates
+                [tableView endUpdates];
+                
+            });
         }
-        
-        //dbg msg
-        //NSLog(@"updating row: %d", row);
-    
-        //reload just the row
-        // ->on main thread
-        dispatch_async(dispatch_get_main_queue(), ^{
+        //reload item
+        // ->tree view
+        else
+        {
+            //begin updates
+            [tableView beginUpdates];
             
-            //reload row
-            [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+            //reload
+            [(NSOutlineView*)tableView reloadItem:task];
             
-        });
+            //end updates
+            [tableView endUpdates];
+        }
             
         
     }
+    
+    //TODO: bottom pane
+    
     
 //bail
 bail:
@@ -410,10 +438,11 @@ bail:
     //tag
     NSUInteger segmentTag = 0;
     
+    /*
     if(YES == [task.binary.name isEqualToString:@"launchd"])
     {
         NSLog(@"asdf");
-    }
+    }*/
     
     //get segment tag
     segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
@@ -614,25 +643,35 @@ bail:
     return;
 }
 
-//reload task table
-// invoke custom refresh method on main thread
--(void)reloadTaskTable
+//TODO: don't think we need to sort by pid, since tree view, just uses kids!!!
+//sort tasks
+// ->either name (flat view) or pid (tree view)
+-(void)sortTasksForView:(OrderedDictionary*)tasks;
 {
     //sort tasks
     // ->flat view, sort by name
     if(FLAT_VIEW == self.taskViewFormat)
     {
         //sort
-        [self.taskEnumerator.tasks sort:SORT_BY_NAME];
+        [tasks sort:SORT_BY_NAME];
     }
     //sort tasks
     // ->tree view, sort by pid
     else
     {
         //sort
-        [self.taskEnumerator.tasks sort:SORT_BY_PID];
+        [tasks sort:SORT_BY_PID];
     }
     
+    return;
+}
+
+//reload task table
+// invoke custom refresh method on main thread
+-(void)reloadTaskTable
+{
+    //sort tasks
+    [self sortTasksForView:self.taskEnumerator.tasks];
     
     //when exec'ing on background thread
     // ->exec on main thread
@@ -643,7 +682,7 @@ bail:
             
             //refresh
             //[self.taskTableController refresh];
-            [(id)self.currentViewController refresh];
+            [(id)self.taskTableController refresh];
             
         });
     }
@@ -655,86 +694,12 @@ bail:
         //TODO: currentViewCont?!?
         //refresh
         //[(id)self.taskTableController refresh];
-        [(id)self.currentViewController refresh];
+        [(id)self.taskTableController refresh];
     }
     
     return;
 }
 
-//callback method, invoked by plugin(s) when item is found
-// ->update the 'total' count and the item table (if it's selected)
--(void)itemFound:(Task*)task
-{
-    //active plugin object
-    //PluginBase* activePlugin = nil;
-    
-    //item
-    //ItemBase* uncoveredItem = nil;
-    
-    //item backing item table
-    // ->depending on flilter status, either all items, or just known ones
-    //NSArray*    = nil;
-    
-    //grab active plugin object
-    //activePlugin = self.plugins[self.activePluginIndex];
-    
-    //extract uncovered item
-    // ->either File obj, Command obj, or Extension obj
-    //uncoveredItem = [activePlugin.allItems lastObject];
-    
-    //only show refresh table if
-    // a) filter is not enabled (e.g. show all)
-    // b) filtering is enable, but item is unknown
-    //if( (YES == self.prefsWindowController.showTrustedItems) ||
-    //    ((YES != self.prefsWindowController.showTrustedItems) && (YES != uncoveredItem.isTrusted)) )
-    //{
-    /*
-        //set table item array
-        // ->case: all
-        if(YES == self.prefsWindowController.showTrustedItems)
-        {
-            //set to all items
-            tableItems = activePlugin.allItems;
-        }
-        //set table item array
-        // ->case: unknown items
-        else
-        {
-            //set to unknown items
-            tableItems = activePlugin.unknownItems;
-        }
-    */
-        //reload category table (on main thread)
-        // ->this will result in the 'total' being updated
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            
-            //begin updates
-            [[((id)self.currentViewController) itemView] beginUpdates];
-            
-            //update category table row
-            // ->this will result in the 'total' being updated
-            //[self.categoryTableController.categoryTableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:self.activePluginIndex] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
-            
-            //if this plugin is currently the selected one (in the category table)
-            // ->update the item row
-            //if(self.selectedPlugin == activePlugin)
-            //{
-                //first tell item table the # of items have changed
-                //[self.taskTableController.itemView noteNumberOfRowsChanged];
-                [[((id)self.currentViewController) itemView] noteNumberOfRowsChanged];
-                
-                //reload just the new row
-               // [self.itemTableController.itemTableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(tableItems.count-1)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
-            //}
-            
-            //end updates
-            //[self.taskTableController.itemView endUpdates];
-            [[((id)self.currentViewController) itemView] beginUpdates];
-        });
-    //}
-    
-    return;
-}
 
 /*
 //callback method, invoked by virus total when plugin's items have been processed
@@ -813,21 +778,6 @@ bail:
 
 */
 
-//callback method, invoked by category table controller when OS/user clicks a row
-// ->lookup/save the selected plugin & reload the item table
--(void)categorySelected:(NSUInteger)rowIndex
-{
-    //save selected plugin
-    //self.selectedPlugin = self.plugins[rowIndex];
-    
-    //scroll to top of item table
-    [self.taskTableController scrollToTop];
-    
-    //reload item table
-    [self.taskTableController.itemView reloadData];
-    
-    return;
-}
 
 //callback when user has updated prefs
 // ->reload table, etc

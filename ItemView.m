@@ -10,6 +10,7 @@
 #import "ItemView.h"
 #import "VTButton.h"
 #import "AppDelegate.h"
+#import "kkRowCell.h"
 #import "3rdParty/OrderedDictionary.h"
 
 //create customize item view
@@ -68,6 +69,10 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
     {
         //create & config view
         itemCell = createTaskView(tableView, owner, item);
+        
+        //set tag
+        // ->task pid (allows lookup later)
+        ((kkRowCell*)itemCell).tag = [((Task*)item).pid integerValue] + PID_TAG_DELTA;
     }
     
     //logic to create dylib view
@@ -90,6 +95,8 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
         //create & config view
         itemCell = createNetworkView(tableView, owner, item);
     }
+    
+    
     
     return itemCell;
     

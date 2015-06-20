@@ -10,4 +10,5 @@
 
 @interface KKRow : NSTableRowView
 
+
 @end

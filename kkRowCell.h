@@ -15,6 +15,9 @@
 
 /* PROPERTIES */
 
+//tag
+@property NSInteger tag;
+
 //color
 @property(nonatomic, retain)NSColor* color;
 

@@ -130,13 +130,14 @@
             continue;
         }
         
-        //enumerate task's dylibs
-        //[newTask enumerateDylibs:self.xpcConnection allDylibs:self.dylibs];
-        
         //add new task
         [self.tasks setObject:newTask forKey:newTask.pid];
         
     }//add new tasks
+    
+    //sort tasks
+    // ->ensures that signing info etc w/ be generated for (top) visible tasks
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) sortTasksForView:newTasks];
     
     //reload task table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
@@ -294,7 +295,17 @@ bail:
     NSUInteger childIndex = 0;
     
     //init comparator
-    comparator = ^(id obj1, id obj2) { return NSOrderedSame; };
+    // ->sort pids
+    comparator = ^(id obj1, id obj2)
+    {
+        if (obj1 < obj2)
+            return NSOrderedAscending;
+        
+        if (obj1 > obj2)
+            return NSOrderedDescending;
+        
+        return NSOrderedSame;
+    };
     
     //interate over all task
     // ->insert task into parent's *ordered* child array
@@ -326,5 +337,67 @@ bail:
     
     return;
 }
+
+//remove a task
+// ->contain extra logic to remove children, etc
+-(void)removeTask:(Task*)task
+{
+    //parent
+    Task* parent = nil;
+    
+    //children
+    NSMutableArray* children = nil;
+    
+    //alloc array for children
+    children = [NSMutableArray array];
+
+    //get all children
+    [self getAllChildren:task children:children];
+    
+    //remove all child tasks
+    for(NSNumber* childPid in children)
+    {
+        //remove
+        [self.tasks removeObjectForKey:childPid];
+    }
+    
+    //remove task
+    [self.tasks removeObjectForKey:task.pid];
+    
+    //get parent
+    parent = [self.tasks objectForKey:task.ppid];
+    
+    //remove task from parent's list of children
+    [parent.children removeObject:task.pid];
+    
+    return;
+    
+}
+
+//given a task
+// ->get list of all child pids
+-(void)getAllChildren:(Task*)parent children:(NSMutableArray*)children
+{
+    //child task
+    Task* childTask = nil;
+    
+    //add parent's children
+    [children addObjectsFromArray:parent.children];
+    
+    for(NSNumber* childPid in parent.children)
+    {
+        //get child task
+        childTask = self.tasks[childPid];
+        
+        if(0 != [childTask.children count])
+        {
+            //recurse
+            [self getAllChildren:childTask children:children];
+        }
+    }
+    
+    return;
+}
+
 
 @end

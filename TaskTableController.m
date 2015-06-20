@@ -25,6 +25,8 @@
 
 #import <AppKit/AppKit.h>
 
+//TODO: need to do some sync or logic to handle swaps -otherwise crashes!!!
+
 @implementation TaskTableController
 
 @synthesize itemView;
@@ -34,13 +36,33 @@
 @synthesize vtWindowController;
 @synthesize infoWindowController;
 
-
+@synthesize didInit;
 
 //@synthesize tasks;
+
+//TODO: called many timesss
 -(void)awakeFromNib
 {
-    self.selectedRow = -1;
     
+    if(YES != didInit)
+    {
+        self.selectedRow = -1;
+        
+         //for outline (tree) view
+         // ->expand
+         if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
+         {
+             [(NSOutlineView*)self.itemView expandItem:nil expandChildren:YES];
+         }
+        
+        //set flag
+        self.didInit = YES;
+        
+    }
+    
+    //self.selectedRow = -1;
+    
+    /*
     //for outline (tree) view
     // ->expand
     if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
@@ -50,9 +72,9 @@
         //TODO: do this in IB?
         //[itemView setTarget:self];
     }
+    */
     
-    NSLog(@"item view: %@", self.itemView);
-    
+        
     /*
     NSString *title = @"[ all tasks ]";
     NSTableColumn *yourColumn = self.itemView.tableColumns.lastObject;
@@ -114,103 +136,9 @@
 // ->only care about for top pane, trigger load bottom view
 -(void)tableViewSelectionDidChange:(NSNotification *)notification
 {
-    //tasks
-    __block OrderedDictionary* tasks = nil;
+    //handle selection
+    [self handleRowSelection];
     
-    //task
-    Task* task = nil;
-    
-    //newly selected row (index)
-    __block NSInteger newlySelectedRow = -1;
-    
-    //selected row cell
-    NSTableCellView* selectedView = nil;
-    
-    //ignore events for bottom-pane
-    if(YES == self.isBottomPane)
-    {
-        //ignore
-        goto bail;
-    }
-    
-    //get index of newly selected row
-    newlySelectedRow = [self.itemView selectedRow];
-    
-    //get row that's about to be selected
-    selectedView = [self.itemView viewAtColumn:0 row:newlySelectedRow makeIfNecessary:YES];
-    
-    //grab task
-    task = [self taskForRow:nil];
-    
-    //check if task is dead
-    if(YES != isAlive([task.pid intValue]))
-    {
-        //make it red
-        ((kkRowCell*)selectedView).color = [NSColor redColor];
-        
-        //draw
-        [selectedView setNeedsDisplay:YES];
-        
-        //make hide it after 1/4th second
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            
-            //reset color
-            ((kkRowCell*)selectedView).color = nil;
-            
-            //get tasks
-            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
-            
-            //remove (now dead) task
-            [tasks removeObjectForKey:task.pid];
-            
-            //reload table
-            [self.itemView reloadData];
-            
-            //sanity check
-            // ->make sure removed task wasn't last
-            if(tasks.count <= newlySelectedRow)
-            {
-                //reset to (new) last
-                newlySelectedRow = tasks.count - 1;
-            }
-            //sanity check
-            // ->reset to first item on other errors
-            else if(-1 == newlySelectedRow)
-            {
-                //set to first
-                newlySelectedRow = 0;
-            }
-            
-            //re-select
-            [self.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:newlySelectedRow] byExtendingSelection:NO];
-            
-        });
-
-        //bail
-        goto bail;
-        
-    }
-    
-    //ignore if row selection didn't change
-    if([self.itemView selectedRow] == self.selectedRow)
-    {
-        //ignore
-        goto bail;
-    }
-        
-    //save newly selected row index
-    self.selectedRow = [self.itemView selectedRow];
-    
-    //save currently selected task
-    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask = task;
-    
-    //reload bottom pane
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
-
-
-//bail
-bail:
-
     return;
 }
 
@@ -811,19 +739,30 @@ bail:
         // ->but only if task still exists (e.g. didn't exit)
         if(NSNotFound != taskIndex)
         {
+            //begin updates
+            [self.itemView beginUpdates];
+            
             //(re)select
             [self.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:taskIndex] byExtendingSelection:NO];
+            
+            //end updates
+            [self.itemView endUpdates];
         }
     }
     
     return;
 }
 
+
+//TODO: make sure this works for outline view!!!
 //grab a task at a row
 -(Task*)taskForRow:(id)sender
 {
     //index of row
     NSInteger taskRow = 0;
+    
+    //selected row cell
+    NSTableCellView* rowView = nil;
     
     //tasks
     OrderedDictionary* tasks = nil;
@@ -845,6 +784,7 @@ bail:
     {
         //grab row
         taskRow = [self.itemView selectedRow];
+        
     }
     
     //sanity check(s)
@@ -858,7 +798,14 @@ bail:
     
     //get task object
     // ->by index to get key, then by key
-    task = tasks[[tasks keyAtIndex:taskRow]];
+    //task = tasks[[tasks keyAtIndex:taskRow]];
+    
+    //get row that's about to be selected
+    rowView = [self.itemView viewAtColumn:0 row:taskRow makeIfNecessary:YES];
+    
+    //extract task
+    // ->pid of task is view's id :)
+    task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
     
 //bail
 bail:
@@ -866,7 +813,7 @@ bail:
     return task;
 }
 
-
+ 
 //grab an item at a row
 -(ItemBase*)itemForRow:(id)sender
 {
@@ -1122,7 +1069,7 @@ bail:
     //return !item ? YES : [[item children] count] != 0;
 }
 
-//TODO: sort children!!!
+
 
 //return child
 -(id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
@@ -1153,105 +1100,12 @@ bail:
 }
 
 
-//TODO: combine logic - and make taskForRow method work for flat and tree views :)
+//TODO: combine logic -
+//TODO: when combine, use pid of task is view's id - to lookup task :)
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
 {
-    //tasks
-    __block OrderedDictionary* tasks = nil;
-    
-    //task
-    Task* task = nil;
-    
-    //newly selected row (index)
-    __block NSInteger newlySelectedRow = -1;
-    
-    //selected row cell
-    NSTableCellView* selectedView = nil;
-    
-    //ignore events for bottom-pane
-    if(YES == self.isBottomPane)
-    {
-        //ignore
-        goto bail;
-    }
-    
-    //get index of newly selected row
-    newlySelectedRow = [self.itemView selectedRow];
-    
-    //get row that's about to be selected
-    selectedView = [self.itemView viewAtColumn:0 row:newlySelectedRow makeIfNecessary:YES];
-    
-    //grab task
-    task = [self taskForRow:nil];
-    
-    //check if task is dead
-    if(YES != isAlive([task.pid intValue]))
-    {
-        //make it red
-        ((kkRowCell*)selectedView).color = [NSColor redColor];
-        
-        //draw
-        [selectedView setNeedsDisplay:YES];
-        
-        //make hide it after 1/4th second
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            
-            //reset color
-            ((kkRowCell*)selectedView).color = nil;
-            
-            //get tasks
-            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
-            
-            //remove (now dead) task
-            [tasks removeObjectForKey:task.pid];
-            
-            //reload table
-            [self.itemView reloadData];
-            
-            //sanity check
-            // ->make sure removed task wasn't last
-            if(tasks.count <= newlySelectedRow)
-            {
-                //reset to (new) last
-                newlySelectedRow = tasks.count - 1;
-            }
-            //sanity check
-            // ->reset to first item on other errors
-            else if(-1 == newlySelectedRow)
-            {
-                //set to first
-                newlySelectedRow = 0;
-            }
-            
-            //re-select
-            [self.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:newlySelectedRow] byExtendingSelection:NO];
-            
-        });
-        
-        //bail
-        goto bail;
-        
-    }
-    
-    //ignore if row selection didn't change
-    if([self.itemView selectedRow] == self.selectedRow)
-    {
-        //ignore
-        goto bail;
-    }
-    
-    //save newly selected row index
-    self.selectedRow = [self.itemView selectedRow];
-    
-    //save currently selected task
-    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask = task;
-    
-    //reload bottom pane
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
-    
-    
-    //bail
-bail:
+    //handle selection
+    [self handleRowSelection];
     
     return;
 }
@@ -1289,5 +1143,128 @@ bail:
     
     return rowView;
 }
+
+/* LOGIC FOR BOTH */
+
+//handle when user clicks row
+// ->update bottom pane w/ task's dylibs/files/etc
+-(void)handleRowSelection
+{
+    //tasks
+    __block OrderedDictionary* tasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //newly selected row (index)
+    __block NSInteger newlySelectedRow = -1;
+    
+    //selected row cell
+    NSTableCellView* selectedView = nil;
+    
+    //ignore events for bottom-pane
+    if(YES == self.isBottomPane)
+    {
+        //ignore
+        goto bail;
+    }
+    
+    //grab tasks
+    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    
+    //get index of newly selected row
+    newlySelectedRow = [self.itemView selectedRow];
+    
+    //sanity check
+    if( (-1 == newlySelectedRow) ||
+        (newlySelectedRow >= tasks.count) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get row that's about to be selected
+    selectedView = [self.itemView viewAtColumn:0 row:newlySelectedRow makeIfNecessary:YES];
+       
+    //extract task
+    // ->pid of task is view's id :)
+    task = tasks[[NSNumber numberWithInteger:(selectedView.tag - PID_TAG_DELTA)]];
+    
+    //check if task is dead
+    if(YES != isAlive([task.pid intValue]))
+    {
+        //make it red
+        ((kkRowCell*)selectedView).color = [NSColor redColor];
+        
+        //draw
+        [selectedView setNeedsDisplay:YES];
+        
+        //make hide it after 1/4th second
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            //reset color
+            ((kkRowCell*)selectedView).color = nil;
+            
+            //remove task
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator removeTask:task];
+            
+            //reload table
+            [self.itemView reloadData];
+            
+            //sanity check
+            // ->make sure removed task wasn't last
+            if(tasks.count <= newlySelectedRow)
+            {
+                //reset to (new) last
+                newlySelectedRow = tasks.count - 1;
+            }
+            //sanity check
+            // ->reset to first item on other errors
+            else if(-1 == newlySelectedRow)
+            {
+                //set to first
+                newlySelectedRow = 0;
+            }
+            
+            //begin updates
+            [self.itemView beginUpdates];
+            
+            //re-select
+            [self.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:newlySelectedRow] byExtendingSelection:NO];
+            
+            //end updates
+            [self.itemView endUpdates];
+        });
+        
+        //bail
+        goto bail;
+        
+    }
+    
+    
+    //ignore if row selection didn't change
+    if([self.itemView selectedRow] == self.selectedRow)
+    {
+        //ignore
+        goto bail;
+    }
+    
+    //save newly selected row index
+    self.selectedRow = [self.itemView selectedRow];
+    
+    //save currently selected task
+    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask = task;
+    
+    //reload bottom pane
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    
+    
+//bail
+bail:
+    
+    ;
+
+}
+
 
 @end

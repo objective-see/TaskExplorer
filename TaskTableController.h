@@ -20,6 +20,9 @@
     
 }
 
+//flag for first time init's
+@property BOOL didInit;
+
 //tasks
 // ->updated by task enumerator
 //@property(nonatomic, retain)OrderedDictionary* tasks;
@@ -76,6 +79,10 @@
 //determine if instance is rendering top pane
 // ->for now, just looks at 'tableItems' iVar
 -(BOOL)isTopPane;
+
+//handle when user clicks row
+// ->update bottom pane w/ task's dylibs/files/etc
+-(void)handleRowSelection;
 
 
 @end

@@ -8,6 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+
+//TODO: add [tableView beginUpdates];
 int main(int argc, char *argv[])
 {
     return NSApplicationMain(argc, (const char **)argv);

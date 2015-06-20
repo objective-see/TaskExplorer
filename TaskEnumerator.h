@@ -61,5 +61,13 @@
 // ->generally yes, unless the first enumeration (of all tasks) is not complete
 //-(BOOL)shouldEnumDylibs;
 
+//remove a task
+// ->contain extra logic to remove children, etc
+-(void)removeTask:(Task*)task;
+
+//given a task
+// ->get list of all child pids
+-(void)getAllChildren:(Task*)parent children:(NSMutableArray*)children;
+
 
 @end
