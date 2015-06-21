@@ -18,9 +18,9 @@
             <rect key="frame" x="0.0" y="0.0" width="1306" height="294"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
-                <scrollView ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="QDh-31-mfl">
-                    <rect key="frame" x="-3" y="20" width="1300" height="274"/>
-                    <clipView key="contentView" ambiguous="YES" misplaced="YES" drawsBackground="NO" id="t1U-m3-CeJ">
+                <scrollView autohidesScrollers="YES" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="QDh-31-mfl">
+                    <rect key="frame" x="0.0" y="0.0" width="1306" height="294"/>
+                    <clipView key="contentView" drawsBackground="NO" id="t1U-m3-CeJ">
                         <rect key="frame" x="1" y="1" width="1204" height="437"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -31,7 +31,7 @@
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 <tableColumns>
-                                    <tableColumn identifier="MainCell" editable="NO" width="1295" minWidth="40" maxWidth="2000" id="sUM-Cl-ag5">
+                                    <tableColumn identifier="MainCell" editable="NO" width="1301" minWidth="40" maxWidth="2000" id="sUM-Cl-ag5">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -45,7 +45,7 @@
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         <prototypeCellViews>
                                             <tableCellView identifier="TaskCell" id="sdY-t5-tbW" customClass="kkRowCell">
-                                                <rect key="frame" x="1" y="1" width="1295" height="40"/>
+                                                <rect key="frame" x="1" y="1" width="1301" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <imageView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cG6-PF-La2">
@@ -185,7 +185,7 @@
                                                 </connections>
                                             </tableCellView>
                                             <tableCellView identifier="DylibCell" id="AMp-Sl-IUz" customClass="kkRowCell">
-                                                <rect key="frame" x="1" y="1" width="1295" height="40"/>
+                                                <rect key="frame" x="1" y="43" width="1301" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="bgG-DR-RMT">
@@ -302,7 +302,7 @@
                                                 </connections>
                                             </tableCellView>
                                             <tableCellView identifier="FileCell" id="zC6-7V-PKY" customClass="kkRowCell">
-                                                <rect key="frame" x="1" y="1" width="1295" height="40"/>
+                                                <rect key="frame" x="1" y="85" width="1301" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LkX-uS-hKH">
@@ -385,7 +385,7 @@
                                                 </connections>
                                             </tableCellView>
                                             <tableCellView identifier="NetworkCell" id="vkh-K9-CiP" customClass="kkRowCell">
-                                                <rect key="frame" x="1" y="1" width="1295" height="40"/>
+                                                <rect key="frame" x="1" y="127" width="1301" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <imageView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n84-aN-dS4">
@@ -471,8 +471,10 @@
                 </scrollView>
             </subviews>
             <constraints>
-                <constraint firstItem="QDh-31-mfl" firstAttribute="leading" secondItem="T1P-b9-TzF" secondAttribute="leading" id="XxZ-TH-o2t"/>
-                <constraint firstAttribute="trailing" secondItem="QDh-31-mfl" secondAttribute="trailing" id="Z3y-5B-K5h"/>
+                <constraint firstItem="QDh-31-mfl" firstAttribute="leading" secondItem="T1P-b9-TzF" secondAttribute="leading" id="AMO-iw-hlh"/>
+                <constraint firstAttribute="trailing" secondItem="QDh-31-mfl" secondAttribute="trailing" id="C3S-5N-41z"/>
+                <constraint firstItem="QDh-31-mfl" firstAttribute="top" secondItem="T1P-b9-TzF" secondAttribute="top" id="ouv-e6-7Mv"/>
+                <constraint firstAttribute="bottom" secondItem="QDh-31-mfl" secondAttribute="bottom" id="t31-0J-wLa"/>
             </constraints>
             <point key="canvasLocation" x="638" y="-658"/>
         </view>

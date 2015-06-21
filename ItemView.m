@@ -489,6 +489,9 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     //task's name frame
     CGRect nameFrame = {0};
     
+    //task's path frame
+    CGRect pathFrame = {0};
+    
     //sanity check
     if(nil == task.binary)
     {
@@ -551,6 +554,22 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     //set pid
     // ->immediately follows name
     [((NSTextField*)[taskCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:[NSString stringWithFormat:@"(%@)", task.pid]];
+    
+    /*
+    //outline view has indentations
+    // ->adjust path width to account for this
+    if(YES == [tableView isKindOfClass:[NSOutlineView class]])
+    {
+        //get path frame
+        pathFrame = ((NSTextField*)[tableView viewWithTag:TABLE_ROW_SUB_TEXT_TAG]).frame;
+    
+        //subtract indendtation for level
+        pathFrame.size.width -= [(NSOutlineView*) tableView levelForItem:task];
+        
+        //set path frame
+        ((NSTextField*)[tableView viewWithTag:TABLE_ROW_SUB_TEXT_TAG]).frame = pathFrame;
+    }
+    */
     
     //set path
     [[taskCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:task.binary.path];

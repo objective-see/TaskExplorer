@@ -50,17 +50,7 @@
         //grab attributes
         //self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
 
-        
-        //do this in bg!
-        //set signing info
-        //self.signingInfo = extractSigningInfo(self.path);
-        
-        //computes hashes
-        // ->set 'md5' and 'sha1' iVars
-        //self.hashes = hashFile(self.path);
 
-        
-    
         //call into filter object to check if file is known
         // ->apple-signed or whitelisted
         //self.isTrusted = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).filterObj isTrustedFile:self];
@@ -165,7 +155,6 @@ bail:
     return taskIcon;
 }
 
-//TODO: green signing for apple!!!
 //get signing info (which takes a while to generate)
 // ->this method should be called in the background
 -(void)generatedSigningInfo

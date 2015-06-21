@@ -9,6 +9,7 @@
 #import "Queue.h"
 #import "Consts.h"
 #import "Binary.h"
+#import "VirusTotal.h"
 #import "AppDelegate.h"
 
 @implementation Queue
@@ -50,6 +51,12 @@
     // ->don't want UI thread, etc to suffer
     [NSThread sleepForTimeInterval:5.0f];
     
+    //VT object
+    VirusTotal* vtObject = nil;
+    
+    //grab VT object
+    vtObject = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).virusTotalObj;
+    
     //for ever
     while(YES)
     {
@@ -69,15 +76,21 @@
         //get item off queue
         binary = [eventQueue dequeue];
             
-        //process binary
-        // ->hash, etc
-        if(YES == [binary isKindOfClass:[Binary class]])
+        //sanity check
+        if(YES != [binary isKindOfClass:[Binary class]])
         {
-            //process
-            //->for now, just hash, etc
-            [binary generateDetailedInfo];
+            //ignore
+            continue;
         }
         
+        //process
+        //->for now, just hash, etc
+        [binary generateDetailedInfo];
+            
+        //add item for VT processing
+        [vtObject addItem:binary];
+        
+            
         //unlock
         [self.queueCondition unlock];
             

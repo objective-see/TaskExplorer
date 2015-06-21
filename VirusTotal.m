@@ -14,6 +14,118 @@
 
 @implementation VirusTotal
 
+@synthesize items;
+
+//init
+-(id)init
+{
+    //init super
+    self = [super init];
+    if(nil != self)
+    {
+        //alloc array for items
+        items = [NSMutableArray array];
+    }
+    
+    return self;
+}
+
+//add item
+// ->will query VT when 25 items are hit
+-(void)addItem:(Binary*)binary
+{
+    //sync
+    @synchronized(self.items)
+    {
+        //add item
+        [self.items addObject:binary];
+    }
+    
+    //query VT once 25 items have been gathered
+    if(VT_MAX_QUERY_COUNT == self.items.count)
+    {
+        //process
+        [self queryVT];
+    }
+}
+
+//make query to VT
+-(void)queryVT
+{
+    //VT query URL
+    NSURL* queryURL = nil;
+    
+    //item data
+    NSMutableDictionary* itemData = nil;
+    
+    //array of queried items
+    // ->needed so can save VT results back into binaries
+    NSMutableDictionary* queriedItems = nil;
+    
+    //parameters
+    NSMutableArray* parameters = nil;
+    
+    //results
+    NSDictionary* results = nil;
+
+    //init query URL
+    queryURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", VT_QUERY_URL, VT_API_KEY]];
+    
+    //alloc list for items
+    parameters = [NSMutableArray array];
+    
+    //alloc dictionary for queried items
+    queriedItems = [NSMutableDictionary dictionary];
+    
+    //sync
+    @synchronized(self.items)
+    {
+    
+    //add all binaries to VT query
+    for(Binary* item in self.items)
+    {
+        //alloc item data
+        itemData = [NSMutableDictionary dictionary];
+        
+        //auto start location
+        itemData[@"autostart_location"] = @"n/a";
+        
+        //set item name
+        itemData[@"autostart_entry"] = item.name;
+        
+        //set item path
+        itemData[@"image_path"] = item.path;
+        
+        //set hash
+        itemData[@"hash"] = item.hashes[KEY_HASH_SHA1];
+        
+        //set creation times
+        itemData[@"creation_datetime"] = [item.attributes.fileCreationDate description];
+        
+        //add item to parameters
+        [parameters addObject:itemData];
+        
+        //save as queried item
+        queriedItems[item.hashes[KEY_HASH_SHA1]] = item;
+    }
+        
+    //remove all items
+    // ->since they've been added to VT request
+    [self.items removeAllObjects];
+        
+    }//sync
+
+    //make query to VT
+    results = [self postRequest:queryURL parameters:parameters];
+    if(nil != results)
+    {
+        //process results
+        [self processResults:queriedItems results:results];
+    }
+    
+    return;
+}
+
 /*
 //thread function
 // ->runs in the background to get virus total info about a plugin's items
@@ -494,45 +606,68 @@ bail:
 }
 
 //process results
-// ->save VT info into each File obj and all flagged files
--(void)processResults:(NSArray*)items results:(NSDictionary*)results
+// ->save VT info into
+-(void)processResults:(NSMutableDictionary*)queriedItems results:(NSDictionary*)results
 {
+    //queried binary obj
+    Binary* queriedItem = nil;
+    
+    //flag for top pane reload
+    // ->will be set if any of the queried binaries are a task executable
+    BOOL reloadTopPane = NO;
+    
+    //flag for bottom pane reload
+    // ->will be set if any of the queried binaries are a dylib
+    BOOL reloadBottomPane = NO;
+    
     //process all results
     // ->save VT result dictionary into File obj
     for(NSDictionary* result in results[VT_RESULTS])
     {
-        //sync
-        // ->since array will be reset if user clicks 'stop' scan
-        @synchronized(items)
+        //extract ('match') queried item
+        // ->VT gives us back a hash
+        queriedItem = queriedItems[result[@"hash"]];
+        
+        //sanity check
+        if(nil == queriedItem)
         {
-
-        //find all items that match
-        // ->might be dupes, which is fine
-        for(Binary* item in items)
-        {
-            //for matches, save vt info
-            if(YES == [result[@"hash"] isEqualToString:item.hashes[KEY_HASH_SHA1]])
-            {
-                //save
-                item.vtInfo = result;
-                
-                //if its flagged save in File's plugin
-                if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
-                {
-                    /*
-                    //sync
-                    // ->since array will be reset if user clicks 'stop' scan
-                    @synchronized(item.plugin.flaggedItems)
-                    {
-                        //save
-                        [item.plugin.flaggedItems addObject:item];
-                    }
-                    */
-                }
-            }
+            //skip
+            continue;
         }
-            
-        }//sync
+        
+        //save VT results into item
+        queriedItem.vtInfo = result;
+        
+        //for task executables
+        // ->set flag to reload top
+        if(YES == queriedItem.isTaskBinary)
+        {
+            //set
+            reloadTopPane = YES;
+        }
+        //for dylibs
+        // ->set flag to reload bottom
+        else
+        {
+            reloadBottomPane = YES;
+        }
+        
+        //TODO: do something with detections!?
+        //if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
+    }
+    
+    //reload top pane
+    if(YES == reloadTopPane)
+    {
+        //reload
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
+    }
+    
+    //reload bottom pane
+    if(YES == reloadBottomPane)
+    {
+        //reload
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:nil itemView:DYLIBS_VIEW];
     }
     
     return;

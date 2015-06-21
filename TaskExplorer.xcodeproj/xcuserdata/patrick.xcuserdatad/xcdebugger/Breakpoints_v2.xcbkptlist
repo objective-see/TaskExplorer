@@ -36,11 +36,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "AppDelegate.m"
-            timestampString = "456474906.073599"
+            timestampString = "456541711.785304"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "671"
-            endingLineNumber = "671"
+            startingLineNumber = "661"
+            endingLineNumber = "661"
             landmarkName = "-reloadTaskTable"
             landmarkType = "5">
          </BreakpointContent>
@@ -115,14 +115,56 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "AppDelegate.m"
-            timestampString = "456474979.625707"
+            filePath = "ItemView.m"
+            timestampString = "456521289.11776"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "416"
-            endingLineNumber = "416"
-            landmarkName = "-reloadRow:item:pane:"
+            startingLineNumber = "484"
+            endingLineNumber = "484"
+            landmarkName = "createTaskView()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TaskTableController.m"
+            timestampString = "456521744.657881"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "934"
+            endingLineNumber = "934"
+            landmarkName = "-showInfo:"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AppDelegate.m"
+            timestampString = "456521776.780775"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "317"
+            endingLineNumber = "317"
+            landmarkName = "-changeViewController"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.SymbolicBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            symbolName = "objc_exception_throw"
+            moduleName = "">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

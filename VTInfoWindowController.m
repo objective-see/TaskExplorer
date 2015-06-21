@@ -262,7 +262,8 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             //make request to VT
-            result = [vtObj reScan:self.fileObj];
+            //TODO: re-enable
+            //result = [vtObj reScan:self.fileObj];
             
             //got result
             // ->update UI and launch browswer to show report
@@ -296,11 +297,16 @@
                 // ->will update VT button in UI once results are retrieved
                 if(nil != scanID)
                 {
+                    ////TODO: re-enable
+                    
+                    /*
                     //kick off task to re-query VT
                     // ->wait 60 seconds though to give VT servers some time to process
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                         [vtObj getInfoForItem:self.fileObj scanID:scanID rowIndex:self.rowIndex];
                     });
+                     
+                    */
                 }
                 
                 //ask app delegate to update item in table
@@ -368,7 +374,8 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
             //submit file to VT
-            result = [vtObj submit:self.fileObj];
+            //TODO: re-enable
+            //result = [vtObj submit:self.fileObj];
             
             // ->need this for (re)queries
             scanID = result[VT_RESULTS_SCANID];
@@ -380,10 +387,13 @@
             // ->will update VT button in UI once results are retrieved
             if(nil != scanID)
             {
+                //TODO: re-enable
+                /*
                 //kick off task to re-query VT
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                     [vtObj getInfoForItem:self.fileObj scanID:scanID rowIndex:self.rowIndex];
                 });
+                */
             }
             
             //got response

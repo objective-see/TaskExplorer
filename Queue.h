@@ -25,6 +25,8 @@
 
 }
 
+/* PROPERTIES */
+
 
 //event queue
 @property(retain, atomic)NSMutableArray* eventQueue;

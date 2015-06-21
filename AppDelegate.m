@@ -89,7 +89,7 @@
     //filterObj = [[Filter alloc] init];
     
     //init virus total object
-    //virusTotalObj = [[VirusTotal alloc] init];
+    virusTotalObj = [[VirusTotal alloc] init];
     
     //init array for virus total threads
     //vtThreads = [NSMutableArray array];
@@ -329,11 +329,7 @@
         {
             //alloc/init
             taskTableController = [[TaskTableController alloc] initWithNibName:@"FlatView" bundle:nil];
-            /*if(self.taskTableController != nil)
-            {
-                //update iVar
-                self.currentViewController = self.taskTableController;
-            }*/
+            
             break;
         }
         case TREE_VIEW:
@@ -341,13 +337,6 @@
             //alloc/init
             taskTableController = [[TaskTableController alloc] initWithNibName:@"TreeView" bundle:nil];
             
-            
-            
-            /*if(self.taskTableController != nil)
-            {
-                //update iVar
-                self.currentViewController = self.taskTableController;
-            }*/
             break;
         }
     }
@@ -361,16 +350,19 @@
     return;
 }
 
-//TODO: add checks to make sure or handle switch to tree view!!!!
 //reload (to re-draw) a specific row in table
 -(void)reloadRow:(Task*)task item:(ItemBase*)item pane:(NSUInteger)pane
 {
     //table view
-    NSTableView* tableView = nil;
+    __block NSTableView* tableView = nil;
     
     //row
-    NSUInteger row = 0;
+    __block NSUInteger row = 0;
     
+    //run everything on main thread
+    // ->ensures table view isn't changed out from under us....
+    dispatch_async(dispatch_get_main_queue(), ^{
+     
     //top table (pane)
     if(PANE_TOP == pane)
     {
@@ -390,20 +382,15 @@
                 goto bail;
             }
             
-            //reload just the row
-            // ->on main thread
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                //begin updates
-                [tableView beginUpdates];
-                
-                //reload row
-                [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
-                
-                //end updates
-                [tableView endUpdates];
-                
-            });
+            //begin updates
+            [tableView beginUpdates];
+                    
+            //reload row
+            [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+                    
+            //end updates
+            [tableView endUpdates];
+            
         }
         //reload item
         // ->tree view
@@ -411,10 +398,10 @@
         {
             //begin updates
             [tableView beginUpdates];
-            
+                    
             //reload
             [(NSOutlineView*)tableView reloadItem:task];
-            
+                    
             //end updates
             [tableView endUpdates];
         }
@@ -427,6 +414,9 @@
     
 //bail
 bail:
+        ;
+        
+    }); //dispatch on main thread
     
     return;
 }
@@ -438,20 +428,14 @@ bail:
     //tag
     NSUInteger segmentTag = 0;
     
-    /*
-    if(YES == [task.binary.name isEqualToString:@"launchd"])
-    {
-        NSLog(@"asdf");
-    }*/
-    
     //get segment tag
     segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
     
     //ignore reloads for unselected tasks
-    if(self.currentTask != task)
+    // ->note: when no task is passed in, always reload though
+    if( (nil != task) &&
+        (self.currentTask != task))
     {
-        //NSLog(@"selected task: %@ not match %@", self.currentTask.binary.name, task.binary.name);
-        
         //ignore
         goto bail;
     }
@@ -1320,6 +1304,9 @@ bail:
     
     //reload top pane
     [self reloadTaskTable];
+    
+    //select top row
+    [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     
     return;
 }

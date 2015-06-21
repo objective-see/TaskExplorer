@@ -38,10 +38,9 @@
 //TODO: weak OK?
 @property (nonatomic, retain) NSXPCConnection* xpcConnection;
 
-//queue object
-// ->contains watch items that should be processed
+//queue
+// ->contains binaries that should be processed
 @property (nonatomic, retain) Queue* binaryQueue;
-
 
 
 /* METHODS */

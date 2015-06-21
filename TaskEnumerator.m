@@ -87,6 +87,7 @@
         
         //init binary processing queue
         binaryQueue = [[Queue alloc] init];
+
     }
     
     return self;

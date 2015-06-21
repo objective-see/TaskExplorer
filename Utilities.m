@@ -112,9 +112,13 @@ NSDictionary* extractSigningInfo(NSString* path)
     //init signing status
     signingStatus = [NSMutableDictionary dictionary];
     
+    //signingStatus[KEY_SIGNATURE_STATUS] = @0;
+    //return signingStatus;
+    
     //create static code
     status = SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode);
     
+    //TODO: called same before!?
     //save signature status
     signingStatus[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
     
@@ -131,6 +135,7 @@ NSDictionary* extractSigningInfo(NSString* path)
     //check signature
     status = SecStaticCodeCheckValidityWithErrors(staticCode, kSecCSDoNotValidateResources, NULL, NULL);
     
+    //TODO: called same above?
     //(re)save signature status
     signingStatus[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
     

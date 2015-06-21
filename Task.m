@@ -44,6 +44,8 @@
 @synthesize arguments;
 @synthesize connections;
 
+//TODO: make sure we only check signature of binary once!!!
+
 //init w/ a pid + path
 // note: time consuming init's are done in '' method
 -(id)initWithPID:(NSNumber*)taskPID andPath:(NSString*)taskPath
@@ -110,6 +112,10 @@
             
             //add to queue
             // ->this will processing
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
+            
+            //add to VT queue
+            // ->this will trigger background submission to VT
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
             
             //add it to 'global' list
@@ -376,7 +382,7 @@ bail:
                 }
                 
                 //add to queue
-                // ->this will processing
+                // ->this will trigger background processing
                 [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:dylib];
                 
                 //add to list of new dylibs
