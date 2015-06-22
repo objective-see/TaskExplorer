@@ -34,17 +34,21 @@
 -(NSDictionary*)postRequest:(NSURL*)url parameters:(id)params;
 
 //submit a file to VT
-//-(NSDictionary*)submit:(File*)fileObj;
+-(NSDictionary*)submit:(Binary*)item;
 
 //submit a rescan request
-//-(NSDictionary*)reScan:(File*)fileObj;
+-(NSDictionary*)reScan:(Binary*)item;
 
 //process results
 // ->updates items (found, detection ratio, etc)
 -(void)processResults:(NSMutableDictionary*)queriedItems results:(NSDictionary*)results;
 
 //get info for a single item
-// ->will callback into AppDelegate to reload plugin
-//-(void)getInfoForItem:(File*)fileObj scanID:(NSString*)scanID rowIndex:(NSUInteger)rowIndex;
+// ->will callback into AppDelegate to reload item
+-(void)getInfoForItem:(Binary*)item scanID:(NSString*)scanID;
+
+//call back up to update item in UI
+// ->will either reload task table (top), or just row in item (bottom) table
+-(void)updateUI:(Binary*)item;
 
 @end

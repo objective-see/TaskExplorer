@@ -5,6 +5,7 @@
 
 #import "Consts.h"
 #import "Binary.h"
+#import "Connection.h"
 #import "Exception.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
@@ -341,6 +342,15 @@
         }
     }
     
+    //always unset filter flag
+    self.taskTableController.isFiltered = NO;
+    
+    //always reset filter text
+    [self.filterTasksBox setStringValue:@""];
+    
+    //set bottom view?
+    self.bottomPaneBtn.selectedSegment = DYLIBS_VIEW;
+    
     //add subview
     [self.topPane addSubview:[self.taskTableController view]];
     
@@ -353,20 +363,42 @@
 //reload (to re-draw) a specific row in table
 -(void)reloadRow:(Task*)task item:(ItemBase*)item pane:(NSUInteger)pane
 {
+    //item's task
+    // ->will use current task if task arg is nil
+    __block Task* itemTask = nil;
+    
     //table view
     __block NSTableView* tableView = nil;
     
     //row
     __block NSUInteger row = 0;
     
+    //segment (for bottom pane
+    __block NSUInteger segmentTag = 0;
+    
     //run everything on main thread
     // ->ensures table view isn't changed out from under us....
     dispatch_async(dispatch_get_main_queue(), ^{
+        
+    //get item's task
+    // ->use passed in task if non-nil
+    if(nil != itemTask)
+    {
+        //set
+        itemTask = task;
+    }
+    //passed in task is nil
+    // ->use currently selected one
+    else
+    {
+        //set
+        itemTask = self.currentTask;
+    }
      
     //top table (pane)
     if(PANE_TOP == pane)
     {
-        //get row that task is loaded in
+        //top table view
         tableView = [((id)self.taskTableController) itemView];
         
         //reloadItem
@@ -375,7 +407,7 @@
         {
             //get index where task is
             // TODO: doesn't account for filtering, etc!!!
-            row = [self.taskEnumerator.tasks indexOfKey:task.pid];
+            row = [self.taskEnumerator.tasks indexOfKey:itemTask.pid];
             if(NSNotFound == row)
             {
                 //bail
@@ -400,7 +432,7 @@
             [tableView beginUpdates];
                     
             //reload
-            [(NSOutlineView*)tableView reloadItem:task];
+            [(NSOutlineView*)tableView reloadItem:itemTask];
                     
             //end updates
             [tableView endUpdates];
@@ -408,10 +440,97 @@
             
         
     }
-    
-    //TODO: bottom pane
-    
-    
+    //bottom pane
+    else
+    {
+        //bottom table view
+        tableView = [((id)self.bottomViewController) itemView];
+        
+        //get segment tag
+        segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+        
+        //get item
+        // ->will bail if item isn't in (current) view, etc
+        switch(segmentTag)
+        {
+            //dylibs
+            case DYLIBS_VIEW:
+                
+                //make sure item class/type matches current view
+                if(YES != [item isKindOfClass:[Binary class]])
+                {
+                    //bail
+                    goto bail;
+                }
+                
+                //sync
+                @synchronized(itemTask.dylibs)
+                {
+                    //get row
+                    row = [itemTask.dylibs indexOfObject:item];
+                }
+                
+                break;
+                
+            //files
+            case FILES_VIEW:
+                
+                //make sure item class/type matches current view
+                if(YES != [item isKindOfClass:[File class]])
+                {
+                    //bail
+                    goto bail;
+                }
+                
+                //sync
+                @synchronized(itemTask.files)
+                {
+                    //get row
+                    row = [itemTask.files indexOfObject:item];
+                }
+                
+                break;
+                
+            //networking
+            case NETWORKING_VIEW:
+                
+                //make sure item class/type matches current view
+                if(YES != [item isKindOfClass:[Connection class]])
+                {
+                    //bail
+                    goto bail;
+                }
+                //sync
+                @synchronized(itemTask.connections)
+                {
+                    //get row
+                    row = [itemTask.connections indexOfObject:item];
+                }
+                
+                break;
+                
+            default:
+                break;
+        }
+        
+        //make sure item was found
+        if(NSNotFound == row)
+        {
+            //bail
+            goto bail;
+        }
+        
+        
+        //begin updates
+        [tableView beginUpdates];
+        
+        //reload row
+        [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+        
+        //end updates
+        [tableView endUpdates];
+    }
+        
 //bail
 bail:
         ;
@@ -472,6 +591,7 @@ bail:
             
             //set table items
             self.bottomViewController.tableItems = self.currentTask.connections;
+            
             break;
             
         default:
@@ -486,7 +606,7 @@ bail:
     {
         //reload
         // ->in main UI thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             
             [self finalizeBottomReload];
         });
@@ -500,7 +620,7 @@ bail:
 
 -(void)finalizeBottomReload
 {
-   //stop progress indicator
+    //stop progress indicator
     [self.bottomPaneSpinner stopAnimation:nil];
     
     //invoke refresh
@@ -1299,6 +1419,21 @@ bail:
     //save selected view
     self.taskViewFormat = [[sender selectedCell] tag];
 
+    //flat view
+    // ->enable 'filter tasks' search field
+    if(FLAT_VIEW == self.taskViewFormat)
+    {
+        //enable
+        self.filterTasksBox.enabled = YES;
+    }
+    //tree view
+    // ->disable 'filter tasks' search field
+    else
+    {
+        //disable
+        self.filterTasksBox.enabled = NO;
+    }
+    
     //switch (top) view/pane
     [self changeViewController];
     
@@ -1387,6 +1522,106 @@ bail:
 bail:
     
 
+    return;
+}
+
+//automatically invoked when user enters text in filter search boxes
+// ->filter tasks and/or items
+- (void)controlTextDidChange:(NSNotification *)aNotification
+{
+    //search text
+    NSTextView* search = nil;
+    
+    //extract search (text) view
+    search = aNotification.userInfo[@"NSFieldEditor"];
+    
+    //sanity check
+    if(nil == search)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //top pane
+    if(YES == [aNotification.object isEqualTo:self.filterTasksBox])
+    {
+        //when text is reset
+        // ->just reset flag
+        if(0 == search.string.length)
+        {
+            //set flag
+            self.taskTableController.isFiltered = NO;
+        }
+        //filter tasks
+        else
+        {
+            //filter
+            [self filterTasks:search.string];
+            
+            //set flag
+            self.taskTableController.isFiltered = YES;
+        }
+        
+        //always reload task table
+        [self.taskTableController.itemView reloadData];
+    }
+    //bottom pane
+    else if(YES == [aNotification.object isEqualTo:self.filterItemsBox])
+    {
+        
+    }
+
+    
+    
+    //NSLog(@"changed!");
+    
+//bail
+bail:
+    
+    return;
+    
+}
+
+//filter tasks
+// ->for now, just name & path
+//  TODO filter on everything
+//  TODO: move into task enumerator!?
+-(void)filterTasks:(NSString*)filterText
+{
+    //task
+    Task* task = nil;
+    
+    //name range
+    NSRange nameRange = {0};
+    
+    //path range
+    NSRange pathRange = {0};
+    
+    //first reset filter'd items
+    [self.taskTableController.filteredItems removeAllObjects];
+    
+    //iterate over all tasks
+    for(NSNumber* taskKey in self.taskEnumerator.tasks)
+    {
+        //extract task
+        task = self.taskEnumerator.tasks[taskKey];
+        
+        //init name range
+        nameRange = [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //init path range
+        pathRange = [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //check for match
+        if( (NSNotFound != nameRange.location) ||
+            (NSNotFound != pathRange.location) )
+        {
+            //save match
+            [self.taskTableController.filteredItems addObject:task];
+        }
+           
+    }//all tasks
+    
     return;
 }
 

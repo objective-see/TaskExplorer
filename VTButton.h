@@ -24,7 +24,7 @@
 @property(assign)TaskTableController *delegate;
 
 //File object
-@property(nonatomic, retain)Binary* fileObj;
+@property(nonatomic, retain)Binary* binary;
 
 //button's row index
 

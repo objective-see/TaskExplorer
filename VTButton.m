@@ -13,7 +13,7 @@
 
 @implementation VTButton
 
-@synthesize fileObj;
+@synthesize binary;
 @synthesize delegate;
 @synthesize mouseDown;
 @synthesize mouseExit;
@@ -53,8 +53,8 @@
     
     //flagged files
     // ->make em red!
-    if( (nil != self.fileObj.vtInfo) &&
-        (0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+    if( (nil != self.binary.vtInfo) &&
+        (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
     {
         //set color (light red)
         color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.5];
@@ -94,8 +94,8 @@
 
     //flagged files
     // ->make em red!
-    if( (nil != self.fileObj.vtInfo) &&
-        (0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+    if( (nil != self.binary.vtInfo) &&
+        (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
     {
         //set color (light red)
         color = [NSColor redColor];
@@ -126,8 +126,8 @@
     
     //flagged files
     // ->make em red!
-    if( (nil != self.fileObj.vtInfo) &&
-        (0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+    if( (nil != self.binary.vtInfo) &&
+        (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
     {
         //set color (lightish red)
         color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.66];
@@ -162,8 +162,8 @@
     {
         //flagged files
         // ->make em red!
-        if( (nil != self.fileObj.vtInfo) &&
-            (0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+        if( (nil != self.binary.vtInfo) &&
+            (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
         {
             //set color (lightish red)
             color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.66];
@@ -182,8 +182,8 @@
     {
         //flagged files
         // ->make em red!
-        if( (nil != self.fileObj.vtInfo) &&
-            (0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+        if( (nil != self.binary.vtInfo) &&
+            (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
         {
             //set color (light red)
             color = [NSColor redColor];

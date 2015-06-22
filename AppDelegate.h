@@ -31,8 +31,10 @@
 
 }
 
-//@property (readonly) NSViewController *currentViewController;
-//@property(nonatomic, retain)NSViewController *currentViewController;
+//'filter task' search box
+// ->top pane
+@property (weak) IBOutlet NSSearchField *filterTasksBox;
+
 
 //(current) bottom view controller
 @property(nonatomic, retain)TaskTableController *bottomViewController;
@@ -47,11 +49,6 @@
 //task table controller object
 @property (nonatomic, retain)TaskTableController *taskTableController;
 
-//tree (outline) controller
-//@property (nonatomic, retain)TreeViewController* treeViewController;
-
-//array to hold binary objects that are in array
-//@property (nonatomic, retain)NSMutableArray *tableContents;
 
 //current task view format
 // ->flat or tree
@@ -71,6 +68,10 @@
 //bottom pane view
 @property (weak) IBOutlet NSView *bottomPane;
 
+
+//'filter items' search box
+// ->bottom pane
+@property (weak) IBOutlet NSSearchField *filterItemsBox;
 
 @property (assign) IBOutlet NSWindow *window;
 
@@ -175,6 +176,9 @@
 //sort tasks
 // ->either name (flat view) or pid (tree view)
 -(void)sortTasksForView:(OrderedDictionary*)tasks;
+
+//filter tasks
+-(void)filterTasks:(NSString*)filterText;
 
 
 @end

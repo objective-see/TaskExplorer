@@ -22,10 +22,10 @@
 @property(nonatomic, strong)VTInfoWindowController *windowController;
 
 //file object
-@property(nonatomic, retain)Binary* fileObj;
+@property(nonatomic, retain)Binary* item;
 
 //row index
-@property NSUInteger rowIndex;
+//@property NSUInteger rowIndex;
 
 //properties in window
 @property (weak) IBOutlet NSTextField *unknownFile;
@@ -50,7 +50,7 @@
 
 //init method
 // ->save item and load nib
--(id)initWithItem:(File*)selectedItem rowIndex:(NSUInteger)itemRowIndex;
+-(id)initWithItem:(Binary*)binary;
 
 //'submit' button handler
 -(IBAction)vtButtonHandler:(id)sender;

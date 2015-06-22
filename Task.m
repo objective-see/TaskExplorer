@@ -110,21 +110,16 @@
                 goto bail;
             }
             
+            //indicate that binary is a task (main) executable
+            self.binary.isTaskBinary = YES;
+            
             //add to queue
             // ->this will processing
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
             
-            //add to VT queue
-            // ->this will trigger background submission to VT
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
-            
             //add it to 'global' list
             existingBinaries[taskPath] = self.binary;
-            
         }
-        
-        //indicate that binary is a task (main) executable
-        //self.binary.isTaskBinary = YES;
         
     }//init self
     
@@ -404,7 +399,7 @@ bail:
                 //add to task's dylibs
                 [self.dylibs addObject:dylib];
             }
-        }
+        } //all dylibs
         
         //sync to sort
         @synchronized(self.dylibs)

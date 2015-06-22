@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <deployment identifier="macosx"/>
         <development version="5000" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
     </dependencies>
@@ -99,6 +98,9 @@
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </searchFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
+                        </connections>
                     </searchField>
                     <button fixedFrame="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
                         <rect key="frame" x="9" y="4" width="35" height="32"/>
@@ -180,6 +182,9 @@
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                             </searchFieldCell>
+                            <connections>
+                                <outlet property="delegate" destination="494" id="B1g-Qz-f4r"/>
+                            </connections>
                         </searchField>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="A5784C30-D7FC-4958-875B-487768A4E610" label="" paletteLabel="" id="O1y-1z-g0u">
@@ -223,6 +228,8 @@
                 <outlet property="bottomPane" destination="E4M-PF-VD0" id="Au5-EH-OKZ"/>
                 <outlet property="bottomPaneBtn" destination="gtq-gn-VPL" id="Uxg-Ab-QzA"/>
                 <outlet property="bottomPaneSpinner" destination="LMT-Bu-FAk" id="a1H-Ag-GT8"/>
+                <outlet property="filterItemsBox" destination="bNA-gy-9Ta" id="hAw-Ja-am4"/>
+                <outlet property="filterTasksBox" destination="4Kr-b9-X6j" id="CB1-Rb-dew"/>
                 <outlet property="logoButton" destination="HoI-FQ-vTI" id="bzc-wu-4Hv"/>
                 <outlet property="noItemsLabel" destination="kIC-ZZ-ldy" id="nOm-8E-tZA"/>
                 <outlet property="progressIndicator" destination="839" id="870"/>

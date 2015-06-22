@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-//TODO: list of what's running on my Mac!!!!
+//TODO: list of what's running on my Mac on website!!!!
 
 #import "Binary.h"
 #import "Consts.h"
@@ -30,59 +30,39 @@
 @implementation TaskTableController
 
 @synthesize itemView;
+@synthesize isFiltered;
 @synthesize tableItems;
 @synthesize selectedRow;
 @synthesize isBottomPane;
+@synthesize filteredItems;
+@synthesize ignoreSelection;
 @synthesize vtWindowController;
 @synthesize infoWindowController;
 
 @synthesize didInit;
 
-//@synthesize tasks;
-
-//TODO: called many timesss
 -(void)awakeFromNib
 {
-    
+    //single time init
     if(YES != didInit)
     {
+        //init selected row
         self.selectedRow = -1;
         
-         //for outline (tree) view
-         // ->expand
-         if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
-         {
-             [(NSOutlineView*)self.itemView expandItem:nil expandChildren:YES];
-         }
+        //alloc array for filtered items
+        filteredItems = [NSMutableArray array];
+        
+        //extand tree view
+        if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
+        {
+            //expand
+            [(NSOutlineView*)self.itemView expandItem:nil expandChildren:YES];
+        }
         
         //set flag
         self.didInit = YES;
-        
     }
     
-    //self.selectedRow = -1;
-    
-    /*
-    //for outline (tree) view
-    // ->expand
-    if(YES == [self.itemView isKindOfClass:[NSOutlineView class]])
-    {
-        [(NSOutlineView*)self.itemView expandItem:nil expandChildren:YES];
-        
-        //TODO: do this in IB?
-        //[itemView setTarget:self];
-    }
-    */
-    
-        
-    /*
-    NSString *title = @"[ all tasks ]";
-    NSTableColumn *yourColumn = self.itemView.tableColumns.lastObject;
-    [yourColumn.headerCell setStringValue:title];
-    
-    [self.itemView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:self.itemView.tableColumns.lastObject];
-     
-    */
 }
 
 
@@ -115,13 +95,26 @@
     // ->use tasks from enumerator
     if(YES != self.isBottomPane)
     {
-        //grab tasks
-        tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+        //when not filtered
+        // ->use tasks
+        if(YES != isFiltered)
+        {
+            //get tasks
+            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
         
-        //set row count
-        rows = tasks.count;
+            //set count
+            rows = tasks.count;
+        }
+        //when filtered
+        // ->use filtered items
+        else
+        {
+            //set count
+            rows = self.filteredItems.count;
+        }
     }
-    //bottom pane uses table items
+    //bottom pane uses 'tableItems' iVar
+    //TODO: filter support
     else
     {
         //set row count
@@ -130,14 +123,19 @@
     
     return rows;
     
-    }
+}
 
 //automatically invoked when user selects row
 // ->only care about for top pane, trigger load bottom view
 -(void)tableViewSelectionDidChange:(NSNotification *)notification
 {
-    //handle selection
-    [self handleRowSelection];
+    //only handle user selections
+    // ->not those from 'reloadData'
+    if(YES != self.ignoreSelection)
+    {
+        //handle selection
+        [self handleRowSelection];
+    }
     
     return;
 }
@@ -157,23 +155,45 @@
     NSView* rowView = nil;
     
     //for TOP PANE
-    // ->use tasks from enumerator
+    // ->use tasks from enumerator or filtered items
     if(YES != self.isBottomPane)
     {
-        //grab tasks
-        tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
-        
-        //sanity check
-        // ->make sure there is table item for row
-        if(tasks.count <= row)
+        //when not filtered
+        // ->use tasks
+        if(YES != isFiltered)
         {
-            //bail
-            goto bail;
+            //grab tasks
+            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+            
+            //sanity check
+            // ->make sure there is table item for row
+            if(tasks.count <= row)
+            {
+                //bail
+                goto bail;
+            }
+            
+            //get task object
+            // ->by index to get key, then by key
+            item = tasks[[tasks keyAtIndex:row]];
+        
         }
         
-        //get task object
-        // ->by index to get key, then by key
-        item = tasks[[tasks keyAtIndex:row]];
+        //when filtered
+        // ->use filtered items
+        else
+        {
+            //sanity check
+            // ->make sure there is table item for row
+            if(self.filteredItems.count <= row)
+            {
+                //bail
+                goto bail;
+            }
+
+            //get task object
+            item = self.filteredItems[row];
+        }
     }
     
     //for BOTTOM PANE
@@ -725,8 +745,14 @@ bail:
     //get task
     selectedTask = [self taskForRow:nil];
     
+    //ignore selection change though
+    self.ignoreSelection = YES;
+
     //always reload
     [self.itemView reloadData];
+    
+    //don't ignore selection
+    self.ignoreSelection = NO;
     
     //when an item was selected
     // ->get its index and make sure that's still selected
@@ -749,6 +775,40 @@ bail:
             [self.itemView endUpdates];
         }
     }
+    /*
+    //otherwise select first row
+    else
+    {
+        //selected row cell
+        NSTableCellView* rowView = nil;
+        
+        //default to first row
+        self.selectedRow = 0;
+        
+        //sanity check
+        if(0 == [self numberOfRowsInTableView:self.itemView])
+        {
+            //bail
+            goto bail;
+        }
+        
+        //get first row
+        rowView = [self.itemView viewAtColumn:0 row:0 makeIfNecessary:YES];
+
+        //extract task
+        // ->pid of task is view's id :)
+        Task* task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
+        
+        //save task
+        ((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask = task;
+        
+        //reload bottom pane
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    }
+    */
+    
+//bail
+bail:
     
     return;
 }
@@ -784,28 +844,34 @@ bail:
     {
         //grab row
         taskRow = [self.itemView selectedRow];
-        
     }
     
+    //TODO: add check for filterItems.count
     //sanity check(s)
-    // ->make sure row has item
+    // ->make sure row is decent
     if( (-1 == taskRow) ||
-        (tasks.count < taskRow) )
+        ((YES != self.isFiltered) && (tasks.count < taskRow)) ||
+        ((YES == self.isFiltered) && (self.filteredItems.count < taskRow)) )
     {
         //bail
         goto bail;
     }
     
-    //get task object
-    // ->by index to get key, then by key
-    //task = tasks[[tasks keyAtIndex:taskRow]];
-    
     //get row that's about to be selected
     rowView = [self.itemView viewAtColumn:0 row:taskRow makeIfNecessary:YES];
     
-    //extract task
-    // ->pid of task is view's id :)
-    task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
+    //when not filtered, use all tasks
+    //if(YES != isFiltered)
+    //{
+        //extract task
+        // ->pid of task is view's id :)
+        task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
+    //}
+    //when filtered, use filtered items
+    //else
+    //{
+    //    task = self.filteredItems[
+    //}
     
 //bail
 bail:
@@ -966,54 +1032,40 @@ bail:
 
 //invoked when the user clicks 'virus total' icon
 // ->launch browser and browse to virus total's page
--(void)showVTInfo:(NSView*)button
+-(void)showVTInfo:(id)sender
 {
-    //array backing table
-    NSArray* tableItems = nil;
+    //item
+    // ->task, dylib, file, etc
+    Binary* item = nil;
     
-    //selected item
-    File* selectedItem = nil;
+    //for top pane
+    // ->get task
+    if(YES != self.isBottomPane)
+    {
+        //get task
+        item = [(Task*)[self taskForRow:sender] binary];
+    }
+    
+    //bottom pane
+    else
+    {
+        //get item
+        item = (Binary*)[self itemForRow:sender];
+    }
 
-    //row that button was clicked on
-    NSUInteger rowIndex = -1;
-    
-    //get row index
-    rowIndex = [self.itemView rowForView:button];
-    
-    //grab item table items
-    tableItems = [self getTableItems];
-    
-    //sanity check
-    // ->make sure row has item
-    if(tableItems.count < rowIndex)
+    //bail on nil items
+    if(nil == item)
     {
         //bail
         goto bail;
     }
-
-    //sanity check
-    if(-1 != rowIndex)
-    {
-        //extract selected item
-        // ->invoke helper function to get array backing table
-        selectedItem = tableItems[rowIndex];
-        
-        //alloc/init info window
-        vtWindowController = [[VTInfoWindowController alloc] initWithItem:selectedItem rowIndex:rowIndex];
-        
-        //show it
-        [self.vtWindowController.windowController showWindow:self];
-      
-        /*
-        //make it modal
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            
-            //modal!
-            [[NSApplication sharedApplication] runModalForWindow:vtWindowController.windowController.window];
-            
-        });
-        */
-    }
+    
+    //alloc/init info window
+    vtWindowController = [[VTInfoWindowController alloc] initWithItem:item];
+    
+    //show it
+    [self.vtWindowController.windowController showWindow:self];
+    
     
 //bail
 bail:
@@ -1177,7 +1229,8 @@ bail:
     
     //sanity check
     if( (-1 == newlySelectedRow) ||
-        (newlySelectedRow >= tasks.count) )
+        ((YES != self.isFiltered) && (newlySelectedRow >= tasks.count)) ||
+        ((YES == self.isFiltered) && (newlySelectedRow >= self.filteredItems.count)) )
     {
         //bail
         goto bail;
@@ -1241,9 +1294,9 @@ bail:
         
     }
     
-    
-    //ignore if row selection didn't change
-    if([self.itemView selectedRow] == self.selectedRow)
+    //ignore if row selection and task didn't change
+    if( ([self.itemView selectedRow] == self.selectedRow) &&
+        (((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask == task) )
     {
         //ignore
         goto bail;
@@ -1262,7 +1315,8 @@ bail:
 //bail
 bail:
     
-    ;
+    
+    return;
 
 }
 

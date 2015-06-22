@@ -573,6 +573,9 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     
     //set path
     [[taskCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:task.binary.path];
+    
+    //config VT button
+    configVTButton(taskCell, owner, task.binary);
 
 //bail
 bail:
@@ -624,6 +627,9 @@ NSTableCellView* createDylibView(NSTableView* tableView, id owner, Binary* dylib
     
     //set path
     [[dylibCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:dylib.path];
+    
+    //config VT button
+    configVTButton(dylibCell, owner, dylib);
     
 //bail
 bail:
@@ -785,6 +791,159 @@ bail:
     return connectionCell;
 }
 
+
+//configure the VT button
+// ->also set's binary name to red if known malware
+void configVTButton(NSTableCellView *itemCell, id owner, Binary* binary)
+{
+    //virus total button
+    // ->for File objects only...
+    VTButton* vtButton;
+    
+    //paragraph style
+    NSMutableParagraphStyle *paragraphStyle = nil;
+    
+    //attribute dictionary
+    NSMutableDictionary *stringAttributes = nil;
+    
+    //VT detection ratio as string
+    NSString* vtDetectionRatio = nil;
+
+    //grab virus total button
+    vtButton = [itemCell viewWithTag:TABLE_ROW_VT_BUTTON];
+    
+    
+    //[itemCell viewWithTag:TABLE_ROW_VT_BUTTON];
+    
+    //configure/show VT info
+    // ->only if 'disable' preference not set
+    //if(YES != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).prefsWindowController.disableVTQueries)
+    //{
+        //set button delegate
+        vtButton.delegate = owner;
+        
+        //save file obj
+        vtButton.binary = binary;
+    
+        //check if have vt results
+        if(nil != binary.vtInfo)
+        {
+            //set font
+            [vtButton setFont:[NSFont fontWithName:@"Menlo-Bold" size:12]];
+            
+            //enable
+            vtButton.enabled = YES;
+            
+            //got VT results
+            // ->check 'permalink' to determine if file is known to VT
+            //   then, show ratio and set to red if file is flagged
+            if(nil != binary.vtInfo[VT_RESULTS_URL])
+            {
+                //alloc paragraph style
+                paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+                
+                //center the text
+                [paragraphStyle setAlignment:NSCenterTextAlignment];
+                
+                //alloc attributes dictionary
+                stringAttributes = [NSMutableDictionary dictionary];
+                
+                //set underlined attribute
+                stringAttributes[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+                
+                //set alignment (center)
+                stringAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
+                
+                //set font
+                stringAttributes[NSFontAttributeName] = [NSFont fontWithName:@"Menlo-Bold" size:12];
+                
+                //compute detection ratio
+                vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[binary.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
+                
+                //known 'good' files (0 positivies)
+                if(0 == [binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
+                {
+                    //(re)set title black
+                    itemCell.textField.textColor = [NSColor blackColor];
+                    
+                    //set color (black)
+                    stringAttributes[NSForegroundColorAttributeName] = [NSColor blackColor];
+                    
+                    //set string (vt ratio), with attributes
+                    [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
+                    
+                    //set color (gray)
+                    stringAttributes[NSForegroundColorAttributeName] = [NSColor grayColor];
+                    
+                    //set selected text color
+                    [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
+                }
+                //files flagged by VT
+                // ->set name and detection to red
+                else
+                {
+                    //set title red
+                    itemCell.textField.textColor = [NSColor redColor];
+                    
+                    //set color (red)
+                    stringAttributes[NSForegroundColorAttributeName] = [NSColor redColor];
+                    
+                    //set string (vt ratio), with attributes
+                    [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
+                    
+                    //set selected text color
+                    [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
+                    
+                }
+                
+                //enable
+                [vtButton setEnabled:YES];
+            }
+            
+            //file is not known
+            // ->reset title to '?'
+            else
+            {
+                //set title
+                [vtButton setTitle:@"?"];
+            }
+        }
+        
+        //no VT results (e.g. unknown file)
+        else
+        {
+            //set font
+            [vtButton setFont:[NSFont fontWithName:@"Menlo-Bold" size:8]];
+            
+            //set title
+            [vtButton setTitle:@"▪ ▪ ▪"];
+            
+            //disable
+            vtButton.enabled = NO;
+        }
+        
+        //show virus total button
+        vtButton.hidden = NO;
+        
+        //show virus total label
+        //[[itemCell viewWithTag:TABLE_ROW_VT_BUTTON+1] setHidden:NO];
+        
+    //}//show VT info (pref not disabled)
+    
+    /*
+    //hide VT info
+    else
+    {
+        //hide virus total button
+        vtButton.hidden = YES;
+        
+        //hide virus total button label
+        [[itemCell viewWithTag:TABLE_ROW_VT_BUTTON+1] setHidden:YES];
+    }
+    */
+    
+    return;
+}
 
 
 

@@ -30,6 +30,7 @@
     return self;
 }
 
+//TODO: move this in Queue?
 //add item
 // ->will query VT when 25 items are hit
 -(void)addItem:(Binary*)binary
@@ -42,21 +43,25 @@
     }
     
     //query VT once 25 items have been gathered
-    if(VT_MAX_QUERY_COUNT == self.items.count)
+    // ->or this is a 'last' item
+    if( (VT_MAX_QUERY_COUNT == self.items.count) ||
+        (YES == binary.lastItem) )
     {
-        //process
-        [self queryVT];
+        //kick of thread to make a query to VT
+        [NSThread detachNewThreadSelector:@selector(queryVT) toTarget:self withObject:nil];
     }
+    
+    return;
 }
 
 //make query to VT
 -(void)queryVT
 {
-    //VT query URL
-    NSURL* queryURL = nil;
-    
     //item data
     NSMutableDictionary* itemData = nil;
+    
+    //VT query URL
+    NSURL* queryURL = nil;
     
     //array of queried items
     // ->needed so can save VT results back into binaries
@@ -67,15 +72,15 @@
     
     //results
     NSDictionary* results = nil;
-
-    //init query URL
-    queryURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", VT_QUERY_URL, VT_API_KEY]];
     
     //alloc list for items
     parameters = [NSMutableArray array];
     
     //alloc dictionary for queried items
     queriedItems = [NSMutableDictionary dictionary];
+    
+    //init query URL
+    queryURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", VT_QUERY_URL, VT_API_KEY]];
     
     //sync
     @synchronized(self.items)
@@ -84,6 +89,14 @@
     //add all binaries to VT query
     for(Binary* item in self.items)
     {
+        //skip items with blank hashes
+        // ->TODO not sure why this would happen
+        if(nil == item.hashes[KEY_HASH_SHA1])
+        {
+            //skip
+            continue;
+        }
+        
         //alloc item data
         itemData = [NSMutableDictionary dictionary];
         
@@ -115,6 +128,7 @@
         
     }//sync
 
+    
     //make query to VT
     results = [self postRequest:queryURL parameters:parameters];
     if(nil != results)
@@ -122,6 +136,7 @@
         //process results
         [self processResults:queriedItems results:results];
     }
+   
     
     return;
 }
@@ -272,9 +287,10 @@
     return;
 }
 */
+
 //get VT info for a single item
 // ->will then callback into AppDelegate to reload item in UI
--(void)getInfoForItem:(Binary*)fileObj scanID:(NSString*)scanID rowIndex:(NSUInteger)rowIndex
+-(void)getInfoForItem:(Binary*)item scanID:(NSString*)scanID
 {
     //VT query URL
     NSURL* queryURL = nil;
@@ -296,8 +312,9 @@
             (1 == [results[VT_RESULTS_RESPONSE] integerValue]) )
         {
             //save result
-            fileObj.vtInfo = results;
+            item.vtInfo = results;
             
+            //TODO: do something if it's flagged!
             //if its flagged save in File's plugin
             if(0 != [results[VT_RESULTS_POSITIVES] unsignedIntegerValue])
             {
@@ -310,10 +327,12 @@
                     [fileObj.plugin.flaggedItems addObject:fileObj];
                 }
                 */
+
             }
             
-            //callback up into UI to reload item
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) itemProcessed:fileObj rowIndex:rowIndex];
+            //update UI
+            // ->will make item in task or dylib table have updated VT results
+            [self updateUI:item];
             
             //exit loop
             break;
@@ -325,6 +344,7 @@
     
     return;
 }
+
 
 //make the (POST)query to VT
 -(NSDictionary*)postRequest:(NSURL*)url parameters:(id)params
@@ -347,7 +367,7 @@
     
     //response (HTTP) from VT
     NSURLResponse* httpResponse = nil;
-
+    
     //alloc/init request
     request = [[NSMutableURLRequest alloc] initWithURL:url];
     
@@ -399,8 +419,8 @@
     
     //sanity check(s)
     if( (nil == vtData) ||
-        (nil != error) ||
-        (200 != (long)[(NSHTTPURLResponse *)httpResponse statusCode]) )
+       (nil != error) ||
+       (200 != (long)[(NSHTTPURLResponse *)httpResponse statusCode]) )
     {
         //err msg
         NSLog(@"OBJECTIVE-SEE ERROR: failed to query VirusTotal (%@, %@)", error, httpResponse);
@@ -443,7 +463,7 @@ bail:
 }
 
 //submit a file to VT
--(NSDictionary*)submit:(File*)fileObj
+-(NSDictionary*)submit:(Binary*)item
 {
     //results
     NSDictionary* results = nil;
@@ -468,15 +488,23 @@ bail:
     
     //response (HTTP) from VT
     NSURLResponse* httpResponse = nil;
+    
+    //remove item's vt info
+    // ->as its about to be outdates
+    item.vtInfo =  nil;
+    
+    //reload UI
+    // ->will change item's VT button back to ...
+    [self updateUI:item];
 
     //init submit URL
-    submitURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_SUBMIT_URL, VT_API_KEY, fileObj.hashes[KEY_HASH_MD5]]];
+    submitURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_SUBMIT_URL, VT_API_KEY, item.hashes[KEY_HASH_MD5]]];
     
     //init request
     request = [[NSMutableURLRequest alloc] initWithURL:submitURL];
     
     //set boundary string
-    NSString *boundary = @"qqqq___knockknock___qqqq";
+    NSString *boundary = @"qqqq___taskexplorer___qqqq";
     
     //set HTTP method (POST)
     [request setHTTPMethod:@"POST"];
@@ -491,13 +519,13 @@ bail:
     body = [NSMutableData data];
     
     //load file into memory
-    fileContents = [NSData dataWithContentsOfFile:fileObj.pathForFinder];
+    fileContents = [NSData dataWithContentsOfFile:item.pathForFinder];
     
     //sanity check
     if(nil == fileContents)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to load %@ into memory for submission", fileObj.path);
+        NSLog(@"OBJECTIVE-SEE ERROR: failed to load %@ into memory for submission", item.path);
         
         //bail
         goto bail;
@@ -507,7 +535,7 @@ bail:
     [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
     //append 'Content-Disposition' file name, etc
-    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\n", fileObj.name] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\n", item.name] dataUsingEncoding:NSUTF8StringEncoding]];
     
     //append 'Content-Type'
     [body appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
@@ -576,8 +604,9 @@ bail:
     return results;
 }
 
+
 //submit a rescan request
--(NSDictionary*)reScan:(File*)fileObj
+-(NSDictionary*)reScan:(Binary*)item
 {
     //result data
     NSDictionary* result = nil;
@@ -585,19 +614,28 @@ bail:
     //scan url
     NSURL* reScanURL = nil;
     
+    //remove item's vt info
+    // ->as its about to be outdates
+    item.vtInfo =  nil;
+    
+    //reload UI
+    // ->will change item's VT button back to ...
+    [self updateUI:item];
+    
     //init scan url
-    reScanURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_RESCAN_URL, VT_API_KEY, fileObj.hashes[KEY_HASH_MD5]]];
+    reScanURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_RESCAN_URL, VT_API_KEY, item.hashes[KEY_HASH_MD5]]];
     
     //make request to VT
     result = [self postRequest:reScanURL parameters:nil];
     if(nil == result)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to re-scan %@", fileObj.name);
+        NSLog(@"OBJECTIVE-SEE ERROR: failed to re-scan %@", item.name);
         
         //bail
         goto bail;
     }
+    
 
 //bail
 bail:
@@ -606,7 +644,7 @@ bail:
 }
 
 //process results
-// ->save VT info into
+// ->save VT info into Binary object & reload relevant pane
 -(void)processResults:(NSMutableDictionary*)queriedItems results:(NSDictionary*)results
 {
     //queried binary obj
@@ -615,10 +653,6 @@ bail:
     //flag for top pane reload
     // ->will be set if any of the queried binaries are a task executable
     BOOL reloadTopPane = NO;
-    
-    //flag for bottom pane reload
-    // ->will be set if any of the queried binaries are a dylib
-    BOOL reloadBottomPane = NO;
     
     //process all results
     // ->save VT result dictionary into File obj
@@ -646,10 +680,11 @@ bail:
             reloadTopPane = YES;
         }
         //for dylibs
-        // ->set flag to reload bottom
+        // ->no dups, update each via row reload
         else
         {
-            reloadBottomPane = YES;
+            //update
+            [self updateUI:queriedItem];
         }
         
         //TODO: do something with detections!?
@@ -657,20 +692,38 @@ bail:
     }
     
     //reload top pane
+    // ->do full since there might be dups (e.g. Chrome Helper)
     if(YES == reloadTopPane)
     {
         //reload
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
-    }
-    
-    //reload bottom pane
-    if(YES == reloadBottomPane)
-    {
-        //reload
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:nil itemView:DYLIBS_VIEW];
+        [self updateUI:nil];
     }
     
     return;
 }
+
+//call back up to update item in UI
+// ->will either reload task table (top), or just row in item (bottom) table
+-(void)updateUI:(Binary*)item
+{
+    //handle case where item is a task (top)
+    // ->fully reload task table (since there can be dups)
+    if( (nil == item) ||
+        (YES == item.isTaskBinary) )
+    {
+        //reload
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
+    }
+    //handle case where item is a dylib (bottom)
+    // ->just reload row
+    else
+    {
+        //reload row
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:nil item:item pane:PANE_BOTTOM];
+    }
+    
+    return;
+}
+
 
 @end

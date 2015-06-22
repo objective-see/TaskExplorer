@@ -282,6 +282,10 @@ bail:
         mach_vm_deallocate(mach_task_self(), (vm_offset_t)allImageInfo, aifBytesRead);
     }
     
+    //remove dups
+    //TODO: this isn't mutable - which is ok, but maybe change reply method def?
+    [dylibPaths setArray:[[NSSet setWithArray:dylibPaths] allObjects]];
+    
     //invoke reply block
     reply(dylibPaths);
     

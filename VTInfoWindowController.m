@@ -23,13 +23,13 @@
 
 @implementation VTInfoWindowController
 
-@synthesize rowIndex;
+@synthesize item;
 @synthesize windowController;
 
 
 //init method
 // ->save item and load nib
--(id)initWithItem:(File*)selectedItem rowIndex:(NSUInteger)itemRowIndex
+-(id)initWithItem:(Binary*)binary
 {
     self = [super init];
     if(nil != self)
@@ -38,10 +38,10 @@
         self.windowController = [[VTInfoWindowController alloc] initWithWindowNibName:@"VTInfoWindow"];
     
         //save item
-        self.windowController.fileObj = selectedItem;
+        self.windowController.item = binary;
         
         //save row index
-        self.windowController.rowIndex = itemRowIndex;
+        //self.windowController.rowIndex = itemRowIndex;
     }
     
     return self;
@@ -92,7 +92,7 @@
     NSColor* textColor = nil;
     
     //get status
-    if(nil != self.fileObj.vtInfo[VT_RESULTS_URL])
+    if(nil != self.item.vtInfo[VT_RESULTS_URL])
     {
         //known
         isKnown = YES;
@@ -105,17 +105,17 @@
         textColor = [NSColor blackColor];
         
         //set color to red if its flagged
-        if(0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
+        if(0 != [self.item.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
         {
             //red
             textColor = [NSColor redColor];
         }
         
         //generate detection ratio
-        vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.fileObj.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
+        vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.item.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.item.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
         
         //set name
-        [self.fileName setStringValue:self.fileObj.name];
+        [self.fileName setStringValue:self.item.name];
         
         //set color
         self.fileName.textColor = textColor;
@@ -130,7 +130,7 @@
         [self.analysisURL setStringValue:@"VirusTotal report"];
         
         //make analyis url a hyperlink
-        makeTextViewHyperlink(self.analysisURL, [NSURL URLWithString:self.fileObj.vtInfo[VT_RESULTS_URL]]);
+        makeTextViewHyperlink(self.analysisURL, [NSURL URLWithString:self.item.vtInfo[VT_RESULTS_URL]]);
         
         //set 'submit' button text to 'rescan'
         self.submitButton.title = @"rescan?";
@@ -157,7 +157,7 @@
         self.analysisURL.hidden = YES;
         
         //set unknown file msg
-        [self.unknownFile setStringValue:[NSString stringWithFormat:@"no results found for '%@'", self.fileObj.name]];
+        [self.unknownFile setStringValue:[NSString stringWithFormat:@"no results found for '%@'", self.item.name]];
         
         //show 'unknown file' msg
         self.unknownFile.hidden = NO;
@@ -253,7 +253,7 @@
     if(YES == [((NSButton*)sender).title isEqualToString:@"rescan?"])
     {
         //set status msg
-        [self.statusMsg setStringValue:[NSString stringWithFormat:@"submitting re-scan request for %@", self.fileObj.name]];
+        [self.statusMsg setStringValue:[NSString stringWithFormat:@"submitting re-scan request for %@", self.item.name]];
             
         //show status msg
         self.statusMsg.hidden = NO;
@@ -262,8 +262,8 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             //make request to VT
-            //TODO: re-enable
-            //result = [vtObj reScan:self.fileObj];
+            // ->will also update UI to show '...'
+            result = [vtObj reScan:self.item];
             
             //got result
             // ->update UI and launch browswer to show report
@@ -272,6 +272,9 @@
                 //grab scan ID
                 // ->need this for (re)queries
                 scanID = result[VT_RESULTS_SCANID];
+                
+                //TODO: do something w/ prev flagged files!?
+                // ...i don't think we'll keep a list~
                 
                 /*
                 
@@ -290,28 +293,17 @@
                  
                 */
                 
-                //remove file's VT info (since it'd now out of date)
-                self.fileObj.vtInfo = nil;
-                
                 //with a scan id can re-query VT
                 // ->will update VT button in UI once results are retrieved
                 if(nil != scanID)
                 {
-                    ////TODO: re-enable
-                    
-                    /*
                     //kick off task to re-query VT
                     // ->wait 60 seconds though to give VT servers some time to process
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                        [vtObj getInfoForItem:self.fileObj scanID:scanID rowIndex:self.rowIndex];
+                        [vtObj getInfoForItem:self.item scanID:scanID];
                     });
-                     
-                    */
+                    
                 }
-                
-                //ask app delegate to update item in table
-                // ->will change the item's VT status to ... (pending)
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]) itemProcessed:self.fileObj rowIndex:self.rowIndex];
                 
                 //nap so user can see msg 'submitting' msg
                 [NSThread sleepForTimeInterval:0.5];
@@ -340,7 +332,6 @@
                     [self.window close];
                     
                 });
-                
             }
             
             //error
@@ -359,13 +350,13 @@
             }
             
         });
-    }
+    } //rescan file
     
     //submit file
     else
     {
         //set status msg
-        [self.statusMsg setStringValue:[NSString stringWithFormat:@"submitting %@", self.fileObj.name]];
+        [self.statusMsg setStringValue:[NSString stringWithFormat:@"submitting %@", self.item.name]];
             
         //show status msg
         self.statusMsg.hidden = NO;
@@ -374,36 +365,26 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
             //submit file to VT
-            //TODO: re-enable
-            //result = [vtObj submit:self.fileObj];
+            // ->will also update UI to show '...'
+            result = [vtObj submit:self.item];
             
             // ->need this for (re)queries
             scanID = result[VT_RESULTS_SCANID];
-            
-            //reset file's VT info
-            self.fileObj.vtInfo = nil;
             
             //with a scan id can query VT
             // ->will update VT button in UI once results are retrieved
             if(nil != scanID)
             {
-                //TODO: re-enable
-                /*
                 //kick off task to re-query VT
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    [vtObj getInfoForItem:self.fileObj scanID:scanID rowIndex:self.rowIndex];
+                    [vtObj getInfoForItem:self.item scanID:scanID];
                 });
-                */
             }
             
             //got response
-            // ->update UI and launch browswer to show report
+            // ->launch browswer to show report
             if(nil != result)
             {
-                //ask app delegate to update item in table
-                // ->will change the item's VT status to ... (pending)
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]) itemProcessed:self.fileObj rowIndex:self.rowIndex];
-                
                 //update status msg
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     
@@ -447,7 +428,7 @@
             }
             
         });
-    }
+    } //submit file
 
     return;
 }

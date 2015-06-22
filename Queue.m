@@ -90,7 +90,6 @@
         //add item for VT processing
         [vtObject addItem:binary];
         
-            
         //unlock
         [self.queueCondition unlock];
             

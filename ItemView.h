@@ -37,3 +37,7 @@ void addTrackingArea(NSTableCellView* itemView, NSUInteger subviewTag, id owner)
 //set code signing image
 // ->either signed, unsigned, or unknown
 NSImage* getCodeSigningIcon(Binary* binary);
+
+//configure the VT button
+// ->also set's binary name to red if known malware
+void configVTButton(NSTableCellView *itemCell, id owner, Binary* binary);

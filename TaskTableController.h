@@ -23,11 +23,17 @@
 //flag for first time init's
 @property BOOL didInit;
 
-//tasks
-// ->updated by task enumerator
-//@property(nonatomic, retain)OrderedDictionary* tasks;
+//flag for ignoring automated row selections
+@property BOOL ignoreSelection;
 
+//flag for filtering
+@property BOOL isFiltered;
+
+//all table items
 @property(nonatomic, retain)NSMutableArray* tableItems;
+
+//filtered table items
+@property(nonatomic, retain)NSMutableArray* filteredItems;
 
 //category table view
 @property(weak) IBOutlet NSTableView *itemView;
