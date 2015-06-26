@@ -96,7 +96,7 @@
     if(YES != self.isBottomPane)
     {
         //when not filtered
-        // ->use tasks
+        // ->use all tasks
         if(YES != isFiltered)
         {
             //get tasks
@@ -114,11 +114,22 @@
         }
     }
     //bottom pane uses 'tableItems' iVar
-    //TODO: filter support
     else
     {
-        //set row count
-        rows = self.tableItems.count;
+        //when not filtered
+        // ->use all items
+        if(YES != isFiltered)
+        {
+            //set row count
+            rows = self.tableItems.count;
+        }
+        //when filtered
+        // ->use filtered items
+        else
+        {
+            //set count
+            rows = self.filteredItems.count;
+        }
     }
     
     return rows;
@@ -199,17 +210,40 @@
     //for BOTTOM PANE
     else
     {
-        //sanity check
-        // ->make sure there is table item for row
-        if(self.tableItems.count <= row)
+        
+        //when not filtered
+        // ->use all items
+        if(YES != isFiltered)
         {
-            //bail
-            goto bail;
+            //sanity check
+            // ->make sure there is table item for row
+            if(self.tableItems.count <= row)
+            {
+                //bail
+                goto bail;
+            }
+            
+            //grab item
+            // ->dylib/file/network item
+            item = [self.tableItems objectAtIndex:row];
         }
         
-        //grab item
-        // ->dylib/file/network item
-        item = [self.tableItems objectAtIndex:row];
+        //when filtered
+        // ->use filtered items
+        else
+        {
+            //sanity check
+            // ->make sure there is table item for row
+            if(self.filteredItems.count <= row)
+            {
+                //bail
+                goto bail;
+            }
+            
+            //set count
+            item = [self.filteredItems objectAtIndex:row];
+        }
+        
     }
     
     //create custom item view
@@ -846,7 +880,6 @@ bail:
         taskRow = [self.itemView selectedRow];
     }
     
-    //TODO: add check for filterItems.count
     //sanity check(s)
     // ->make sure row is decent
     if( (-1 == taskRow) ||
@@ -860,6 +893,7 @@ bail:
     //get row that's about to be selected
     rowView = [self.itemView viewAtColumn:0 row:taskRow makeIfNecessary:YES];
     
+    //TODO: need this?
     //when not filtered, use all tasks
     //if(YES != isFiltered)
     //{
@@ -895,14 +929,27 @@ bail:
     //sanity check(s)
     // ->make sure row has item
     if( (-1 == itemRow) ||
-        (self.tableItems.count < itemRow) )
+        ((YES != self.isFiltered) && (self.tableItems.count < itemRow)) ||
+        ((YES == self.isFiltered) && (self.filteredItems.count < itemRow)) )
     {
         //bail
         goto bail;
     }
 
-    //get item object
-    item = self.tableItems[itemRow];
+    //when not filtered
+    // ->just grab item
+    if(YES != self.isFiltered)
+    {
+        //get item
+        item = self.tableItems[itemRow];
+    }
+    //when filtered
+    // ->grab from filtered item
+    else
+    {
+        //get item
+        item = self.filteredItems[itemRow];
+    }
     
 //bail
 bail:

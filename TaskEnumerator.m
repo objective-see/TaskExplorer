@@ -143,6 +143,10 @@
     //reload task table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
     
+    //TODO: only do if current task is nil?
+    //reload bottom pane
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    
     //now generate signing info
     // ->for (new) tasks & their dylibs
     for(NSNumber* key in newTasks)

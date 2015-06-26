@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
+        <deployment identifier="macosx"/>
         <development version="5000" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
     </dependencies>
@@ -44,19 +45,19 @@
         </menu>
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
-            <rect key="contentRect" x="0.0" y="0.0" width="1353" height="650"/>
+            <rect key="contentRect" x="0.0" y="0.0" width="1353" height="675"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="1000" height="650"/>
             <value key="maxSize" type="size" width="2000" height="650"/>
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="1353" height="650"/>
+                <rect key="frame" x="0.0" y="-2" width="1353" height="675"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="839">
-                        <rect key="frame" x="1157" y="-146" width="32" height="32"/>
+                        <rect key="frame" x="1157" y="-121" width="32" height="32"/>
                     </progressIndicator>
                     <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="745">
-                        <rect key="frame" x="869" y="-137" width="268" height="18"/>
+                        <rect key="frame" x="869" y="-112" width="268" height="18"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="status..." id="748">
                             <font key="font" size="13" name="Menlo-Regular"/>
                             <color key="textColor" red="0.20000000000000001" green="0.67450980392156867" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -64,7 +65,7 @@
                         </textFieldCell>
                     </textField>
                     <button ambiguous="YES" misplaced="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
-                        <rect key="frame" x="640" y="4" width="29" height="32"/>
+                        <rect key="frame" x="640" y="22" width="29" height="32"/>
                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
@@ -74,7 +75,7 @@
                         </connections>
                     </button>
                     <segmentedControl verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gtq-gn-VPL">
-                        <rect key="frame" x="465" y="329" width="223" height="24"/>
+                        <rect key="frame" x="465" y="354" width="223" height="24"/>
                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="DHY-0u-YD7">
                             <font key="font" metaFont="system"/>
                             <segments>
@@ -87,23 +88,12 @@
                             <action selector="selectBottomPaneContent:" target="494" id="CQa-nn-jVf"/>
                         </connections>
                     </segmentedControl>
-                    <searchField wantsLayer="YES" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
-                        <rect key="frame" x="1161" y="330" width="148" height="22"/>
+                    <button ambiguous="YES" misplaced="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
+                        <rect key="frame" x="9" y="20" width="35" height="32"/>
                         <constraints>
-                            <constraint firstAttribute="height" constant="22" id="1yR-lY-9om"/>
-                            <constraint firstAttribute="width" constant="148" id="XYi-Db-Iyc"/>
+                            <constraint firstAttribute="width" constant="35" id="XGt-s5-weq"/>
+                            <constraint firstAttribute="height" constant="32" id="wlR-bC-Msz"/>
                         </constraints>
-                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter" usesSingleLineMode="YES" bezelStyle="round" id="bct-8m-iWd">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </searchFieldCell>
-                        <connections>
-                            <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
-                        </connections>
-                    </searchField>
-                    <button fixedFrame="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
-                        <rect key="frame" x="9" y="4" width="35" height="32"/>
                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="settings" imagePosition="overlaps" alignment="center" alternateImage="settingsBG" imageScaling="proportionallyDown" inset="2" id="1TF-i7-mBn">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
@@ -113,10 +103,10 @@
                         </connections>
                     </button>
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TNF-7q-Loy" userLabel="Top Pane">
-                        <rect key="frame" x="0.0" y="369" width="1353" height="281"/>
+                        <rect key="frame" x="0.0" y="394" width="1353" height="281"/>
                     </customView>
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="E4M-PF-VD0" userLabel="Bottom Pane">
-                        <rect key="frame" x="0.0" y="35" width="1353" height="281"/>
+                        <rect key="frame" x="0.0" y="60" width="1353" height="281"/>
                         <subviews>
                             <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="LMT-Bu-FAk">
                                 <rect key="frame" x="660" y="124" width="32" height="32"/>
@@ -131,6 +121,20 @@
                             </textField>
                         </subviews>
                     </customView>
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
+                        <rect key="frame" x="1133" y="355" width="175" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="22" id="1yR-lY-9om"/>
+                        </constraints>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter Dylibs" usesSingleLineMode="YES" bezelStyle="round" id="bct-8m-iWd">
+                            <font key="font" size="11" name="Menlo-Regular"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
+                        </connections>
+                    </searchField>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="centerX" secondItem="gtq-gn-VPL" secondAttribute="centerX" id="2Nh-NZ-P5p"/>
@@ -172,13 +176,13 @@
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="CF826839-BC2B-4FEF-898A-77DC4D2486F1" label="" paletteLabel="" id="y4u-t8-Acq">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="96" height="22"/>
-                        <size key="maxSize" width="119" height="22"/>
+                        <size key="minSize" width="96" height="19"/>
+                        <size key="maxSize" width="175" height="22"/>
                         <searchField key="view" wantsLayer="YES" verticalHuggingPriority="750" id="4Kr-b9-X6j">
-                            <rect key="frame" x="11" y="14" width="117" height="22"/>
+                            <rect key="frame" x="0.0" y="14" width="175" height="22"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter Tasks" usesSingleLineMode="YES" bezelStyle="round" id="WXx-nE-N2S">
-                                <font key="font" metaFont="system"/>
+                                <font key="font" size="11" name="Menlo-Regular"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                             </searchFieldCell>
@@ -186,20 +190,6 @@
                                 <outlet property="delegate" destination="494" id="B1g-Qz-f4r"/>
                             </connections>
                         </searchField>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="A5784C30-D7FC-4958-875B-487768A4E610" label="" paletteLabel="" id="O1y-1z-g0u">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="38" height="17"/>
-                        <size key="maxSize" width="38" height="17"/>
-                        <textField key="view" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="Pc9-qO-K4R">
-                            <rect key="frame" x="6" y="15" width="38" height="17"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Tasks" id="jaa-xq-WqA">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="F54A1AEB-291E-4556-8B7E-D1C677012ABF" label="" paletteLabel="" image="kkText" id="UwA-pW-Mg8">
                         <nil key="toolTip"/>
@@ -221,7 +211,7 @@
                     <toolbarItem reference="y4u-t8-Acq"/>
                 </defaultToolbarItems>
             </toolbar>
-            <point key="canvasLocation" x="662.5" y="335"/>
+            <point key="canvasLocation" x="662.5" y="347.5"/>
         </window>
         <customObject id="494" customClass="AppDelegate">
             <connections>

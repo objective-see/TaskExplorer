@@ -8,6 +8,9 @@
 #import "Consts.h"
 #import "Filter.h"
 #import "Utilities.h"
+#import "Task.h"
+#import "ItemBase.h"
+#import "Connection.h"
 
 @implementation Filter
 
@@ -27,18 +30,91 @@
     if(self)
     {
         //load known file hashes
-        self.trustedFiles = [self loadWhitelist:WHITE_LISTED_FILES];
+        //self.trustedFiles = [self loadWhitelist:WHITE_LISTED_FILES];
         
         //load known commands
-        self.knownCommands = [self loadWhitelist:WHITE_LISTED_COMMANDS];
+        //self.knownCommands = [self loadWhitelist:WHITE_LISTED_COMMANDS];
         
         //load known extensions
-        self.trustedExtensions = [self loadWhitelist:WHITE_LISTED_EXTENSIONS];
+        //self.trustedExtensions = [self loadWhitelist:WHITE_LISTED_EXTENSIONS];
     }
     
     return self;
 }
 
+//TODO: add filter tasks
+
+
+//filter dylibs and files
+// ->name and path
+-(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
+{
+    //name range
+    NSRange nameRange = {0};
+    
+    //path range
+    NSRange pathRange = {0};
+    
+    //first reset filter'd items
+    [results removeAllObjects];
+    
+    //iterate over all tasks
+    for(ItemBase* item in items)
+    {
+        //init name range
+        nameRange = [item.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //init path range
+        pathRange = [item.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //check for match
+        if( (NSNotFound != nameRange.location) ||
+           (NSNotFound != pathRange.location) )
+        {
+            //save match
+            [results addObject:item];
+        }
+        
+    }//all items
+    
+    return;
+}
+
+//filter network connections
+-(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
+{
+    //local IP addr range
+    NSRange localIPRange = {0};
+    
+    //local port range
+    NSRange localPortRange = {0};
+
+    //TODO: add remote ip/port, state, proto, family?
+    
+    //first reset filter'd items
+    [results removeAllObjects];
+    
+    //iterate over all tasks
+    for(Connection* item in items)
+    {
+        //init name range
+        localIPRange = [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //init path range
+        localPortRange = [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //check for match
+        if( (NSNotFound != localIPRange.location) ||
+            (NSNotFound != localPortRange.location) )
+        {
+            //save match
+            [results addObject:item];
+        }
+        
+    }//all items
+    
+    return;
+}
 
 //load a (JSON) white list
 // ->file hashes, known commands, etc

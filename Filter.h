@@ -27,6 +27,12 @@
 
 /* METHODS */
 
+//filter dylibs and files
+-(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
+
+//filter network connections
+-(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
+
 //load a (JSON) white list
 // ->file hashes, known commands, etc
 -(NSDictionary*)loadWhitelist:(NSString*)fileName;

@@ -16,6 +16,13 @@
 #import "Task.h"
 
 //TODO: bottom pane's progress indicator: center via autolayout
+//TODO: fix bottom icons
+//TODO: dylib info view, don't show args
+//TODO: SHA1 is NULL
+//TODO: Time is NULL
+//TODO: Software signing is too long (goes into 'close' buttom
+//TODO: only update task row(s) on Task VT result! not full table
+//TODO: full VT queue!!
 
 @implementation AppDelegate
 
@@ -37,11 +44,10 @@
 @synthesize scannerThread;
 @synthesize versionString;
 @synthesize progressIndicator;
+//@synthesize filterObj;
 
 @synthesize topPane;
 @synthesize taskEnumerator;
-//@synthesize treeViewController;
-//@synthesize currentViewController;
 @synthesize viewSelector;
 
 
@@ -92,8 +98,8 @@
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
     
-    //init array for virus total threads
-    //vtThreads = [NSMutableArray array];
+    //init filter obj
+    filterObj = [[Filter alloc] init];
     
     //check that OS is supported
     if(YES != isSupportedOS())
@@ -341,12 +347,6 @@
             break;
         }
     }
-    
-    //always unset filter flag
-    self.taskTableController.isFiltered = NO;
-    
-    //always reset filter text
-    [self.filterTasksBox setStringValue:@""];
     
     //set bottom view?
     self.bottomPaneBtn.selectedSegment = DYLIBS_VIEW;
@@ -1418,7 +1418,7 @@ bail:
 {
     //save selected view
     self.taskViewFormat = [[sender selectedCell] tag];
-
+    
     //flat view
     // ->enable 'filter tasks' search field
     if(FLAT_VIEW == self.taskViewFormat)
@@ -1437,11 +1437,27 @@ bail:
     //switch (top) view/pane
     [self changeViewController];
     
+    //always unset filter flag
+    self.taskTableController.isFiltered = NO;
+    
+    //always reset filter text
+    [self.filterTasksBox setStringValue:@""];
+    
+    //remove all filtered tasks
+    [self.taskTableController.filteredItems removeAllObjects];
+    
+    //reset current task
+    self.currentTask = nil;
+    
     //reload top pane
     [self reloadTaskTable];
     
     //select top row
     [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    
+    //reload bottom pane
+    // ->ensures correct info is shown for selected (top) task
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
     
     return;
 }
@@ -1453,6 +1469,26 @@ bail:
 {
     //tag
     NSUInteger segmentTag = 0;
+ 
+    //filter box placeholder text
+    NSString* filterPlaceholder = nil;
+    
+    //always reset filter flag
+    self.bottomViewController.isFiltered = NO;
+    
+    //always reset filter box's text
+    self.filterItemsBox.stringValue = @"";
+    
+    //remove all filtered items
+    [self.bottomViewController.filteredItems removeAllObjects];
+    
+    //when no current task
+    // ->set to first task in sorted tasks
+    if(nil == self.currentTask)
+    {
+        //set to first
+        self.currentTask = self.taskEnumerator.tasks[[self.taskEnumerator.tasks keyAtIndex:0]];
+    }
 
     //get segment tag
     segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
@@ -1490,6 +1526,9 @@ bail:
         //dylibs
         case DYLIBS_VIEW:
             
+            //init placeholder text for dylibs
+            filterPlaceholder =  @"Filter Dylibs";
+            
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
             [self.currentTask enumerateDylibs:self.taskEnumerator.xpcConnection allDylibs:self.taskEnumerator.dylibs];
@@ -1499,6 +1538,9 @@ bail:
         //files
         case FILES_VIEW:
             
+            //init placeholder text for files
+            filterPlaceholder = @"Filter Files";
+            
             //(re)enumerate files via XPC
             // ->triggers table reload when done
             [self.currentTask enumerateFiles:self.taskEnumerator.xpcConnection];
@@ -1507,6 +1549,9 @@ bail:
             
         //networking
         case NETWORKING_VIEW:
+            
+            //init placeholder text for network
+            filterPlaceholder = @"Filter Connections";
             
             //(re)enumerate network connections via XPC
             // ->triggers table reload when done
@@ -1518,6 +1563,15 @@ bail:
             break;
     }
     
+    //set filter box's placeholder text
+    // ->UI change, so do on main thread
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        //set placeholder
+        [self.filterItemsBox setPlaceholderString:filterPlaceholder];
+    });
+    
+    
 //bail
 bail:
     
@@ -1527,10 +1581,13 @@ bail:
 
 //automatically invoked when user enters text in filter search boxes
 // ->filter tasks and/or items
-- (void)controlTextDidChange:(NSNotification *)aNotification
+-(void)controlTextDidChange:(NSNotification *)aNotification
 {
     //search text
     NSTextView* search = nil;
+    
+    //tag for bottom pane selector
+    NSUInteger segmentTag = 0;
     
     //extract search (text) view
     search = aNotification.userInfo[@"NSFieldEditor"];
@@ -1541,7 +1598,7 @@ bail:
         //bail
         goto bail;
     }
-    
+
     //top pane
     if(YES == [aNotification.object isEqualTo:self.filterTasksBox])
     {
@@ -1556,24 +1613,77 @@ bail:
         else
         {
             //filter
+            //TODO: move into Filter obj
             [self filterTasks:search.string];
             
             //set flag
             self.taskTableController.isFiltered = YES;
         }
         
-        //always reload task table
+        //always reload task (top) pane
         [self.taskTableController.itemView reloadData];
     }
     //bottom pane
     else if(YES == [aNotification.object isEqualTo:self.filterItemsBox])
     {
+        //when text is reset
+        // ->just reset flag
+        if(0 == search.string.length)
+        {
+            //set flag
+            self.bottomViewController.isFiltered = NO;
+        }
         
-    }
+        //filter items
+        else
+        {
+            //get segment tag
+            segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+            
+            //get item
+            // ->will bail if item isn't in (current) view, etc
+            switch(segmentTag)
+            {
+                //dylibs
+                case DYLIBS_VIEW:
+                {
+                    //filter
+                    [self.filterObj filterFiles:search.string items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
 
-    
-    
-    //NSLog(@"changed!");
+                    break;
+                }
+                
+                //files
+                case FILES_VIEW:
+                {
+                    //filter
+                    [self.filterObj filterFiles:search.string items:self.currentTask.files results:self.bottomViewController.filteredItems];
+                    
+                    break;
+                }
+                    
+                //network connections
+                case NETWORKING_VIEW:
+                {
+                    //filter
+                    [self.filterObj filterConnections:search.string items:self.currentTask.connections results:self.bottomViewController.filteredItems];
+                    
+                    
+                    break;
+                }
+                    
+                default:
+                    break;
+                    
+            }//switch
+            
+            //set flag
+            self.bottomViewController.isFiltered = YES;
+        }
+        
+        //always reload task (top) pane
+        [self.bottomViewController.itemView reloadData];
+    }
     
 //bail
 bail:

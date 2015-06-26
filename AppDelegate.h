@@ -31,6 +31,9 @@
 
 }
 
+//Filter obj
+//@property (nonatomic, retain) Filter* filter;
+
 //'filter task' search box
 // ->top pane
 @property (weak) IBOutlet NSSearchField *filterTasksBox;
