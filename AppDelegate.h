@@ -129,9 +129,6 @@
 // ->provide mouse over effects
 -(void)initTrackingAreas;
 
-//callback method, invoked by virus total when plugin's items have been processed
-// ->reload table if plugin matches active plugin
-//-(void)itemsProcessed:(PluginBase*)plugin;
 
 
 //callback when user has updated prefs
@@ -164,7 +161,7 @@
 @property (weak) IBOutlet NSTextField *versionString;
 
 //reload (to re-draw) a specific row in table
--(void)reloadRow:(Task*)task item:(ItemBase*)item pane:(NSUInteger)pane;
+-(void)reloadRow:(id)item;
 
 //reload task table
 -(void)reloadTaskTable;
@@ -182,6 +179,9 @@
 
 //filter tasks
 -(void)filterTasks:(NSString*)filterText;
+
+//VT callback to reload a binary
+-(void)reloadBinary:(Binary*)binary;
 
 
 @end

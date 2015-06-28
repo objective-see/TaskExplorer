@@ -54,6 +54,14 @@
             //load nib
             self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"DylibInfoWindow"];
         }
+        //load file info window
+        else if(YES == [selectedItem isKindOfClass:[File class]])
+        {
+            //load nib
+            self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"FileInfoWindow"];
+        }
+        
+        //TODO: file && network info view
         
         /*TODO: delete this and xibs?
         
@@ -102,6 +110,10 @@
     // ->when showing info about a dylib
     Binary* dylib = nil;
     
+    //file
+    // ->when showing info about a file
+    File* file = nil;
+
     //handle tasks
     if(YES == [self.itemObj isKindOfClass:[Task class]])
     {
@@ -139,6 +151,13 @@
         //set path
         [self.path setStringValue:[self valueForStringItem:task.binary.path default:@"unknown"]];
         
+        //hashes could still be, being generated
+        // ->but don't want to wait, so just created em directly
+        if(nil == task.binary.hashes[KEY_HASH_MD5])
+        {
+            //save hash
+            task.binary.hashes = hashFile(task.binary.path);
+        }
         
         //set hash
         [self.hashes setStringValue:[NSString stringWithFormat:@"%@ / %@", task.binary.hashes[KEY_HASH_MD5], task.binary.hashes[KEY_HASH_SHA1]]];
@@ -149,11 +168,19 @@
         //set date
         [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", task.binary.attributes.fileCreationDate, task.binary.attributes.fileModificationDate]];
         
+        //signing info still being generated?
+        // ->but don't want to wait, so just created em directly
+        if(nil == task.binary.signingInfo)
+        {
+            //generate signing info
+            task.binary.signingInfo = extractSigningInfo(task.binary.path);
+        }
+        
         //set signing info
         [self.sign setStringValue:[self valueForStringItem:[task.binary formatSigningInfo] default:@"not signed"]];
     }
     
-    //handle tasks
+    //handle binaries
     else if(YES == [self.itemObj isKindOfClass:[Binary class]])
     {
         //type cast
@@ -165,7 +192,7 @@
         //set name
         [self.name setStringValue:[self valueForStringItem:dylib.name default:@"unknown"]];
         
-    
+        //TODO: enable?!
         /*
          //flagged files
          // ->make name red!
@@ -180,70 +207,66 @@
         //set path
         [self.path setStringValue:[self valueForStringItem:dylib.path default:@"unknown"]];
         
+        //hashes still being generated?
+        // ->but don't want to wait, so just created em directly
+        if(nil == dylib.hashes[KEY_HASH_MD5])
+        {
+            //save hash
+            dylib.hashes = hashFile(dylib.path);
+        }
         
         //set hash
-        [self.hashes setStringValue:[NSString stringWithFormat:@"%@ / %@", dylib.hashes[KEY_HASH_MD5], task.binary.hashes[KEY_HASH_SHA1]]];
+        [self.hashes setStringValue:[NSString stringWithFormat:@"%@ / %@", dylib.hashes[KEY_HASH_MD5], dylib.hashes[KEY_HASH_SHA1]]];
         
         //set size
         [self.size setStringValue:[NSString stringWithFormat:@"%llu bytes", dylib.attributes.fileSize]];
         
         //set date
-        [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", dylib.attributes.fileCreationDate, task.binary.attributes.fileModificationDate]];
+        [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", dylib.attributes.fileCreationDate, dylib.attributes.fileModificationDate]];
+        
+        //signing info still being generated?
+        // ->but don't want to wait, so just created em directly
+        if(nil == dylib.signingInfo)
+        {
+            //generate signing info
+            dylib.signingInfo = extractSigningInfo(dylib.path);
+        }
         
         //set signing info
         [self.sign setStringValue:[self valueForStringItem:[dylib formatSigningInfo] default:@"not signed"]];
     }
     
-    
     //handle File class
     else if(YES == [self.itemObj isKindOfClass:[File class]])
     {
+        //typecast
+        file = (File*)self.itemObj;
+        
+        //first check if detailed info (such as 'type') was generated yet
+        // ->when not, do it directly here
+        if(nil == file.type)
+        {
+            //generated detailed info
+            [file generateDetailedInfo];
+        }
+        
         //set icon
-        self.icon.image = getIconForBinary(self.itemObj.path, ((File*)itemObj).bundle);
+        self.icon.image = itemObj.icon;
         
         //set name
         [self.name setStringValue:self.itemObj.name];
         
-        /*
-        
-        //flagged files
-        // ->make name red!
-        if( (nil != ((Binary*)self.itemObj).vtInfo) &&
-            (0 != [((File*)self.itemObj).vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
-        {
-            //set color (light red)
-            self.name.textColor = [NSColor redColor];
-        }
-         
-        */
-        
         //set path
         [self.path setStringValue:self.itemObj.path];
         
-        //set hash
-        [self.hashes setStringValue:[NSString stringWithFormat:@"%@ / %@", ((File*)self.itemObj).hashes[KEY_HASH_MD5], ((File*)self.itemObj).hashes[KEY_HASH_SHA1]]];
+        //set type
+        [self.type setStringValue:[self valueForStringItem:((File*)self.itemObj).type default:@"unknown"]];
         
         //set size
-        [self.size setStringValue:[NSString stringWithFormat:@"%llu bytes", ((File*)self.itemObj).attributes.fileSize]];
+        [self.size setStringValue:[NSString stringWithFormat:@"%llu bytes", self.itemObj.attributes.fileSize]];
         
         //set date
-        [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", ((File*)self.itemObj).attributes.fileCreationDate, ((File*)self.itemObj).attributes.fileModificationDate]];
-        
-        //set plist
-        if(nil != ((File*)self.itemObj).plist)
-        {
-            //set
-            [self.plist setStringValue:((File*)self.itemObj).plist];
-        }
-        //no plist
-        else
-        {
-            //set
-            [self.plist setStringValue:@"no plist for item"];
-        }
-        
-        //set signing info
-        [self.sign setStringValue:[(File*)self.itemObj formatSigningInfo]];
+        [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", self.itemObj.attributes.fileCreationDate, self.itemObj.attributes.fileModificationDate]];
     }
     
     /*

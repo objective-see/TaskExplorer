@@ -14,19 +14,13 @@
 
 @implementation File
 
-@synthesize path;
-@synthesize name;
-@synthesize plist;
-@synthesize bundle;
-@synthesize hashes;
-@synthesize signingInfo;
-
-//@synthesize vtInfo;
+@synthesize type;
 
 
 //init method
 -(id)initWithParams:(NSDictionary*)params
 {
+    //TODO: why care if dir?
     //flag for directories
     BOOL isDirectory = NO;
     
@@ -49,46 +43,15 @@
             goto bail;
         }
         
-        //if path is directory
-        // ->treat is as a bundle
-        if(YES == isDirectory)
-        {
-            //load bundle
-            // ->save this into 'bundle' iVar
-            if(nil == (bundle = [NSBundle bundleWithPath:params[KEY_RESULT_PATH]]))
-            {
-                //err msg
-                NSLog(@"OBJECTIVE-SEE ERROR: couldn't create bundle for %@", params[KEY_RESULT_PATH]);
-                
-                //set self to nil
-                self = nil;
-                
-                //bail
-                goto bail;
-            }
-            
-            //extract executable from bundle
-            // ->save this into 'path' iVar
-            if(nil == (self.path = self.bundle.executablePath))
-            {
-                //err msg
-                //NSLog(@"OBJECTIVE-SEE ERROR: couldn't find executable in bundle %@", itemPath);
-                
-                //set self to nil
-                self = nil;
-                
-                //bail
-                goto bail;
-            }
-        }
-        
-        //save (optional) plist
-        // ->ok if this is nil
-        self.plist = params[KEY_RESULT_PLIST];
-
         //extract name
         self.name = [[self.path lastPathComponent] stringByDeletingPathExtension];
+     
+        //set icon
+        self.icon = [[NSWorkspace sharedWorkspace] iconForFile:self.path];
         
+        //grab attributes
+        self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
+
     }
            
 //bail
@@ -97,20 +60,61 @@ bail:
     return self;
 }
 
+//set file type
+// ->invokes 'file' cmd, the parses out result
+-(void)setFileType
+{
+    //results from 'file' cmd
+    NSString* results = nil;
+    
+    //array of parsed results
+    NSArray* parsedResults = nil;
+    
+    //exec 'file' to get file type
+    results = [[NSString alloc] initWithData:execTask(@"/usr/bin/file", @[self.path]) encoding:NSUTF8StringEncoding];
+    
+    //sanity check
+    if(nil == results)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //parse results
+    // ->format: <file path>: <file types>
+    parsedResults = [results componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":\n"]];
+    
+    //sanity check
+    // ->should be two items in array, <file path> and <file type>
+    if(parsedResults.count < 2)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //file type comes second
+    // ->also trim whitespace
+    self.type = [parsedResults[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+//bail
+bail:
+    ;
+    
+    
+    return;
+}
+
+
 //get detailed info (which takes a while to generate)
 // ->only shown to user if they click 'info' so this method is called in the background
 -(void)generateDetailedInfo
 {
-    //grab attributes
-    //TODO: done elsewhere?
-    self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
-    
-    //computes hashes
-    // ->set 'md5' and 'sha1' iVars
-    self.hashes = hashFile(self.path);
+    //set type
+    [self setFileType];
     
     return;
 }
+
 
 //convert object to JSON string
 -(NSString*)toJSON
@@ -120,25 +124,26 @@ bail:
     
     //json data
     // ->for intermediate conversions
-    NSData *jsonData = nil;
+    //NSData *jsonData = nil;
     
     //plist
     NSString* filePlist = nil;
     
     //hashes
-    NSString* fileHashes = nil;
+    //NSString* fileHashes = nil;
     
     //signing info
-    NSString* fileSigs = nil;
+    //NSString* fileSigs = nil;
     
     //init file hash to default string
     // ->used when hashes are nil, or serialization fails
-    fileHashes = @"\"unknown\"";
+    //fileHashes = @"\"unknown\"";
     
     //init file signature to default string
     // ->used when signatures are nil, or serialization fails
-    fileSigs = @"\"unknown\"";
+    //fileSigs = @"\"unknown\"";
     
+    /*
     //convert hashes to JSON
     if(nil != self.hashes)
     {
@@ -201,8 +206,11 @@ bail:
     //init VT detection ratio
     //vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
+    
     //init json
     json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"plist\": \"%@\", \"hashes\": %@, \"signature(s)\": %@", self.name, self.path, filePlist, fileHashes, fileSigs];
+     
+    */
     
     return json;
 }

@@ -35,7 +35,6 @@
         
         //start it
         [self.qProcessorThread start];
-
     }
     
     return self;
@@ -86,7 +85,7 @@
         //process
         //->for now, just hash, etc
         [binary generateDetailedInfo];
-            
+         
         //add item for VT processing
         [vtObject addItem:binary];
         

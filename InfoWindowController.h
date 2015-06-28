@@ -27,17 +27,18 @@
 @property (weak) IBOutlet NSTextField *arguments;
 
 
+
 //file window specific outlets
 @property(weak)IBOutlet NSTextField *hashes;
 @property(weak)IBOutlet NSTextField *size;
 @property(weak)IBOutlet NSTextField *sign;
 
+//file window specific outlets
+@property (weak) IBOutlet NSTextField *type;
+
 
 @property (weak) IBOutlet NSTextField *plist;
 
-//extension window specific outlets
-@property (weak) IBOutlet NSTextField *details;
-@property (weak) IBOutlet NSTextField *identifier;
 
 //window controller
 @property(nonatomic, strong)InfoWindowController *windowController;

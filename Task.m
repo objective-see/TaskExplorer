@@ -399,6 +399,7 @@ bail:
                 //add to task's dylibs
                 [self.dylibs addObject:dylib];
             }
+            
         } //all dylibs
         
         //sync to sort
@@ -417,28 +418,29 @@ bail:
         // ->this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
         
-        //complete dylib processing
+        //complete dylib processing for new dylib
         // ->get signing info, hash, etc, & save into global list
+        //   ...reloads each row (if task is stil current)
         for(Binary* newDylib in newDylibs)
         {
             //generate signing info
             [newDylib generatedSigningInfo];
+            
+            //no need to reload if task is now longer current/selected
+            if(((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask != self)
+            {
+                //skip reload
+                continue;
+            }
+            
+            //reload row
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newDylib];
         }
         
-        //any new dylibs?
-        // ->reload bottom pane to update signing info, etc
-        if(0 != newDylibs.count)
-        {
-            //reload
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
-        }
-    
     }];
     
     return;
 }
-
-
 
 //enumerate all file descriptors
 -(void)enumerateFiles:(NSXPCConnection*)xpcConnection

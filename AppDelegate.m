@@ -16,13 +16,9 @@
 #import "Task.h"
 
 //TODO: bottom pane's progress indicator: center via autolayout
-//TODO: fix bottom icons
-//TODO: dylib info view, don't show args
-//TODO: SHA1 is NULL
-//TODO: Time is NULL
-//TODO: Software signing is too long (goes into 'close' buttom
-//TODO: only update task row(s) on Task VT result! not full table
-//TODO: full VT queue!!
+//TODO: full VT queue!! - flush
+//TODO: on filter, reset scanning for bottom item (hideDylib)
+//TODO: network info window
 
 @implementation AppDelegate
 
@@ -44,7 +40,6 @@
 @synthesize scannerThread;
 @synthesize versionString;
 @synthesize progressIndicator;
-//@synthesize filterObj;
 
 @synthesize topPane;
 @synthesize taskEnumerator;
@@ -360,54 +355,46 @@
     return;
 }
 
-//reload (to re-draw) a specific row in table
--(void)reloadRow:(Task*)task item:(ItemBase*)item pane:(NSUInteger)pane
+//smartly reload a specific row in table
+// ->arg determines pane (top/bottom) and for bottom pane, the active view the item belongs to
+-(void)reloadRow:(id)item;
 {
-    //item's task
-    // ->will use current task if task arg is nil
-    __block Task* itemTask = nil;
-    
     //table view
     __block NSTableView* tableView = nil;
     
     //row
     __block NSUInteger row = 0;
     
-    //segment (for bottom pane
-    __block NSUInteger segmentTag = 0;
-    
     //run everything on main thread
     // ->ensures table view isn't changed out from under us....
     dispatch_async(dispatch_get_main_queue(), ^{
-        
-    //get item's task
-    // ->use passed in task if non-nil
-    if(nil != itemTask)
-    {
-        //set
-        itemTask = task;
-    }
-    //passed in task is nil
-    // ->use currently selected one
-    else
-    {
-        //set
-        itemTask = self.currentTask;
-    }
-     
+    
     //top table (pane)
-    if(PANE_TOP == pane)
+    if(YES == [item isKindOfClass:[Task class]])
     {
         //top table view
         tableView = [((id)self.taskTableController) itemView];
         
-        //reloadItem
+        //reload item
         // ->flat view
         if(YES != [tableView isKindOfClass:[NSOutlineView class]])
         {
-            //get index where task is
-            // TODO: doesn't account for filtering, etc!!!
-            row = [self.taskEnumerator.tasks indexOfKey:itemTask.pid];
+            //no filtering
+            // ->grab row from all tasks
+            if(YES != self.taskTableController.isFiltered)
+            {
+                //get row
+                row = [self.taskEnumerator.tasks indexOfKey:((Task*)item).pid];
+            }
+            //filtering
+            // ->grab row from filtered tasks
+            else
+            {
+                //get row
+                row = [self.taskTableController.filteredItems indexOfObject:item];
+            }
+            
+            //sanity check
             if(NSNotFound == row)
             {
                 //bail
@@ -425,20 +412,18 @@
             
         }
         //reload item
-        // ->tree view
+        // ->tree view, so no need to worry about filtering
         else
         {
             //begin updates
             [tableView beginUpdates];
                     
             //reload
-            [(NSOutlineView*)tableView reloadItem:itemTask];
+            [(NSOutlineView*)tableView reloadItem:item];
                     
             //end updates
             [tableView endUpdates];
         }
-            
-        
     }
     //bottom pane
     else
@@ -446,80 +431,27 @@
         //bottom table view
         tableView = [((id)self.bottomViewController) itemView];
         
-        //get segment tag
-        segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
-        
-        //get item
-        // ->will bail if item isn't in (current) view, etc
-        switch(segmentTag)
+        //no filtering
+        // ->grab row from all items
+        if(YES != self.bottomViewController.isFiltered)
         {
-            //dylibs
-            case DYLIBS_VIEW:
-                
-                //make sure item class/type matches current view
-                if(YES != [item isKindOfClass:[Binary class]])
-                {
-                    //bail
-                    goto bail;
-                }
-                
-                //sync
-                @synchronized(itemTask.dylibs)
-                {
-                    //get row
-                    row = [itemTask.dylibs indexOfObject:item];
-                }
-                
-                break;
-                
-            //files
-            case FILES_VIEW:
-                
-                //make sure item class/type matches current view
-                if(YES != [item isKindOfClass:[File class]])
-                {
-                    //bail
-                    goto bail;
-                }
-                
-                //sync
-                @synchronized(itemTask.files)
-                {
-                    //get row
-                    row = [itemTask.files indexOfObject:item];
-                }
-                
-                break;
-                
-            //networking
-            case NETWORKING_VIEW:
-                
-                //make sure item class/type matches current view
-                if(YES != [item isKindOfClass:[Connection class]])
-                {
-                    //bail
-                    goto bail;
-                }
-                //sync
-                @synchronized(itemTask.connections)
-                {
-                    //get row
-                    row = [itemTask.connections indexOfObject:item];
-                }
-                
-                break;
-                
-            default:
-                break;
+            //get row
+            row = [self.bottomViewController.tableItems indexOfObject:item];
         }
-        
+        //filtering
+        // ->grab row from filtered item
+        else
+        {
+            //get row
+            row = [self.bottomViewController.filteredItems indexOfObject:item];
+        }
+
         //make sure item was found
         if(NSNotFound == row)
         {
             //bail
             goto bail;
         }
-        
         
         //begin updates
         [tableView beginUpdates];
@@ -529,7 +461,8 @@
         
         //end updates
         [tableView endUpdates];
-    }
+    
+    }//bottom pane
         
 //bail
 bail:
@@ -636,6 +569,72 @@ bail:
     else
     {
         self.noItemsLabel.hidden = YES;
+    }
+    
+    return;
+}
+
+//VT callback to reload a binary
+// ->task binary: reload all instances that match in top pane
+//   dylib:       reload row if dylib is loaded in current/selected task
+-(void)reloadBinary:(Binary*)binary
+{
+    //all tasks
+    OrderedDictionary* tasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //task binary
+    // ->reload all instances that match in top pane
+    if(YES == binary.isTaskBinary)
+    {
+        //when not filtered
+        // ->use all tasks
+        if(YES != self.taskTableController.isFiltered)
+        {
+            //TODO: sync?
+            
+            //get tasks
+            tasks = self.taskEnumerator.tasks;
+            for(NSNumber* taskPid in tasks)
+            {
+                //extract task
+                task = tasks[taskPid];
+                
+                //check for match
+                if(task.binary == binary)
+                {
+                    //reload
+                    [self reloadRow:task];
+                }
+            }
+        }
+        //when filtered
+        // ->use filtered items
+        else
+        {
+            //filtered items
+            for(Task* task in self.taskTableController.filteredItems)
+            {
+                //check for match
+                if(task.binary == binary)
+                {
+                    //reload
+                    [self reloadRow:task];
+                }
+            }
+        }
+        
+        
+    }//top pane
+    
+    //bottom pane
+    // ->can just invoke 'reloadRow' method (which has logic to handle filtering, ignoring 'not found' items, etc.
+    else
+    {
+        //reload
+        [self reloadRow:binary];
     }
     
     return;

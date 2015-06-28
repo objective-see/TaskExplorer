@@ -191,7 +191,7 @@ struct dyld_image_info_32 {
     // ->32bit mode
     else
     {
-        //hack, can use 64bit version of struct (since 'infoArray' is first pointer
+        //hack, can use 64bit version of struct (since 'infoArray' is first pointer)
         // ->but zero out top bits
         remoteReadAddr = (vm_address_t)allImageInfo->infoArray & 0xFFFFFFFF;
         

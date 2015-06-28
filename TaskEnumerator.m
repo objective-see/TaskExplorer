@@ -154,11 +154,19 @@
         //get task
         newTask = newTasks[key];
         
+        //don't need to regerate signing info if its already there
+        // ->e.g. task is just another instance of the same binary
+        if(nil != newTask.binary.signingInfo)
+        {
+            //skip
+            continue;
+        }
+        
         //generate signing info
         [newTask.binary generatedSigningInfo];
         
         //reload task (row) in table
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newTask item:newTask.binary pane:PANE_TOP];
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newTask];
     
         //reload bottom pane
         // ->this will only reload if new task is the currently selected one, etc

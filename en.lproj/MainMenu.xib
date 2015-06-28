@@ -45,37 +45,27 @@
         </menu>
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
-            <rect key="contentRect" x="0.0" y="0.0" width="1353" height="675"/>
+            <rect key="contentRect" x="0.0" y="0.0" width="1353" height="660"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="1000" height="650"/>
             <value key="maxSize" type="size" width="2000" height="650"/>
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="-2" width="1353" height="675"/>
+                <rect key="frame" x="0.0" y="0.0" width="1353" height="660"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="839">
-                        <rect key="frame" x="1157" y="-121" width="32" height="32"/>
+                        <rect key="frame" x="1157" y="-136" width="32" height="32"/>
                     </progressIndicator>
                     <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="745">
-                        <rect key="frame" x="869" y="-112" width="268" height="18"/>
+                        <rect key="frame" x="869" y="-127" width="268" height="18"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="status..." id="748">
                             <font key="font" size="13" name="Menlo-Regular"/>
                             <color key="textColor" red="0.20000000000000001" green="0.67450980392156867" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button ambiguous="YES" misplaced="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
-                        <rect key="frame" x="640" y="22" width="29" height="32"/>
-                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
-                            <behavior key="behavior" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="logoButtonHandler:" target="494" id="H4C-BT-arE"/>
-                        </connections>
-                    </button>
                     <segmentedControl verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gtq-gn-VPL">
-                        <rect key="frame" x="465" y="354" width="223" height="24"/>
+                        <rect key="frame" x="465" y="339" width="223" height="24"/>
                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="DHY-0u-YD7">
                             <font key="font" metaFont="system"/>
                             <segments>
@@ -88,8 +78,22 @@
                             <action selector="selectBottomPaneContent:" target="494" id="CQa-nn-jVf"/>
                         </connections>
                     </segmentedControl>
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
+                        <rect key="frame" x="1133" y="340" width="175" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="22" id="1yR-lY-9om"/>
+                        </constraints>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter Dylibs" usesSingleLineMode="YES" bezelStyle="round" id="bct-8m-iWd">
+                            <font key="font" size="11" name="Menlo-Regular"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
+                        </connections>
+                    </searchField>
                     <button ambiguous="YES" misplaced="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
-                        <rect key="frame" x="9" y="20" width="35" height="32"/>
+                        <rect key="frame" x="9" y="5" width="35" height="32"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="35" id="XGt-s5-weq"/>
                             <constraint firstAttribute="height" constant="32" id="wlR-bC-Msz"/>
@@ -103,10 +107,10 @@
                         </connections>
                     </button>
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TNF-7q-Loy" userLabel="Top Pane">
-                        <rect key="frame" x="0.0" y="394" width="1353" height="281"/>
+                        <rect key="frame" x="0.0" y="379" width="1353" height="281"/>
                     </customView>
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="E4M-PF-VD0" userLabel="Bottom Pane">
-                        <rect key="frame" x="0.0" y="60" width="1353" height="281"/>
+                        <rect key="frame" x="0.0" y="45" width="1353" height="281"/>
                         <subviews>
                             <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="LMT-Bu-FAk">
                                 <rect key="frame" x="660" y="124" width="32" height="32"/>
@@ -121,20 +125,16 @@
                             </textField>
                         </subviews>
                     </customView>
-                    <searchField wantsLayer="YES" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
-                        <rect key="frame" x="1133" y="355" width="175" height="22"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="22" id="1yR-lY-9om"/>
-                        </constraints>
-                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter Dylibs" usesSingleLineMode="YES" bezelStyle="round" id="bct-8m-iWd">
-                            <font key="font" size="11" name="Menlo-Regular"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </searchFieldCell>
+                    <button ambiguous="YES" misplaced="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
+                        <rect key="frame" x="662" y="5" width="29" height="32"/>
+                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
+                            <behavior key="behavior" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
                         <connections>
-                            <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
+                            <action selector="logoButtonHandler:" target="494" id="H4C-BT-arE"/>
                         </connections>
-                    </searchField>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="centerX" secondItem="gtq-gn-VPL" secondAttribute="centerX" id="2Nh-NZ-P5p"/>
@@ -211,7 +211,7 @@
                     <toolbarItem reference="y4u-t8-Acq"/>
                 </defaultToolbarItems>
             </toolbar>
-            <point key="canvasLocation" x="662.5" y="347.5"/>
+            <point key="canvasLocation" x="662.5" y="340.5"/>
         </window>
         <customObject id="494" customClass="AppDelegate">
             <connections>

@@ -649,11 +649,7 @@ bail:
 {
     //queried binary obj
     Binary* queriedItem = nil;
-    
-    //flag for top pane reload
-    // ->will be set if any of the queried binaries are a task executable
-    BOOL reloadTopPane = NO;
-    
+        
     //process all results
     // ->save VT result dictionary into File obj
     for(NSDictionary* result in results[VT_RESULTS])
@@ -672,54 +668,12 @@ bail:
         //save VT results into item
         queriedItem.vtInfo = result;
         
-        //for task executables
-        // ->set flag to reload top
-        if(YES == queriedItem.isTaskBinary)
-        {
-            //set
-            reloadTopPane = YES;
-        }
-        //for dylibs
-        // ->no dups, update each via row reload
-        else
-        {
-            //update
-            [self updateUI:queriedItem];
-        }
+        //callback to smartly reload
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:queriedItem];
+        
         
         //TODO: do something with detections!?
         //if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
-    }
-    
-    //reload top pane
-    // ->do full since there might be dups (e.g. Chrome Helper)
-    if(YES == reloadTopPane)
-    {
-        //reload
-        [self updateUI:nil];
-    }
-    
-    return;
-}
-
-//call back up to update item in UI
-// ->will either reload task table (top), or just row in item (bottom) table
--(void)updateUI:(Binary*)item
-{
-    //handle case where item is a task (top)
-    // ->fully reload task table (since there can be dups)
-    if( (nil == item) ||
-        (YES == item.isTaskBinary) )
-    {
-        //reload
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
-    }
-    //handle case where item is a dylib (bottom)
-    // ->just reload row
-    else
-    {
-        //reload row
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:nil item:item pane:PANE_BOTTOM];
     }
     
     return;
