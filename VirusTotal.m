@@ -330,9 +330,8 @@
 
             }
             
-            //update UI
-            // ->will make item in task or dylib table have updated VT results
-            [self updateUI:item];
+            //call up into app delegate to smartly reload
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:item];
             
             //exit loop
             break;
@@ -490,12 +489,12 @@ bail:
     NSURLResponse* httpResponse = nil;
     
     //remove item's vt info
-    // ->as its about to be outdates
+    // ->as its about to be outdated
     item.vtInfo =  nil;
     
-    //reload UI
-    // ->will change item's VT button back to ...
-    [self updateUI:item];
+    //call up into app delegate to smartly reload
+    // ->it's VT button will be '...'
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:item];
 
     //init submit URL
     submitURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_SUBMIT_URL, VT_API_KEY, item.hashes[KEY_HASH_MD5]]];
@@ -618,9 +617,9 @@ bail:
     // ->as its about to be outdates
     item.vtInfo =  nil;
     
-    //reload UI
-    // ->will change item's VT button back to ...
-    [self updateUI:item];
+    //call up into app delegate to smartly reload
+    // ->will change item's VT button back to '...'
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:item];
     
     //init scan url
     reScanURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@?apikey=%@&resource=%@", VT_RESCAN_URL, VT_API_KEY, item.hashes[KEY_HASH_MD5]]];
@@ -668,7 +667,7 @@ bail:
         //save VT results into item
         queriedItem.vtInfo = result;
         
-        //callback to smartly reload
+        //call up into app delegate to smartly reload
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:queriedItem];
         
         

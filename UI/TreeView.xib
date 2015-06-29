@@ -25,7 +25,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="40" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="cLW-QZ-CYz" id="Wr1-No-lg2">
-                                <rect key="frame" x="0.0" y="0.0" width="1304" height="0.0"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1326" height="0.0"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -73,10 +73,10 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <button toolTip="show in finder" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="107" translatesAutoresizingMaskIntoConstraints="NO" id="0m7-AT-Eya">
-                                                        <rect key="frame" x="1288" y="17" width="15" height="15"/>
+                                                        <rect key="frame" x="1288" y="15" width="18" height="18"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="15" id="Tdr-QH-P2k"/>
-                                                            <constraint firstAttribute="height" constant="15" id="hTD-dI-cC7"/>
+                                                            <constraint firstAttribute="width" constant="18" id="Tdr-QH-P2k"/>
+                                                            <constraint firstAttribute="height" constant="18" id="hTD-dI-cC7"/>
                                                         </constraints>
                                                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="show" imagePosition="only" alignment="center" alternateImage="showBG" state="on" imageScaling="proportionallyDown" inset="2" id="9bk-bJ-Zyz">
                                                             <behavior key="behavior" lightByContents="YES"/>
@@ -135,7 +135,7 @@
                                                             <constraint firstAttribute="height" constant="15" id="4EE-js-ecq"/>
                                                             <constraint firstAttribute="width" constant="15" id="kAe-AG-RWR"/>
                                                         </constraints>
-                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="only" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="3jg-7d-Ojq">
+                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="overlaps" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="3jg-7d-Ojq">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
@@ -171,10 +171,10 @@
                                                     <constraint firstItem="QSB-ts-KGS" firstAttribute="leading" secondItem="ni5-tf-iVs" secondAttribute="trailing" constant="8" id="2Q3-uZ-8AD"/>
                                                     <constraint firstItem="Kpb-Mz-fbz" firstAttribute="leading" secondItem="e66-L1-kbk" secondAttribute="trailing" constant="22" id="IAL-i7-0WG"/>
                                                     <constraint firstItem="Ljf-ew-dFy" firstAttribute="leading" secondItem="IPo-Hz-FA1" secondAttribute="trailing" constant="8" id="J8E-t8-gI1"/>
-                                                    <constraint firstAttribute="trailing" secondItem="201-Tu-53I" secondAttribute="trailing" constant="16" id="JVC-Ka-pOt"/>
+                                                    <constraint firstAttribute="trailing" secondItem="201-Tu-53I" secondAttribute="trailing" constant="18" id="JVC-Ka-pOt"/>
                                                     <constraint firstItem="jvS-nx-JhV" firstAttribute="leading" secondItem="0gS-xR-4Le" secondAttribute="leading" constant="5" id="P00-iS-abC"/>
                                                     <constraint firstItem="IPo-Hz-FA1" firstAttribute="leading" secondItem="jvS-nx-JhV" secondAttribute="trailing" constant="10" id="SFT-OI-f7s"/>
-                                                    <constraint firstItem="0m7-AT-Eya" firstAttribute="leading" secondItem="Kpb-Mz-fbz" secondAttribute="trailing" constant="22" id="SKZ-SB-gUV"/>
+                                                    <constraint firstItem="0m7-AT-Eya" firstAttribute="leading" secondItem="Kpb-Mz-fbz" secondAttribute="trailing" constant="17" id="SKZ-SB-gUV"/>
                                                     <constraint firstItem="JeZ-sa-j9F" firstAttribute="leading" secondItem="Ljf-ew-dFy" secondAttribute="trailing" constant="11" id="Su2-k9-ZuQ"/>
                                                     <constraint firstItem="201-Tu-53I" firstAttribute="leading" secondItem="JeZ-sa-j9F" secondAttribute="trailing" constant="10" id="Zzh-F4-3Lv"/>
                                                     <constraint firstItem="e66-L1-kbk" firstAttribute="leading" secondItem="IPo-Hz-FA1" secondAttribute="trailing" constant="13" id="bQs-ue-I0H"/>

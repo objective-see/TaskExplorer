@@ -90,7 +90,10 @@
 #define PREF_BUTTON_TAG 1001
 
 //logo button
-#define LOGO_BUTTON_TAG 1002
+#define SEARCH_BUTTON_TAG 1002
+
+//logo button
+#define LOGO_BUTTON_TAG 1003
 
 //category table
 

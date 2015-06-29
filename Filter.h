@@ -27,6 +27,9 @@
 
 /* METHODS */
 
+//filter tasks
+-(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
+
 //filter dylibs and files
 -(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
 

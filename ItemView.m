@@ -695,14 +695,8 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
     //item cell
     NSTableCellView* connectionCell = nil;
     
-    //connection endpoint
-    NSMutableString* endpoints = nil;
-    
     //connection details
     NSMutableString* details = nil;
-    
-    //alloc string for endpoints
-    endpoints = [NSMutableString string];
     
     //alloc string for details
     details = [NSMutableString string];
@@ -715,54 +709,16 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
         goto bail;
     }
     
-    //reset icon
-    connectionCell.imageView.image = nil;
-    
-    //set icon for TCP sockets
-    //TODO: (re)set default icon!?
-    if(nil != connection.state)
-    {
-        //listening
-        if(YES == [connection.state isEqualToString:SOCKET_LISTENING])
-        {
-            //set
-            connectionCell.imageView.image = [NSImage imageNamed:@"listeningIcon"];
-        }
-        //connected
-        else if(YES == [connection.state isEqualToString:SOCKET_ESTABLISHED])
-        {
-            //set
-            connectionCell.imageView.image = [NSImage imageNamed:@"connectedIcon"];
-        }
-    }
-    
-    //set icon for UDP sockets
-    // ->can't listen, so just show em as streaming
-    else if(YES == [connection.type isEqualToString:@"SOCK_DGRAM"])
-    {
-        //set
-        connectionCell.imageView.image = [NSImage imageNamed:@"streamIcon"];
-    }
+    //set icon
+    connectionCell.imageView.image = connection.icon;
     
     //default
     // ->(re)set main textfield's color to black
     connectionCell.textField.textColor = [NSColor blackColor];
     
-    //add local addr/port to endpoint string
-    [endpoints appendString:[NSString stringWithFormat:@"%@:%d", connection.localIPAddr, [connection.localPort unsignedShortValue]]];
-     
-     //for remote connections
-     // ->add remote endpoint
-     if( (nil != connection.remoteIPAddr) &&
-         (nil != connection.remotePort) )
-     {
-         //add remote endpoint
-        [endpoints appendString:[NSString stringWithFormat:@" -> %@:%d", connection.remoteIPAddr, [connection.remotePort unsignedShortValue]]];
-     }
-    
     //set main text
     // ->connection endpoints
-    [connectionCell.textField setStringValue:endpoints];
+    [connectionCell.textField setStringValue:connection.endpoints];
     
     //set details
     // ->TCP socket

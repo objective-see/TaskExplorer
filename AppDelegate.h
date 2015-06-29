@@ -121,6 +121,7 @@
 
 //'no items' found label for bottom pane
 @property (weak) IBOutlet NSTextField *noItemsLabel;
+@property (weak) IBOutlet NSButton *searchButton;
 
 /* METHODS */
 - (IBAction)switchView:(id)sender;
@@ -136,11 +137,11 @@
 -(void)applyPreferences;
 
 //update a single row
--(void)itemProcessed:(Binary*)fileObj rowIndex:(NSUInteger)rowIndex;
+//-(void)itemProcessed:(Binary*)fileObj rowIndex:(NSUInteger)rowIndex;
 
 //action
 // ->invoked when user clicks 'About/Info' or Objective-See logo in main UI
--(void)displayScanStats;
+//-(void)displayScanStats;
 
 -(IBAction)scanButtonHandler:(id)sender;
 
@@ -183,5 +184,10 @@
 //VT callback to reload a binary
 -(void)reloadBinary:(Binary*)binary;
 
+//save button handler
+-(IBAction)saveResults:(id)sender;
+
+//search button handler
+-(IBAction)search:(id)sender;
 
 @end

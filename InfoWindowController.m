@@ -61,24 +61,13 @@
             self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"FileInfoWindow"];
         }
         
-        //TODO: file && network info view
-        
-        /*TODO: delete this and xibs?
-        
-        //load file info window
-        else if(YES == [selectedItem isKindOfClass:[File class]])
-        {
-            //load nib
-            self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"FileInfoWindow"];
-        }
-        //load extension info window
+        //load networking info window
         else if(YES == [selectedItem isKindOfClass:[Connection class]])
         {
             //load nib
-            self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"ConnectionInfoWindow"];
+            self.windowController = [[InfoWindowController alloc] initWithWindowNibName:@"NetworkInfoWindow"];
         }
-        */
-         
+        
         //save item
         self.windowController.itemObj = selectedItem;
     }
@@ -113,6 +102,10 @@
     //file
     // ->when showing info about a file
     File* file = nil;
+    
+    //connection
+    // ->when showing info about a connection
+    Connection* connection = nil;
 
     //handle tasks
     if(YES == [self.itemObj isKindOfClass:[Task class]])
@@ -260,7 +253,7 @@
         [self.path setStringValue:self.itemObj.path];
         
         //set type
-        [self.type setStringValue:[self valueForStringItem:((File*)self.itemObj).type default:@"unknown"]];
+        [self.type setStringValue:[self valueForStringItem:file.type default:@"unknown"]];
         
         //set size
         [self.size setStringValue:[NSString stringWithFormat:@"%llu bytes", self.itemObj.attributes.fileSize]];
@@ -269,37 +262,30 @@
         [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", self.itemObj.attributes.fileCreationDate, self.itemObj.attributes.fileModificationDate]];
     }
     
-    /*
-    //handle Extension class
-    if(YES == [self.itemObj isKindOfClass:[Extension class]])
+    //handle Connection class
+    else if(YES == [self.itemObj isKindOfClass:[Connection class]])
     {
+        //typecast
+        connection = (Connection*)self.itemObj;
+        
         //set icon
-        self.icon.image = getIconForBinary(((Extension*)itemObj).browser, nil);
+        self.icon.image = itemObj.icon;
         
-        //set name
-        [self.name setStringValue:self.itemObj.name];
+        //set connection string
+        [self.name setStringValue:connection.endpoints];
         
-        //set path
-        [self.path setStringValue:self.itemObj.path];
+        //set type
+        [self.type setStringValue:[self valueForStringItem:connection.type default:@"unknown"]];
         
-        //set description
-        // ->optional
-        if(nil != ((Extension*)self.itemObj).details)
-        {
-            //set
-            [self.details setStringValue:[NSString stringWithFormat:@"%@", ((Extension*)self.itemObj).details]];
-        }
-               
-        //set id
-        [self.identifier setStringValue:[NSString stringWithFormat:@"%@", ((Extension*)self.itemObj).identifier]];
+        //set proto
+        [self.protocol setStringValue:[self valueForStringItem:connection.proto default:@"unknown"]];
         
-        //set date
-        [self.date setStringValue:[NSString stringWithFormat:@"%@ (created) / %@ (modified)", ((File*)self.itemObj).attributes.fileCreationDate, ((File*)self.itemObj).attributes.fileModificationDate]];
+        //set family
+        [self.family setStringValue:[self valueForStringItem:connection.family default:@"unknown"]];
         
-        //set signing info
-        //[self.sign setStringValue:[(File*)self.itemObj formatSigningInfo]];
+        //set status
+        [self.state setStringValue:[self valueForStringItem:connection.state default:@"unknown"]];
     }
-    */
     
     return;
 }

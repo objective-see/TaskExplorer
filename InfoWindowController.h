@@ -36,8 +36,13 @@
 //file window specific outlets
 @property (weak) IBOutlet NSTextField *type;
 
+//network window specific outlets
 
-@property (weak) IBOutlet NSTextField *plist;
+@property (weak) IBOutlet NSTextField *connection;
+@property (weak) IBOutlet NSTextField *protocol;
+@property (weak) IBOutlet NSTextField *family;
+@property (weak) IBOutlet NSTextField *state;
+
 
 
 //window controller

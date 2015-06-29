@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
-		CD001B371AB903040089014A /* kkText.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B341AB903040089014A /* kkText.png */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
 		CD02194F1AD34D8B005148A2 /* AboutWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD02194D1AD34D8B005148A2 /* AboutWindow.xib */; };
@@ -84,6 +83,13 @@
 		CDD248341AF5947300232422 /* TAAdaptiveSpaceItem.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD248311AF5947300232422 /* TAAdaptiveSpaceItem.m */; };
 		CDD248351AF5947300232422 /* TAAdaptiveSpaceItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD248331AF5947300232422 /* TAAdaptiveSpaceItemView.m */; };
 		CDD2483B1AF5CC4D00232422 /* Task.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD2483A1AF5CC4D00232422 /* Task.m */; };
+		CDEE76FC1B3FD44500763826 /* saveIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE76FB1B3FD44500763826 /* saveIcon.png */; };
+		CDEE76FF1B3FD4B000763826 /* saveIconBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE76FD1B3FD4B000763826 /* saveIconBG.png */; };
+		CDEE77001B3FD4B000763826 /* saveIconOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE76FE1B3FD4B000763826 /* saveIconOver.png */; };
+		CDEE77021B3FD55600763826 /* teText.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE77011B3FD55600763826 /* teText.png */; };
+		CDEE77061B41220300763826 /* search.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE77031B41220300763826 /* search.png */; };
+		CDEE77071B41220300763826 /* searchBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE77041B41220300763826 /* searchBG.png */; };
+		CDEE77081B41220300763826 /* searchOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE77051B41220300763826 /* searchOver.png */; };
 		CDF08CBF1AC3DE25009B3423 /* logoAppleBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDF08CBE1AC3DE25009B3423 /* logoAppleBG.png */; };
 		CDF08CC11AC3E8B0009B3423 /* showOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CDF08CC01AC3E8B0009B3423 /* showOver.png */; };
 		CDF08CC31AC3E98D009B3423 /* infoOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CDF08CC21AC3E98D009B3423 /* infoOver.png */; };
@@ -133,7 +139,6 @@
 		1D21BC51172AF43D009D1CFD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1D21BC52172AF43D009D1CFD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		1D21BC53172AF43D009D1CFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		CD001B341AB903040089014A /* kkText.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = kkText.png; path = images/kkText.png; sourceTree = SOURCE_ROOT; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
 		CD001B361AB903040089014A /* logoApple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoApple.png; path = images/logoApple.png; sourceTree = SOURCE_ROOT; };
 		CD02194D1AD34D8B005148A2 /* AboutWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AboutWindow.xib; path = UI/AboutWindow.xib; sourceTree = "<group>"; };
@@ -239,6 +244,13 @@
 		CDD248331AF5947300232422 /* TAAdaptiveSpaceItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TAAdaptiveSpaceItemView.m; path = 3rdParty/TAAdaptiveSpaceItemView.m; sourceTree = "<group>"; };
 		CDD248391AF5CC4D00232422 /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Task.h; sourceTree = SOURCE_ROOT; };
 		CDD2483A1AF5CC4D00232422 /* Task.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Task.m; sourceTree = SOURCE_ROOT; };
+		CDEE76FB1B3FD44500763826 /* saveIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = saveIcon.png; path = images/saveIcon.png; sourceTree = SOURCE_ROOT; };
+		CDEE76FD1B3FD4B000763826 /* saveIconBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = saveIconBG.png; path = images/saveIconBG.png; sourceTree = SOURCE_ROOT; };
+		CDEE76FE1B3FD4B000763826 /* saveIconOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = saveIconOver.png; path = images/saveIconOver.png; sourceTree = SOURCE_ROOT; };
+		CDEE77011B3FD55600763826 /* teText.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = teText.png; path = images/teText.png; sourceTree = SOURCE_ROOT; };
+		CDEE77031B41220300763826 /* search.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = search.png; path = images/search.png; sourceTree = SOURCE_ROOT; };
+		CDEE77041B41220300763826 /* searchBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = searchBG.png; path = images/searchBG.png; sourceTree = SOURCE_ROOT; };
+		CDEE77051B41220300763826 /* searchOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = searchOver.png; path = images/searchOver.png; sourceTree = SOURCE_ROOT; };
 		CDF08CBE1AC3DE25009B3423 /* logoAppleBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoAppleBG.png; path = images/logoAppleBG.png; sourceTree = SOURCE_ROOT; };
 		CDF08CC01AC3E8B0009B3423 /* showOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = showOver.png; path = images/showOver.png; sourceTree = SOURCE_ROOT; };
 		CDF08CC21AC3E98D009B3423 /* infoOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoOver.png; path = images/infoOver.png; sourceTree = SOURCE_ROOT; };
@@ -381,6 +393,13 @@
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				CDEE77031B41220300763826 /* search.png */,
+				CDEE77041B41220300763826 /* searchBG.png */,
+				CDEE77051B41220300763826 /* searchOver.png */,
+				CDEE77011B3FD55600763826 /* teText.png */,
+				CDEE76FD1B3FD4B000763826 /* saveIconBG.png */,
+				CDEE76FE1B3FD4B000763826 /* saveIconOver.png */,
+				CDEE76FB1B3FD44500763826 /* saveIcon.png */,
 				CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */,
 				CD4D54251B2EA94C00008030 /* streamIcon.png */,
 				CD4D53D11B23ED4300008030 /* listeningIcon.png */,
@@ -407,7 +426,6 @@
 				CDF08CC21AC3E98D009B3423 /* infoOver.png */,
 				CDF08CC01AC3E8B0009B3423 /* showOver.png */,
 				CDF08CBE1AC3DE25009B3423 /* logoAppleBG.png */,
-				CD001B341AB903040089014A /* kkText.png */,
 				CD001B351AB903040089014A /* logo.png */,
 				CD001B361AB903040089014A /* logoApple.png */,
 				CDA81DD11A9970A0009790E2 /* signed.png */,
@@ -607,10 +625,13 @@
 				CDA81D691A95B4E9009790E2 /* bug.png in Resources */,
 				CD02195E1AD39A74005148A2 /* ResultsWindow.xib in Resources */,
 				CD3F4D141AF85088002A2647 /* FlatView.xib in Resources */,
+				CDEE76FF1B3FD4B000763826 /* saveIconBG.png in Resources */,
 				CDA81D5B1A95B4B4009790E2 /* InfoPlist.strings in Resources */,
 				CD4D53CA1B20296E00008030 /* unknown.png in Resources */,
+				CDEE77081B41220300763826 /* searchOver.png in Resources */,
 				CDA81D6B1A95B4E9009790E2 /* show.png in Resources */,
 				CDF08CF31ACA6864009B3423 /* browserIcon.png in Resources */,
+				CDEE77061B41220300763826 /* search.png in Resources */,
 				CDAB98A11AEAFAFA00C75B4B /* authorizationIcon.png in Resources */,
 				CD001B391AB903040089014A /* logoApple.png in Resources */,
 				CDF08CEF1ACA677B009B3423 /* launchIcon.png in Resources */,
@@ -620,7 +641,9 @@
 				CDF08CF01ACA677B009B3423 /* kernelIcon.png in Resources */,
 				CD4D54261B2EA94C00008030 /* streamIcon.png in Resources */,
 				CDF08CD01AC4C6E8009B3423 /* settingsBG.png in Resources */,
+				CDEE77021B3FD55600763826 /* teText.png in Resources */,
 				CD0219551AD34E4C005148A2 /* kkIcon.png in Resources */,
+				CDEE76FC1B3FD44500763826 /* saveIcon.png in Resources */,
 				CD0219591AD37748005148A2 /* unsigned2.png in Resources */,
 				CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */,
 				CDA81D5C1A95B4B4009790E2 /* MainMenu.xib in Resources */,
@@ -630,7 +653,6 @@
 				CDA5F6C61B16E8D4003CE340 /* lockIcon.png in Resources */,
 				CDA81DD41A9970A0009790E2 /* unsigned.png in Resources */,
 				CD7B9FA71ACCAE5E00DF3C71 /* startScanOver.png in Resources */,
-				CD001B371AB903040089014A /* kkText.png in Resources */,
 				CDF08CC11AC3E8B0009B3423 /* showOver.png in Resources */,
 				CD4D54241B2D082300008030 /* DylibInfoWindow.xib in Resources */,
 				CDA81DCC1A9960A3009790E2 /* virusTotalBG.png in Resources */,
@@ -645,6 +667,7 @@
 				CD0219501AD34D8B005148A2 /* PrefsWindow.xib in Resources */,
 				CDA81D6C1A95B4E9009790E2 /* showBG.png in Resources */,
 				CD3F4CFF1AF72BC4002A2647 /* TaskInfoWindow.xib in Resources */,
+				CDEE77001B3FD4B000763826 /* saveIconOver.png in Resources */,
 				CDA81D6A1A95B4E9009790E2 /* mainIcon.png in Resources */,
 				CDA81D711A95B4E9009790E2 /* stopScanBG.png in Resources */,
 				CDF08CBF1AC3DE25009B3423 /* logoAppleBG.png in Resources */,
@@ -660,6 +683,7 @@
 				CDA81DCA1A9960A3009790E2 /* infoBG.png in Resources */,
 				CDF08CD11AC4C6E8009B3423 /* settings.png in Resources */,
 				CDA81DD31A9970A0009790E2 /* signed.png in Resources */,
+				CDEE77071B41220300763826 /* searchBG.png in Resources */,
 				CDA81E661AA020FD009790E2 /* FileInfoWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

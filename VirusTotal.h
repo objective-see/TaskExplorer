@@ -47,8 +47,4 @@
 // ->will callback into AppDelegate to reload item
 -(void)getInfoForItem:(Binary*)item scanID:(NSString*)scanID;
 
-//call back up to update item in UI
-// ->will either reload task table (top), or just row in item (bottom) table
--(void)updateUI:(Binary*)item;
-
 @end

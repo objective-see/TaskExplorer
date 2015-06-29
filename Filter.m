@@ -42,7 +42,48 @@
     return self;
 }
 
-//TODO: add filter tasks
+//filter tasks
+// ->for now, just name & path
+//  TODO filter on everything
+-(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results
+{
+    //task
+    Task* task = nil;
+    
+    //name range
+    NSRange nameRange = {0};
+    
+    //path range
+    NSRange pathRange = {0};
+    
+    //first reset filter'd items
+    [results removeAllObjects];
+    
+    //iterate over all tasks
+    for(NSNumber* taskKey in items)
+    {
+        //extract task
+        task = items[taskKey];
+        
+        //init name range
+        nameRange = [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //init path range
+        pathRange = [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
+        
+        //check for match
+        if( (NSNotFound != nameRange.location) ||
+            (NSNotFound != pathRange.location) )
+        {
+            //save match
+            [results addObject:task];
+        }
+        
+    }//all tasks
+    
+    return;
+}
+
 
 
 //filter dylibs and files

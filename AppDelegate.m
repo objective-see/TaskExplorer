@@ -15,10 +15,11 @@
 
 #import "Task.h"
 
-//TODO: bottom pane's progress indicator: center via autolayout
 //TODO: full VT queue!! - flush
-//TODO: on filter, reset scanning for bottom item (hideDylib)
-//TODO: network info window
+
+//TODO: add IPV6 :: as 0.0.0.0? (since we do this for IPV4 i think)
+//TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
+
 
 @implementation AppDelegate
 
@@ -44,6 +45,7 @@
 @synthesize topPane;
 @synthesize taskEnumerator;
 @synthesize viewSelector;
+@synthesize searchButton;
 
 
 //@synthesize taskScrollView;
@@ -61,10 +63,6 @@
     
     //make window front
     [NSApp activateIgnoringOtherApps:YES];
-    
-    //set initial view
-    // ->default is flat (non-tree) view
-    //[self changeViewController:[self.viewSelector selectedItem].tag];
     
     return;
 }
@@ -159,72 +157,19 @@
     //set flag
     self.bottomViewController.isBottomPane = YES;
     
-    //set input
-    //self.bottomViewController.tableItems = currentTask.dylibs;
-    
     //add subview
     [self.bottomPane addSubview:[self.bottomViewController view]];
-    
-    //[self.bottomPane addSubview:self.noItemsLabel];
     
     //set frame
     [[self.bottomViewController view] setFrame:[self.bottomPane bounds]];
     
-    //set default msg
+    //add 'items' not found msg
     [self.bottomViewController.view addSubview:self.noItemsLabel];
-
-
-
-
-
 
     //set delegate
     // ->ensures our 'windowWillClose' method, which has logic to fully exit app
     self.window.delegate = self;
     
-    
-    
-    
-    //kick off thread to begin enumerating shared objects
-    // ->this takes awhile, so do it now!
-    //[self.sharedItemEnumerator start];
-
-    //instantiate all plugins objects
-    //self.plugins = [self instantiatePlugins];
-    
-    //set selected plugin to first
-    //self.selectedPlugin = [self.plugins firstObject];
-    
-    //dbg msg
-    //NSLog(@"KNOCKKNOCK: registered plugins: %@", self.plugins);
-    
-    //pre-populate category table w/ each plugin title
-    //[self.categoryTableController initTable:self.plugins];
-    
-    //make category table active/selected
-    //[[self.categoryTableController.categoryTableView window] makeFirstResponder:self.categoryTableController.categoryTableView];
-    
-    //hide status msg
-    // ->when user clicks scan, will show up..
-    //[self.statusText setStringValue:@""];
-    
-    //hide progress indicator
-    //self.progressIndicator.hidden = YES;
-    
-    //init button label
-    // ->start scan
-    //[self.scanButtonLabel setStringValue:START_SCAN];
-    
-    //set version info
-    //[self.versionString setStringValue:[NSString stringWithFormat:@"version: %@", getAppVersion()]];
-    
-    //init tracking areas
-    //[self initTrackingAreas];
-    
-    //set delegate
-    // ->ensures our 'windowWillClose' method, which has logic to fully exit app
-    //self.window.delegate = self;
-
     return;
 }
 
@@ -394,36 +339,30 @@
                 row = [self.taskTableController.filteredItems indexOfObject:item];
             }
             
-            //sanity check
-            if(NSNotFound == row)
-            {
-                //bail
-                goto bail;
-            }
-            
-            //begin updates
-            [tableView beginUpdates];
-                    
-            //reload row
-            [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
-                    
-            //end updates
-            [tableView endUpdates];
-            
         }
         //reload item
         // ->tree view, so no need to worry about filtering
         else
         {
-            //begin updates
-            [tableView beginUpdates];
-                    
-            //reload
-            [(NSOutlineView*)tableView reloadItem:item];
-                    
-            //end updates
-            [tableView endUpdates];
+            //get row
+            row = [(NSOutlineView*)tableView rowForItem:item];
         }
+        
+        //sanity check
+        if(NSNotFound == row)
+        {
+            //bail
+            goto bail;
+        }
+        
+        //begin updates
+        [tableView beginUpdates];
+        
+        //reload row
+        [tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(row)] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+        
+        //end updates
+        [tableView endUpdates];
     }
     //bottom pane
     else
@@ -508,6 +447,9 @@ bail:
             
             //set table items
             self.bottomViewController.tableItems = self.currentTask.dylibs;
+            
+            //if there is none
+            self.noItemsLabel.stringValue = @"no dylibs found";
         
             break;
             
@@ -517,6 +459,9 @@ bail:
             ///set table items
             self.bottomViewController.tableItems = self.currentTask.files;
             
+            //if there is none
+            self.noItemsLabel.stringValue = @"no files found";
+            
             break;
             
         //networking
@@ -524,6 +469,9 @@ bail:
             
             //set table items
             self.bottomViewController.tableItems = self.currentTask.connections;
+            
+            //if there is none
+            self.noItemsLabel.stringValue = @"no network connections found";
             
             break;
             
@@ -562,12 +510,14 @@ bail:
     //no items?
     if(0 == self.bottomViewController.tableItems.count)
     {
+        //how
         self.noItemsLabel.hidden = NO;
         
     }
-    //no items?
+    //got items?
     else
     {
+        //hide
         self.noItemsLabel.hidden = YES;
     }
     
@@ -640,6 +590,7 @@ bail:
     return;
 }
 
+
 //display alert about OS not being supported
 -(void)showUnsupportedAlert
 {
@@ -679,6 +630,13 @@ bail:
     
     //add tracking area to pref button
     [self.showPreferencesButton addTrackingArea:trackingArea];
+    
+    //init tracking area
+    // ->for search button
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self.searchButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.searchButton.tag]}];
+    
+    //add tracking area to search button
+    [self.searchButton addTrackingArea:trackingArea];
     
     //init tracking area
     // ->for logo button
@@ -942,6 +900,8 @@ bail:
 }
 
 
+
+/*
 //update the UI to reflect that the fact the scan was stopped
 // ->set text back to 'start scan', etc...
 -(void)stopScanUI:(NSString*)statusMsg
@@ -989,6 +949,7 @@ bail:
 
     return;
 }
+*/
 
 /*
 //shows alert stating that that scan is complete (w/ stats)
@@ -1167,7 +1128,13 @@ bail:
         if(PREF_BUTTON_TAG == tag)
         {
             //set
-            imageName = @"settings";
+            imageName = @"saveIcon";
+        }
+        //set original search image
+        else if(SEARCH_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"search";
         }
         //set original logo image
         else if(LOGO_BUTTON_TAG == tag)
@@ -1203,7 +1170,13 @@ bail:
         if(PREF_BUTTON_TAG == tag)
         {
             //set
-            imageName = @"settingsOver";
+            imageName = @"saveIconOver";
+        }
+        //set mouse over search image
+        else if(SEARCH_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"searchOver";
         }
         //set mouse over logo image
         else if(LOGO_BUTTON_TAG == tag)
@@ -1227,6 +1200,58 @@ bail:
     return;    
 }
 
+//invoked when user clicks 'save' icon
+// ->show popup that allows user to save results
+-(IBAction)saveResults:(id)sender
+{
+    //save panel
+    NSSavePanel *panel = nil;
+    
+    //output
+    // ->json of all tasks/dylibs, etc
+    __block NSString* output = nil;
+    
+    //error
+    __block NSError* error = nil;
+    
+    //create panel
+    panel = [NSSavePanel savePanel];
+    
+    //suggest file name
+    [panel setNameFieldStringValue:@"tasks.json"];
+    
+    //show panel
+    // ->completion handler will invoked when user clicks 'ok'
+    [panel beginWithCompletionHandler:^(NSInteger result)
+    {
+        //only need to handle 'ok'
+        if(NSFileHandlingPanelOKButton == result)
+        {
+            //TODO: generate JSON
+            output = @"test";
+        
+            //save JSON to disk
+            if(YES != [output writeToURL:[panel URL] atomically:NO encoding:NSUTF8StringEncoding error:nil])
+            {
+                //err msg
+                NSLog(@"OBJECTIVE-SEE ERROR: saving output to %@ failed with %@", [panel URL], error);
+                
+            }
+        }
+        
+    }];
+    
+//bail
+bail:
+    
+    return;
+    
+}
+
+- (IBAction)search:(id)sender {
+}
+
+/*
 //save results to disk
 // ->JSON dumped to current directory
 -(void)saveResults
@@ -1330,13 +1355,14 @@ bail:
         //bail
         goto bail;
     }
-    */
+ 
     
 //bail
 bail:
     
     return;
 }
+*/
 
 #pragma mark Menu Handler(s) #pragma mark -
 
@@ -1613,7 +1639,8 @@ bail:
         {
             //filter
             //TODO: move into Filter obj
-            [self filterTasks:search.string];
+            //[self filterTasks:search.string];
+            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
             
             //set flag
             self.taskTableController.isFiltered = YES;
@@ -1621,6 +1648,23 @@ bail:
         
         //always reload task (top) pane
         [self.taskTableController.itemView reloadData];
+        
+        //[self.bottomViewController.itemView reloadData];
+        
+        //when nothing matches
+        // ->reset current task and bottom pane
+        if( (YES == self.taskTableController.isFiltered) &&
+            (0 == self.taskTableController.filteredItems.count) )
+        {
+            //remove bottom pane's items
+            [self.bottomViewController.tableItems removeAllObjects];
+            
+            //reset current task
+            self.currentTask = nil;
+            
+            //reload bottom pane
+            [self.bottomViewController.itemView reloadData];
+        }
     }
     //bottom pane
     else if(YES == [aNotification.object isEqualTo:self.filterItemsBox])
@@ -1667,7 +1711,6 @@ bail:
                     //filter
                     [self.filterObj filterConnections:search.string items:self.currentTask.connections results:self.bottomViewController.filteredItems];
                     
-                    
                     break;
                 }
                     
@@ -1680,7 +1723,7 @@ bail:
             self.bottomViewController.isFiltered = YES;
         }
         
-        //always reload task (top) pane
+        //always reload item (bottom) pane
         [self.bottomViewController.itemView reloadData];
     }
     
@@ -1691,47 +1734,6 @@ bail:
     
 }
 
-//filter tasks
-// ->for now, just name & path
-//  TODO filter on everything
-//  TODO: move into task enumerator!?
--(void)filterTasks:(NSString*)filterText
-{
-    //task
-    Task* task = nil;
-    
-    //name range
-    NSRange nameRange = {0};
-    
-    //path range
-    NSRange pathRange = {0};
-    
-    //first reset filter'd items
-    [self.taskTableController.filteredItems removeAllObjects];
-    
-    //iterate over all tasks
-    for(NSNumber* taskKey in self.taskEnumerator.tasks)
-    {
-        //extract task
-        task = self.taskEnumerator.tasks[taskKey];
-        
-        //init name range
-        nameRange = [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //init path range
-        pathRange = [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //check for match
-        if( (NSNotFound != nameRange.location) ||
-            (NSNotFound != pathRange.location) )
-        {
-            //save match
-            [self.taskTableController.filteredItems addObject:task];
-        }
-           
-    }//all tasks
-    
-    return;
-}
+
 
 @end

@@ -38,8 +38,18 @@
 //socket state
 @property(nonatomic, retain)NSString* state;
 
+//pretty print of connnection
+@property(nonatomic, retain)NSMutableString* endpoints;
+
 
 /* METHODS */
+
+//set icon
+-(void)setConnectionIcon;
+
+//return a string representation of the connection
+-(void)setConnectionString;
+
 
 
 @end
