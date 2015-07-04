@@ -114,7 +114,7 @@
             self.binary.isTaskBinary = YES;
             
             //add to queue
-            // ->this will processing
+            // ->this will process in background
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
             
             //add it to 'global' list
@@ -420,7 +420,7 @@ bail:
         
         //complete dylib processing for new dylib
         // ->get signing info, hash, etc, & save into global list
-        //   ...reloads each row (if task is stil current)
+        //   ...reloads each row (if task is still current)
         for(Binary* newDylib in newDylibs)
         {
             //generate signing info

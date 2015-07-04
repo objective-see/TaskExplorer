@@ -15,11 +15,9 @@
 
 #import "Task.h"
 
-//TODO: full VT queue!! - flush
-
 //TODO: add IPV6 :: as 0.0.0.0? (since we do this for IPV4 i think)
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
-
+//TODO: first time (w/ auth) dylibs don't show up?
 
 @implementation AppDelegate
 
@@ -108,11 +106,9 @@
     // ->display authentication request if needed
     if(YES != [self isAuthenticated])
     {
-        //ask
-        // ->displays popup
+        //display auth popup
+        // ->will kick off task emun on successful auth :)
         [self askForRoot];
-        
-        //TODO: make sure we call 'explore' once successfully auth'd :)
     }
     else
     {

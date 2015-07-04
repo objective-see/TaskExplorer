@@ -25,37 +25,103 @@
     {
         //alloc array for items
         items = [NSMutableArray array];
+        
+        //kick of thread to watch/flush queue
+        // ->will flush if item not processed in 30 seconds
+        [NSThread detachNewThreadSelector:@selector(queueFlusher) toTarget:self withObject:nil];
     }
     
     return self;
 }
 
-//TODO: move this in Queue?
+//watch queue
+// ->manaully flush if any item in for more than 3.0 seconds
+-(void)queueFlusher
+{
+    //last item
+    Binary* lastItem = nil;
+    
+    //items to process
+    NSMutableArray* vtItems = nil;
+    
+    //forever
+    // ->watch/flush if needed
+    while(YES)
+    {
+        //grab last item
+        lastItem = [self.items lastObject];
+        
+        //sleep
+        [NSThread sleepForTimeInterval:3.0];
+        
+        //sync
+        @synchronized(self.items)
+        {
+            //no items?
+            // ->just loop/re-nap
+            if(0 == self.items.count)
+            {
+                //loop
+                continue;
+            }
+        
+            //check if last item, is still last
+            // ->if not, loop/re-nap
+            if(lastItem != [self.items lastObject])
+            {
+                //loop
+                continue;
+            }
+            
+            //make copy
+            vtItems = [NSMutableArray arrayWithArray:self.items];
+            
+            //last item is same after timeout
+            // ->flush the queue
+            [NSThread detachNewThreadSelector:@selector(queryVT:) toTarget:self withObject:vtItems];
+            
+            //remove all items
+            [self.items removeAllObjects];
+        }
+
+    }//forever
+        
+    return;
+}
+
 //add item
 // ->will query VT when 25 items are hit
 -(void)addItem:(Binary*)binary
 {
+    //items to process
+    NSMutableArray* vtItems = nil;
+    
     //sync
     @synchronized(self.items)
     {
         //add item
         [self.items addObject:binary];
-    }
+       
+        //query VT once 25 items have been gathered
+        if(VT_MAX_QUERY_COUNT == self.items.count)
+        {
+            //make copy
+            vtItems =  [NSMutableArray arrayWithArray:self.items];
     
-    //query VT once 25 items have been gathered
-    // ->or this is a 'last' item
-    if( (VT_MAX_QUERY_COUNT == self.items.count) ||
-        (YES == binary.lastItem) )
-    {
-        //kick of thread to make a query to VT
-        [NSThread detachNewThreadSelector:@selector(queryVT) toTarget:self withObject:nil];
-    }
+            //kick of thread to make a query to VT
+            [NSThread detachNewThreadSelector:@selector(queryVT:) toTarget:self withObject:vtItems];
+            
+            //remove all items
+            [self.items removeAllObjects];
+        }
+
+    }//sync
     
     return;
 }
 
 //make query to VT
--(void)queryVT
+-(void)queryVT:(NSMutableArray*)vtItems
 {
     //item data
     NSMutableDictionary* itemData = nil;
@@ -82,12 +148,8 @@
     //init query URL
     queryURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", VT_QUERY_URL, VT_API_KEY]];
     
-    //sync
-    @synchronized(self.items)
-    {
-    
     //add all binaries to VT query
-    for(Binary* item in self.items)
+    for(Binary* item in vtItems)
     {
         //skip items with blank hashes
         // ->TODO not sure why this would happen
@@ -121,13 +183,6 @@
         //save as queried item
         queriedItems[item.hashes[KEY_HASH_SHA1]] = item;
     }
-        
-    //remove all items
-    // ->since they've been added to VT request
-    [self.items removeAllObjects];
-        
-    }//sync
-
     
     //make query to VT
     results = [self postRequest:queryURL parameters:parameters];
@@ -136,7 +191,6 @@
         //process results
         [self processResults:queriedItems results:results];
     }
-   
     
     return;
 }

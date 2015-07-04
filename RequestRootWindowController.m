@@ -16,10 +16,8 @@
 @implementation RequestRootWindowController
 
 @synthesize statusMsg;
+@synthesize authButton;
 @synthesize shouldExit;
-
-//TODO: add 'why' / info button :)
-
 
 //automatically called when nib is loaded
 // ->center window
@@ -27,6 +25,13 @@
 {
     //center
     [self.window center];
+    
+    //make auth button one in focus
+    [self.window makeFirstResponder:self.authButton];
+    
+    //default to exit app
+    // ->unset if auth is succesful
+    self.shouldExit = YES;
     
     return;
 }
@@ -52,9 +57,6 @@
 // ->make ourselves unmodal and possibly exit app
 -(void)windowWillClose:(NSNotification *)notification
 {
-    //save prefs
-    //[self savePrefs];
-    
     //make un-modal
     [[NSApplication sharedApplication] stopModal];
     
@@ -88,6 +90,12 @@
     //path to XPC service
     NSString* xpcService = nil;
     
+    //hide arrow icon
+    self.arrowIcon.hidden = YES;
+    
+    //hide help button
+    self.helpButton.hidden = YES;
+    
     //get path to XPC service
     xpcService = getPath2XPC();
     if(nil == xpcService)
@@ -117,9 +125,6 @@
         //err msg
         NSLog(@"ERROR: AuthorizationCreate() failed with %d", osStatus);
         
-        //set exit flag
-        self.shouldExit = YES;
-        
         //bail
         goto bail;
     }
@@ -137,9 +142,6 @@
         //set font to red
         self.statusMsg.textColor = [NSColor redColor];
         
-        //set exit flag
-        self.shouldExit = YES;
-         
         //bail
         goto bail;
     }
@@ -151,7 +153,7 @@
     
     //2nd arg: permissions
     // ->4 at front is setuid
-    //TODO: make 4755
+    //TODO: make 4755 before deploy (for testing, 777 makes XCOde be able to del it during build!)
     installArgs[1] = "4777";
     
     //3rd arg: XPC service
@@ -174,9 +176,6 @@
         
         //set font to red
         self.statusMsg.textColor = [NSColor redColor];
-        
-        //set exit flag
-        self.shouldExit = YES;
         
         //bail
         goto bail;
@@ -213,14 +212,22 @@ bail:
 }
 
 //invoked when user clicks 'cancel' button
-// ->set exit flag and close window
+// ->close window, which will trigger app exit
 -(IBAction)close:(id)sender
 {
-    //set flag to exit
-    self.shouldExit = YES;
-    
     //exit
     [self.window close];
 }
 
+//invoked when user clicks 'help' button
+// ->open product's page w/ anchor to help
+//TODO: make sure taskexplorer.html#help has help!
+-(IBAction)help:(id)sender
+{
+    //open URL
+    // ->invokes user's default browser
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://objective-see.com/products/taskexplorer.html#help"]];
+    
+    return;
+}
 @end

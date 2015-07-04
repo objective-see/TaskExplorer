@@ -41,10 +41,6 @@
 
 /* VIRUS TOTAL INFO */
 
-//flag saying item is 'last'
-// ->thus VT items should all be queried
-@property BOOL lastItem;
-
 //dictionary returned by VT
 @property (nonatomic, retain)NSDictionary* vtInfo;
 

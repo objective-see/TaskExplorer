@@ -23,7 +23,6 @@
 @synthesize isTaskBinary;
 
 @synthesize vtInfo;
-@synthesize lastItem;
 
 //init method
 -(id)initWithParams:(NSDictionary*)params

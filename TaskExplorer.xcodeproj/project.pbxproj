@@ -38,6 +38,8 @@
 		CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */; };
 		CD4D543F1B2FF32C00008030 /* signedAppleIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */; };
 		CD6095731A87067D00E091CD /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD6095721A87067D00E091CD /* Security.framework */; };
+		CD6AFB7F1B4736DF00D42C34 /* flatIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CD6AFB7E1B4736DF00D42C34 /* flatIcon.png */; };
+		CD6AFB811B4737AC00D42C34 /* arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = CD6AFB801B4737AC00D42C34 /* arrow.png */; };
 		CD6E54FF1B1162B5007953AB /* ItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6E54FE1B1162B5007953AB /* ItemView.m */; };
 		CD7B9F4D1ACB959200DF3C71 /* logoAppleOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD7B9F4C1ACB959200DF3C71 /* logoAppleOver.png */; };
 		CD7B9F501ACB9A8400DF3C71 /* Exception.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7B9F4F1ACB9A8400DF3C71 /* Exception.m */; };
@@ -180,6 +182,8 @@
 		CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = NetworkInfoWindow.xib; path = UI/NetworkInfoWindow.xib; sourceTree = "<group>"; };
 		CD4D543E1B2FF32C00008030 /* signedAppleIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = signedAppleIcon.png; path = images/signedAppleIcon.png; sourceTree = SOURCE_ROOT; };
 		CD6095721A87067D00E091CD /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		CD6AFB7E1B4736DF00D42C34 /* flatIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flatIcon.png; path = images/flatIcon.png; sourceTree = SOURCE_ROOT; };
+		CD6AFB801B4737AC00D42C34 /* arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = arrow.png; path = images/arrow.png; sourceTree = SOURCE_ROOT; };
 		CD6E54FD1B1162B5007953AB /* ItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ItemView.h; sourceTree = "<group>"; };
 		CD6E54FE1B1162B5007953AB /* ItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ItemView.m; sourceTree = "<group>"; };
 		CD7B9F4C1ACB959200DF3C71 /* logoAppleOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoAppleOver.png; path = images/logoAppleOver.png; sourceTree = SOURCE_ROOT; };
@@ -393,6 +397,8 @@
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				CD6AFB801B4737AC00D42C34 /* arrow.png */,
+				CD6AFB7E1B4736DF00D42C34 /* flatIcon.png */,
 				CDEE77031B41220300763826 /* search.png */,
 				CDEE77041B41220300763826 /* searchBG.png */,
 				CDEE77051B41220300763826 /* searchOver.png */,
@@ -655,6 +661,8 @@
 				CD7B9FA71ACCAE5E00DF3C71 /* startScanOver.png in Resources */,
 				CDF08CC11AC3E8B0009B3423 /* showOver.png in Resources */,
 				CD4D54241B2D082300008030 /* DylibInfoWindow.xib in Resources */,
+				CD6AFB7F1B4736DF00D42C34 /* flatIcon.png in Resources */,
+				CD6AFB811B4737AC00D42C34 /* arrow.png in Resources */,
 				CDA81DCC1A9960A3009790E2 /* virusTotalBG.png in Resources */,
 				CD001B381AB903040089014A /* logo.png in Resources */,
 				CDA81D6D1A95B4E9009790E2 /* scanIcon.png in Resources */,

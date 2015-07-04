@@ -15,6 +15,15 @@
 
 /* PROPERTIES */
 
+//auth button
+@property (weak) IBOutlet NSButton *authButton;
+
+//arrow icon
+@property (weak) IBOutlet NSImageView *arrowIcon;
+
+//help button
+@property (weak) IBOutlet NSButton *helpButton;
+
 //status msg
 @property (weak) IBOutlet NSTextField *statusMsg;
 
@@ -26,6 +35,10 @@
 //invoked when user clicks 'auth' button
 // ->auths user!
 -(IBAction)authenticate:(id)sender;
+
+//invoked when user clicks 'help' button
+// ->open product's page w/ anchor to help
+-(IBAction)help:(id)sender;
 
 //invoked when user clicks 'cancel' button
 // ->exits app

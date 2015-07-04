@@ -17,7 +17,7 @@
 /* PROPERTIES */
 
 //array for (up to 25) items
-@property (nonatomic, retain)NSMutableArray* items;
+@property(nonatomic, retain)NSMutableArray* items;
 
 
 /* METHODS */
