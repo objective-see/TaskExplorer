@@ -14,7 +14,7 @@
 
 @synthesize name;
 @synthesize path;
-@synthesize isTrusted;
+//@synthesize isTrusted;
 @synthesize attributes;
 
 //init method
@@ -24,9 +24,6 @@
     self = [super init];
     if(nil != self)
     {
-        //save plugin
-        //self.plugin = params[KEY_RESULT_PLUGIN];
-        
         //extract/save name
         self.name = params[KEY_RESULT_NAME];
         

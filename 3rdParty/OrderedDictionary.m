@@ -120,9 +120,26 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
 
 -(id)keyAtIndex:(NSUInteger)anIndex
 {
-	return [array objectAtIndex:anIndex];
+    //object
+    id item = nil;
+    
+    if((nil == array) ||
+       (anIndex >= array.count))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //extract item
+    item = [array objectAtIndex:anIndex];
+    
+//bail
+bail:
+    
+    return item;
 }
 
+//TODO: add sanity checks
 //given an key
 // ->return its index
 -(NSUInteger)indexOfKey:(id)aKey

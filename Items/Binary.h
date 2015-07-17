@@ -28,10 +28,8 @@
 //bundle
 @property(nonatomic, retain)NSBundle* bundle;
 
-//TODO: no needed?
 //flag for task (main) executable
 @property BOOL isTaskBinary;
-
 
 //hashes (md5, sha1)
 @property(nonatomic, retain)NSDictionary* hashes;

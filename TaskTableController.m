@@ -44,7 +44,7 @@
 -(void)awakeFromNib
 {
     //single time init
-    if(YES != didInit)
+    if(YES != self.didInit)
     {
         //init selected row
         self.selectedRow = -1;
@@ -63,6 +63,7 @@
         self.didInit = YES;
     }
     
+
 }
 
 
@@ -256,334 +257,6 @@
     return rowView;
     
     
-    /*
-    //item cell
-    NSTableCellView *itemCell = nil;
-    
-    //tasks
-    OrderedDictionary* tasks = nil;
-    
-    //task
-    Task* task =  nil;
-    
-    //signature icon
-    NSImageView* signatureImageView = nil;
-    
-    //VT detection ratio
-    NSString* vtDetectionRatio = nil;
-    
-    //virus total button
-    // ->for File objects only...
-    VTButton* vtButton;
-    
-    //(for files) signed/unsigned icon
-    NSImage* signatureStatus = nil;
-    
-    //task's name frame
-    CGRect nameFrame = {0};
-    
-    //attribute dictionary
-    NSMutableDictionary *stringAttributes = nil;
-    
-    //paragraph style
-    NSMutableParagraphStyle *paragraphStyle = nil;
-    
-    //truncated path
-    //NSString* truncatedPath = nil;
-    
-    //truncated plist
-    //NSString* truncatedPlist = nil;
-    
-    //tracking area
-    NSTrackingArea* trackingArea = nil;
-    
-    //flag indicating row has tracking area
-    // ->ensures we don't add 2x
-    BOOL hasTrackingArea = NO;
-    
-    //grab tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
-    
-    //sanity check
-    // ->make sure there is table item for row
-    if(tasks.count <= row)
-    {
-        //bail
-        goto bail;
-    }
-  
-    //get task object
-    // ->by index to get key, then by key
-    task = tasks[[tasks keyAtIndex:row]];
-    
-    //make table cell
-    itemCell = [tableView makeViewWithIdentifier:@"ImageCell" owner:self];
-    if(nil == itemCell)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //check if cell was previously used (by checking the item name)
-    // ->if so, set flag to indicated tracking area does not need to be added
-    if(YES != [itemCell.textField.stringValue isEqualToString:@"Item Name"])
-    {
-        //set flag
-        hasTrackingArea = YES;
-    }
-    
-    //default
-    // ->set main textfield's color to black
-    itemCell.textField.textColor = [NSColor blackColor];
-    
-    //set main text
-    // ->name
-    if( (nil != task.binary) &&
-        (nil != task.binary.name) )
-    {
-       
-        [itemCell.textField setStringValue:task.binary.name];
-    }
-    
-    //get name frame
-    nameFrame = itemCell.textField.frame;
-    
-    //adjust width to fit text
-    nameFrame.size.width = [itemCell.textField.stringValue sizeWithAttributes: @{NSFontAttributeName: itemCell.textField.font}].width + 5;
-    
-    //disable autolayout
-    itemCell.textField.translatesAutoresizingMaskIntoConstraints = YES;
-    
-    //update frame
-    // ->should now be exact size of text
-    itemCell.textField.frame = nameFrame;
-    
-    //[itemCell.textField setDrawsBackground:YES];
-    
-    //NSLog(@"size after: %f", itemCell.textField.frame.size.width);
-    
-    //itemCell.textField.backgroundColor = [NSColor redColor];
-    
-    //set pid
-    [((NSTextField*)[itemCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:[NSString stringWithFormat:@"(%@)", task.pid]];
-    
-    //only have to add tracking area once
-    // ->add it the first time
-    if(NO == hasTrackingArea)
-    {
-        //init tracking area
-        // ->for 'show' button
-        trackingArea = [[NSTrackingArea alloc] initWithRect:[[itemCell viewWithTag:TABLE_ROW_SHOW_BUTTON] bounds]
-                        options:(NSTrackingInVisibleRect | NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways)
-                        owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:TABLE_ROW_SHOW_BUTTON]}];
-        
-        //add tracking area to 'show' button
-        [[itemCell viewWithTag:TABLE_ROW_SHOW_BUTTON] addTrackingArea:trackingArea];
-        
-        //init tracking area
-        // ->for 'info' button
-        trackingArea = [[NSTrackingArea alloc] initWithRect:[[itemCell viewWithTag:TABLE_ROW_INFO_BUTTON] bounds]
-                        options:(NSTrackingInVisibleRect | NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways)
-                        owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:TABLE_ROW_INFO_BUTTON]}];
-        
-        //add tracking area to 'info' button
-        [[itemCell viewWithTag:TABLE_ROW_INFO_BUTTON] addTrackingArea:trackingArea];
-    }
-    
-    //get signature image view
-    signatureImageView = [itemCell viewWithTag:TABLE_ROW_SIGNATURE_ICON];
-    
-    //set detailed text
-    // ->path
-    //if(YES == [item isKindOfClass:[File class]])
-    //{
-        //grab virus total button
-        // ->need it for frame computations, etc
-        vtButton = [itemCell viewWithTag:TABLE_ROW_VT_BUTTON];
-        
-        //set image
-        // ->app's icon
-        itemCell.imageView.image = task.binary.icon;
-
-    
-        //set signature status icon
-        //switch on signing status
-        if( (nil != task.binary.signingInfo) &&
-            (STATUS_SUCCESS == [task.binary.signingInfo[KEY_SIGNATURE_STATUS] integerValue]) )
-        {
-            //signed
-            signatureStatus = [NSImage imageNamed:@"signed"];
-        }
-        //signature not present or invalid
-        // ->just set text unsigned
-        else
-        {
-            //signed
-            signatureStatus = [NSImage imageNamed:@"unsigned"];
-        }
-        
-
-        //set signature icon
-        signatureImageView.image = signatureStatus;
-        
-        //show signature icon
-        signatureImageView.hidden = NO;
-    
-        //set detailed text
-        // ->always item's path
-        [[itemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:task.binary.path];
-    
-        /*
-        //for files w/ plist
-        // ->set/show
-        if(nil != task.plist)
-        {
-            //shift up frame
-            pathFrame.origin.y = 20;
-        
-            //set new frame
-            ((NSTextField*)[itemCell viewWithTag:TABLE_ROW_PATH_LABEL]).frame = pathFrame;
-            
-            //truncate plist
-            truncatedPlist = stringByTruncatingString([itemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG], ((File*)item).plist, itemCell.frame.size.width-TABLE_BUTTONS_FILE);
-        
-            //set plist
-            [((NSTextField*)[itemCell viewWithTag:TABLE_ROW_PLIST_LABEL]) setStringValue:truncatedPlist];
-            
-            //show
-            [((NSTextField*)[itemCell viewWithTag:TABLE_ROW_PLIST_LABEL]) setHidden:NO];
-        }
-        */
-    
-    /*
-        //configure/show VT info
-        // ->only if 'disable' preference not set
-        if(YES != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).prefsWindowController.disableVTQueries)
-        {
-            //set button delegate
-            vtButton.delegate = self;
-            
-            //save file obj
-            vtButton.fileObj = task
-            
-            //check if have vt results
-            if(nil != ((File*)item).vtInfo)
-            {
-                //set font
-                [vtButton setFont:[NSFont fontWithName:@"Menlo-Bold" size:25]];
-                
-                //enable
-                vtButton.enabled = YES;
-                
-                //got VT results
-                // ->check 'permalink' to determine if file is known to VT
-                //   then, show ratio and set to red if file is flagged
-                if(nil != ((File*)item).vtInfo[VT_RESULTS_URL])
-                {
-                    //alloc paragraph style
-                    paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-                    
-                    //center the text
-                    [paragraphStyle setAlignment:NSCenterTextAlignment];
-                    
-                    //alloc attributes dictionary
-                    stringAttributes = [NSMutableDictionary dictionary];
-                    
-                    //set underlined attribute
-                    stringAttributes[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
-                    
-                    //set alignment (center)
-                    stringAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
-                    
-                    //set font
-                    stringAttributes[NSFontAttributeName] = [NSFont fontWithName:@"Menlo-Bold" size:15];
-                    
-                    //compute detection ratio
-                    vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[((File*)item).vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[((File*)item).vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
-                    
-                    //known 'good' files (0 positivies)
-                    if(0 == [((File*)item).vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
-                    {
-                        //(re)set title black
-                        itemCell.textField.textColor = [NSColor blackColor];
-                        
-                        //set color (black)
-                        stringAttributes[NSForegroundColorAttributeName] = [NSColor blackColor];
-                        
-                        //set string (vt ratio), with attributes
-                        [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
-                        
-                        //set color (gray)
-                        stringAttributes[NSForegroundColorAttributeName] = [NSColor grayColor];
-                        
-                        //set selected text color
-                        [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
-                    }
-                    //files flagged by VT
-                    // ->set name and detection to red
-                    else
-                    {
-                        //set title red
-                        itemCell.textField.textColor = [NSColor redColor];
-                        
-                        //set color (red)
-                        stringAttributes[NSForegroundColorAttributeName] = [NSColor redColor];
-                        
-                        //set string (vt ratio), with attributes
-                        [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
-                        
-                        //set selected text color
-                        [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
-                        
-                    }
-                    
-                    //enable
-                    [vtButton setEnabled:YES];
-                }
-            
-                //file is not known
-                // ->reset title to '?'
-                else
-                {
-                    //set title
-                    [vtButton setTitle:@"?"];
-                }
-            }
-        
-            //no VT results (e.g. unknown file)
-            else
-            {
-                //set font
-                [vtButton setFont:[NSFont fontWithName:@"Menlo-Bold" size:8]];
-                
-                //set title
-                [vtButton setTitle:@"▪ ▪ ▪"];
-                
-                //disable
-                vtButton.enabled = NO;
-            }
-            
-            //show virus total button
-            vtButton.hidden = NO;
-            
-            //show virus total label
-            [[itemCell viewWithTag:TABLE_ROW_VT_BUTTON+1] setHidden:NO];
-            
-        }//show VT info (pref not disabled)
-        
-        //hide VT info
-        else
-        {
-            //hide virus total button
-            vtButton.hidden = YES;
-            
-            //hide virus total button label
-            [[itemCell viewWithTag:TABLE_ROW_VT_BUTTON+1] setHidden:YES];
-        }
-     
-    */
-    
-
 //bail
 bail:
     
@@ -958,41 +631,6 @@ bail:
 }
 
 
-/*
-//helper function
-// ->get items array (either all or just unknown)
--(NSArray*)getTableItems
-{
-    //array backing table
-    // ->based on filtering options, will either be all items, or only unknown ones
-    NSArray* tableItems = nil;
-    
-    //plugin object
-    PluginBase* selectedPluginObj = nil;
-
-    //set selected plugin from app delegate
-    selectedPluginObj =  ((AppDelegate*)[[NSApplication sharedApplication] delegate]).selectedPlugin;
-    
-    //set array backing table
-    // ->case: no filtering (i.e., all items)
-    if(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).prefsWindowController.showTrustedItems)
-    {
-        //set count
-        tableItems = selectedPluginObj.allItems;
-    }
-    //set array backing table
-    // ->case: filtering (i.e., unknown items)
-    else
-    {
-        //set count
-        tableItems = selectedPluginObj.unknownItems;
-    }
-    
-    return tableItems;
-}
-*/
-
-
 //automatically invoked when user clicks the 'show in finder' icon
 // ->open Finder to show item
 -(IBAction)showInFinder:(id)sender
@@ -1305,8 +943,16 @@ bail:
             //reset color
             ((kkRowCell*)selectedView).color = nil;
             
-            //remove task
+            //remove task from task emumerator
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator removeTask:task];
+            
+            //when filtering
+            // ->remove deceased task from filter tasks
+            if(YES == isFiltered)
+            {
+                //remove
+                [self.filteredItems removeObject:task];
+            }
             
             //reload table
             [self.itemView reloadData];

@@ -78,14 +78,6 @@
 //scroll back up to top of table
 -(void)scrollToTop;
 
-//helper function
-// ->get items array (either all or just unknown)
--(NSArray*)getTableItems;
-
-//determine if instance is rendering top pane
-// ->for now, just looks at 'tableItems' iVar
--(BOOL)isTopPane;
-
 //handle when user clicks row
 // ->update bottom pane w/ task's dylibs/files/etc
 -(void)handleRowSelection;

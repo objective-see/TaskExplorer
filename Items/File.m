@@ -20,10 +20,6 @@
 //init method
 -(id)initWithParams:(NSDictionary*)params
 {
-    //TODO: why care if dir?
-    //flag for directories
-    BOOL isDirectory = NO;
-    
     //super
     // ->saves path, etc
     self = [super initWithParams:params];
@@ -31,7 +27,7 @@
     {
         //always skip not-existent paths
         // ->also get set a directory flag at the same time ;)
-        if(YES != [[NSFileManager defaultManager] fileExistsAtPath:params[KEY_RESULT_PATH] isDirectory:&isDirectory])
+        if(YES != [[NSFileManager defaultManager] fileExistsAtPath:params[KEY_RESULT_PATH]])
         {
             //err msg
             NSLog(@"OBJECTIVE-SEE ERROR: %@ not found", params[KEY_RESULT_PATH]);
@@ -125,9 +121,6 @@ bail:
     //json data
     // ->for intermediate conversions
     //NSData *jsonData = nil;
-    
-    //plist
-    NSString* filePlist = nil;
     
     //hashes
     //NSString* fileHashes = nil;

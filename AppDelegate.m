@@ -18,6 +18,9 @@
 //TODO: add IPV6 :: as 0.0.0.0? (since we do this for IPV4 i think)
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: first time (w/ auth) dylibs don't show up?
+//TODO: remove 'pref' from menu - or disable?
+
+//TODO: 'flagged' items button?
 
 @implementation AppDelegate
 
@@ -37,7 +40,6 @@
 @synthesize taskViewFormat;
 
 @synthesize scannerThread;
-@synthesize versionString;
 @synthesize progressIndicator;
 
 @synthesize topPane;
@@ -82,9 +84,6 @@
     
     //self.taskScrollView.wantsLayer = TRUE;
     //self.taskScrollView.layer.cornerRadius = 20;
-    
-    //init filter object
-    //filterObj = [[Filter alloc] init];
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -236,21 +235,15 @@
 -(void)exploreTasks
 {
     //alloc task enumerator
-    taskEnumerator = [[TaskEnumerator alloc] init];
+    if(nil == self.taskEnumerator)
+    {
+        //alloc
+        taskEnumerator = [[TaskEnumerator alloc] init];
+    }
     
+    //kick off thread to enum task
+    // ->will update table as results come in
     [NSThread detachNewThreadSelector:@selector(enumerateTasks) toTarget:self.taskEnumerator withObject:nil];
-    
-    /*
-    //invoke function in background begin process enumeration
-    //TODO: DISPATCH_QUEUE_PRIORITY_HIGH ok?
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        
-        //start enumerating
-        // ->will update table procs come in
-        //[self.taskEnumerator enumerateTasks];
-        
-    });
-    */
     
     return;
 }
@@ -264,6 +257,9 @@
     {
         //remove
         [[self.taskTableController view] removeFromSuperview];
+        
+        //'free'
+        self.taskTableController = nil;
     }
     
     switch(self.taskViewFormat)
@@ -590,10 +586,6 @@ bail:
 //display alert about OS not being supported
 -(void)showUnsupportedAlert
 {
-    //response
-    // ->index of button click
-    NSModalResponse response = 0;
-    
     //alert box
     NSAlert* fullScanAlert = nil;
     
@@ -601,7 +593,7 @@ bail:
     fullScanAlert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"OS X %@ is not supported", [[NSProcessInfo processInfo] operatingSystemVersionString]] defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"sorry for the inconvenience!"];
     
     //and show it
-    response = [fullScanAlert runModal];
+    [fullScanAlert runModal];
     
     return;
 }
@@ -614,12 +606,13 @@ bail:
     NSTrackingArea* trackingArea = nil;
     
     //init tracking area
-    // ->for scan button
-    //trackingArea = [[NSTrackingArea alloc] initWithRect:[self.scanButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.scanButton.tag]}];
+    // ->for 'refresh' button
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self.refreshButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.refreshButton.tag]}];
     
-    //add tracking area to scan button
-    //[self.scanButton addTrackingArea:trackingArea];
+    //add tracking area to pref button
+    [self.refreshButton addTrackingArea:trackingArea];
 
+    
     //init tracking area
     // ->for preference button
     trackingArea = [[NSTrackingArea alloc] initWithRect:[self.showPreferencesButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.showPreferencesButton.tag]}];
@@ -750,7 +743,6 @@ bail:
     {
         //TODO: currentViewCont?!?
         //refresh
-        //[(id)self.taskTableController refresh];
         [(id)self.taskTableController refresh];
     }
     
@@ -841,10 +833,7 @@ bail:
 -(void)applyPreferences
 {
     //currently selected category
-    NSUInteger selectedCategory = 0;
-    
-    //save alert
-    NSAlert* saveAlert = nil;
+    //NSUInteger selectedCategory = 0;
     
     /*
     
@@ -895,165 +884,8 @@ bail:
     return;
 }
 
-
-
-/*
-//update the UI to reflect that the fact the scan was stopped
-// ->set text back to 'start scan', etc...
--(void)stopScanUI:(NSString*)statusMsg
-{
-    //status msg's frame
-    CGRect newFrame = {};
-
-    //stop spinner
-    [self.progressIndicator stopAnimation:nil];
-    
-    //hide progress indicator
-    self.progressIndicator.hidden = YES;
-    
-    //grab status msg's frame
-    newFrame = self.statusText.frame;
-    
-    //shift it over (since activity spinner is gone)
-    newFrame.origin.x += 50;
-    
-    //update status msg w/ new frame
-    self.statusText.frame = newFrame;
-    
-    //set status msg
-    [self.statusText setStringValue:statusMsg];
-    
-    //update button's image
-    //self.scanButton.image = [NSImage imageNamed:@"startScan"];
-    
-    //update button's backgroud image
-    //self.scanButton.alternateImage = [NSImage imageNamed:@"startScanBG"];
-    
-    //set label text
-    // ->'Start Scan'
-    //[self.scanButtonLabel setStringValue:START_SCAN];
-    
-    //re-enable gear (show prefs) button
-    self.showPreferencesButton.enabled = YES;
-    
-    //only show scan stats for completed scan
-    if(YES == [statusMsg isEqualToString:SCAN_MSG_COMPLETE])
-    {
-        //display scan stats in UI (popup)
-        [self displayScanStats];
-    }
-
-    return;
-}
-*/
-
-/*
-//shows alert stating that that scan is complete (w/ stats)
--(void)displayScanStats
-{
-    //detailed scan msg
-    NSMutableString* details = nil;
-    
-    //item count
-    NSUInteger itemCount = 0;
-    
-    //flagged item count
-    NSUInteger flaggedItemCount =  0;
-    
-    //iterate over all plugins
-    // ->sum up their item counts and flag items count
-    for(PluginBase* plugin in self.plugins)
-    {
-        //when showing all findings
-        // ->sum em all up!
-        if(YES == self.prefsWindowController.showTrustedItems)
-        {
-            //add up
-            itemCount += plugin.allItems.count;
-            
-            //add plugin's flagged items
-            flaggedItemCount += plugin.flaggedItems.count;
-            
-            //init detailed msg
-            details = [NSMutableString stringWithFormat:@"■ found %lu items", (unsigned long)itemCount];
-        }
-        //otherwise just unknown items
-        else
-        {
-            //add up
-            itemCount += plugin.unknownItems.count;
-            
-            //manually check if each unknown item is flagged
-            // ->gotta do this since flaggedItems includes all items
-            for(ItemBase* item in plugin.unknownItems)
-            {
-                //check if item it flagged
-                if(YES == [plugin.flaggedItems containsObject:item])
-                {
-                    //inc
-                    flaggedItemCount++;
-                }
-            }
-            
-            //init detailed msg
-            details = [NSMutableString stringWithFormat:@"■ found %lu non-OS items", (unsigned long)itemCount];
-        }
-    }
-
-    //when VT integration is enabled
-    // ->add flagged items
-    if(YES != self.prefsWindowController.disableVTQueries)
-    {
-        //add flagged items
-        [details appendFormat:@" \r\n■ %lu item(s) flagged by VirusTotal", flaggedItemCount];
-    }
-    
-    //when 'save results' is enabled
-    // ->add msg about saving
-    if(YES == self.prefsWindowController.saveOutput)
-    {
-        //add save msg
-        [details appendFormat:@" \r\n■ saved findings to '%@'", OUTPUT_FILE];
-    }
-    
-    //alloc/init settings window
-    if(nil == self.resultsWindowController)
-    {
-        //alloc/init
-        resultsWindowController = [[ResultsWindowController alloc] initWithWindowNibName:@"ResultsWindow"];
-        
-        //set details
-        self.resultsWindowController.details = details;
-    }
-    
-    //subsequent times
-    // ->set details directly
-    if(nil != self.resultsWindowController.detailsLabel)
-    {
-        //set
-        self.resultsWindowController.detailsLabel.stringValue = details;
-    }
-    
-    //show it
-    [self.resultsWindowController showWindow:self];
-    
-    //invoke function in background that will make window modal
-    // ->waits until window is non-nil
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        //make modal
-        makeModal(self.resultsWindowController);
-        
-    });
-    
-    return;
-} 
-*/
- 
- 
 //automatically invoked when window is closing
-// ->tell OS that we are done with window so it can (now) be freed
-//TODO: still needed!?
+// ->terminate app
 -(void)windowWillClose:(NSNotification *)notification
 {
     //exit
@@ -1100,38 +932,27 @@ bail:
     //restore button back to default (visual) state
     if(YES == shouldReset)
     {
-        /*
-        //set original scan image
-        if(SCAN_BUTTON_TAG == tag)
-        {
-            //scan running?
-            if(YES == [self.scanButtonLabel.stringValue isEqualToString:@"Stop Scan"])
-            {
-                //set
-                imageName = @"stopScan";
-
-            }
-            //scan not running
-            else
-            {
-                //set
-                imageName = @"startScan";
-            }
-            
-        }*/
-         
-        //set original preferences image
-        if(PREF_BUTTON_TAG == tag)
+        //set original refresh image
+        if(REFRESH_BUTTON_TAG == tag)
         {
             //set
-            imageName = @"saveIcon";
+            imageName = @"refreshIcon";
         }
+        
         //set original search image
         else if(SEARCH_BUTTON_TAG == tag)
         {
             //set
             imageName = @"search";
         }
+        
+        //set original save image
+        else if(SAVE_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"saveIcon";
+        }
+        
         //set original logo image
         else if(LOGO_BUTTON_TAG == tag)
         {
@@ -1142,37 +963,23 @@ bail:
     //highlight button
     else
     {
-        /*
-        //set original scan image
-        if(SCAN_BUTTON_TAG == tag)
-        {
-            //scan running
-            if(YES == [self.scanButtonLabel.stringValue isEqualToString:@"Stop Scan"])
-            {
-                //set
-                imageName = @"stopScanOver";
-                
-            }
-            //scan not running
-            else
-            {
-                //set
-                imageName = @"startScanOver";
-            }
-            
-        }
-        */
-        //set mouse over preferences image
-        if(PREF_BUTTON_TAG == tag)
+        //set original refresh image
+        if(REFRESH_BUTTON_TAG == tag)
         {
             //set
-            imageName = @"saveIconOver";
+            imageName = @"refreshIconOver";
         }
         //set mouse over search image
         else if(SEARCH_BUTTON_TAG == tag)
         {
             //set
             imageName = @"searchOver";
+        }
+        //set mouse over 'save' image
+        else if(SAVE_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"saveIconOver";
         }
         //set mouse over logo image
         else if(LOGO_BUTTON_TAG == tag)
@@ -1186,12 +993,22 @@ bail:
     
     //grab button
     button = [[[self window] contentView] viewWithTag:tag];
+    if(YES != [button isKindOfClass:[NSButton class]])
+    {
+        //wtf
+        goto bail;
+    }
     
+    //when enabled
+    // ->set image
     if(YES == [button isEnabled])
     {
         //set
         [button setImage:[NSImage imageNamed:imageName]];
     }
+    
+//bail
+bail:
     
     return;    
 }
@@ -1203,9 +1020,12 @@ bail:
     //save panel
     NSSavePanel *panel = nil;
     
+    //save results popup
+    __block NSAlert* saveResultPopup = nil;
+    
     //output
     // ->json of all tasks/dylibs, etc
-    __block NSString* output = nil;
+    __block NSMutableString* output = nil;
     
     //error
     __block NSError* error = nil;
@@ -1223,16 +1043,52 @@ bail:
         //only need to handle 'ok'
         if(NSFileHandlingPanelOKButton == result)
         {
-            //TODO: generate JSON
-            output = @"test";
+            //alloc output JSON
+            output = [NSMutableString string];
+            
+            //start JSON
+            [output appendString:@"{\"tasks:\":["];
+            
+            //TODO: sync taskEnumerator.tasks!! since user can click 'refresh' etc?
+            
+            //get tasks
+            for(NSNumber* taskPid in self.taskEnumerator.tasks)
+            {
+                //JSON
+                [output appendFormat:@"{%@},", [self.taskEnumerator.tasks[taskPid] toJSON]];
+            }
+            
+            //remove last ','
+            if(YES == [output hasSuffix:@","])
+            {
+                //remove
+                [output deleteCharactersInRange:NSMakeRange([output length]-1, 1)];
+            }
+            
+            //terminate list/output
+            [output appendString:@"]}"];
         
             //save JSON to disk
-            if(YES != [output writeToURL:[panel URL] atomically:NO encoding:NSUTF8StringEncoding error:nil])
+            // ->on error will show err msg in popup
+            if(YES != [output writeToURL:[panel URL] atomically:NO encoding:NSUTF8StringEncoding error:&error])
             {
                 //err msg
                 NSLog(@"OBJECTIVE-SEE ERROR: saving output to %@ failed with %@", [panel URL], error);
                 
+                //init popup w/ error msg
+                saveResultPopup = [NSAlert alertWithMessageText:@"ERROR: failed to save output" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"details: %@", error];
+                
             }
+            //happy
+            // ->set result msg
+            else
+            {
+                //init popup w/ msg
+                saveResultPopup = [NSAlert alertWithMessageText:@"Succesfully saved output" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"file: %s", [[panel URL] fileSystemRepresentation]];
+            }
+            
+            //show popup
+            [saveResultPopup runModal];
         }
         
     }];
@@ -1244,121 +1100,22 @@ bail:
     
 }
 
-- (IBAction)search:(id)sender {
-}
-
-/*
-//save results to disk
-// ->JSON dumped to current directory
--(void)saveResults
+//automatically invoked when user clicks 'search' button
+// ->perform global search
+//TODO: implement
+- (IBAction)search:(id)sender
 {
-    //output
-    NSMutableString* output = nil;
+    //'unimplemented' msg
+    __block NSAlert* errorPopup = nil;
     
-    //plugin items
-    NSArray* items = nil;
+    //init popup w/ msg
+    errorPopup = [NSAlert alertWithMessageText:@"sorry, 'global search' not yet implemented" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"...should be in next version :)"];
+    
+    //and show it
+    [errorPopup runModal];
 
-    //output directory
-    NSString* outputDirectory = nil;
-    
-    //output file
-    NSString* outputFile = nil;
-    
-    //error
-    NSError* error = nil;
-    
-    //init output string
-    output = [NSMutableString string];
-    
-    //start JSON
-    [output appendString:@"{"];
-    
-    /*
-    
-    //iterate over all plugins
-    // ->format/add items to output
-    for(PluginBase* plugin in self.plugins)
-    {
-        //set items
-        // ->all?
-        if(YES == self.prefsWindowController.showTrustedItems)
-        {
-            //set
-            items = plugin.allItems;
-        }
-        //set items
-        // ->just unknown items
-        else
-        {
-            //set
-            items = plugin.unknownItems;
-        }
-        
-        //add plugin name
-        [output appendString:[NSString stringWithFormat:@"\"%@\":[", plugin.name]];
-    
-        //sync
-        // ->since array will be reset if user clicks 'stop' scan
-        @synchronized(items)
-        {
-        
-        //iterate over all items
-        // ->convert to JSON/append to output
-        for(ItemBase* item in items)
-        {
-            //add item
-            [output appendFormat:@"{%@},", [item toJSON]];
-            
-        }//all plugin items
-            
-        }//sync
-        
-        //remove last ','
-        if(YES == [output hasSuffix:@","])
-        {
-            //remove
-            [output deleteCharactersInRange:NSMakeRange([output length]-1, 1)];
-        }
-        
-        //terminate list
-        [output appendString:@"],"];
-
-    }//all plugins
-    
-    //remove last ','
-    if(YES == [output hasSuffix:@","])
-    {
-        //remove
-        [output deleteCharactersInRange:NSMakeRange([output length]-1, 1)];
-    }
-    
-    //terminate list/output
-    [output appendString:@"}"];
-    
-    //init output directory
-    // ->app's directory
-    outputDirectory = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
-    
-    //init full path to output file
-    outputFile = [NSString stringWithFormat:@"%@/%@", outputDirectory, OUTPUT_FILE];
-    
-    //save JSON to disk
-    if(YES != [output writeToFile:outputFile atomically:YES encoding:NSUTF8StringEncoding error:nil])
-    {
-        //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: saving output to %@ failed with %@", outputFile, error);
-        
-        //bail
-        goto bail;
-    }
- 
-    
-//bail
-bail:
-    
     return;
 }
-*/
 
 #pragma mark Menu Handler(s) #pragma mark -
 
@@ -1437,6 +1194,13 @@ bail:
 // ->invoke helper function to change view
 -(IBAction)switchView:(id)sender
 {
+    //ignore same selection
+    if(self.taskViewFormat == [[sender selectedCell] tag])
+    {
+        //bail
+        goto bail;
+    }
+    
     //save selected view
     self.taskViewFormat = [[sender selectedCell] tag];
     
@@ -1479,6 +1243,9 @@ bail:
     //reload bottom pane
     // ->ensures correct info is shown for selected (top) task
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    
+//bail
+bail:
     
     return;
 }
@@ -1535,12 +1302,32 @@ bail:
     //clear out existing items
     [self.bottomViewController.tableItems removeAllObjects];
     
-    //reload to clear
-    [(id)self.bottomViewController reloadTable];
-    
-    //start progress indicator
-    [self.bottomPaneSpinner startAnimation:nil];
-    
+    //when in a background thread
+    // ->perform UI stuff on main thread
+    if(YES != [NSThread isMainThread])
+    {
+        //refresh on main thread
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            
+            //reload to clear
+            [(id)self.bottomViewController reloadTable];
+            
+            //start progress indicator
+            [self.bottomPaneSpinner startAnimation:nil];
+            
+        });
+    }
+    //in main thread already
+    // ->just perform UI actions directly
+    else
+    {
+        //reload to clear
+        [(id)self.bottomViewController reloadTable];
+        
+        //start progress indicator
+        [self.bottomPaneSpinner startAnimation:nil];
+    }
+
     //set input
     switch(segmentTag)
     {
@@ -1584,13 +1371,25 @@ bail:
             break;
     }
     
-    //set filter box's placeholder text
-    // ->UI change, so do on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
+    //when in a background thread
+    // ->perform UI stuff on main thread
+    if(YES != [NSThread isMainThread])
+    {
+        //set filter box's placeholder text
+        // ->UI change, so do on main thread
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            
+            //set placeholder
+            [self.filterItemsBox setPlaceholderString:filterPlaceholder];
+        });
+    }
+    //in main thread already
+    // ->just perform UI actions directly
+    else
+    {
         //set placeholder
         [self.filterItemsBox setPlaceholderString:filterPlaceholder];
-    });
+    }
     
     
 //bail
@@ -1633,19 +1432,31 @@ bail:
         //filter tasks
         else
         {
-            //filter
-            //TODO: move into Filter obj
-            //[self filterTasks:search.string];
-            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+            //'#' indicates a keyword search
+            // ->check for keyword match, then filter by keyword
+            if(YES == [search.string hasPrefix:@"#"])
+            {
+                //ignore #search strings that don't match a keyword
+                if(YES != [filterObj isKeyword:search.string])
+                {
+                    //ignore
+                    goto bail;
+                }
+            }
             
+            //filter
+            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+                
             //set flag
             self.taskTableController.isFiltered = YES;
         }
         
         //always reload task (top) pane
+        // ->will trigger bottom load too
         [self.taskTableController.itemView reloadData];
         
-        //[self.bottomViewController.itemView reloadData];
+        //scroll to top
+        [self.taskTableController scrollToTop];
         
         //when nothing matches
         // ->reset current task and bottom pane
@@ -1686,9 +1497,21 @@ bail:
                 //dylibs
                 case DYLIBS_VIEW:
                 {
+                    //'#' indicates a keyword search
+                    // ->check for keyword match, then filter by keyword
+                    if(YES == [search.string hasPrefix:@"#"])
+                    {
+                        //ignore #search strings that don't match a keyword
+                        if(YES != [filterObj isKeyword:search.string])
+                        {
+                            //ignore
+                            goto bail;
+                        }
+                    }
+                    
                     //filter
                     [self.filterObj filterFiles:search.string items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
-
+                    
                     break;
                 }
                 
@@ -1721,6 +1544,9 @@ bail:
         
         //always reload item (bottom) pane
         [self.bottomViewController.itemView reloadData];
+        
+        //scroll to top
+        [self.bottomViewController scrollToTop];
     }
     
 //bail
@@ -1731,5 +1557,23 @@ bail:
 }
 
 
+//action for 'refresh' button
+// ->query OS to refresh/reload all tasks
+-(IBAction)refreshTasks:(id)sender
+{
+    //unselect current task
+    self.currentTask = nil;
+    
+    //select top row
+    [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+     
+    //scroll to top
+    [self.taskTableController scrollToTop];
 
+    //get tasks
+    // ->background thread will enum tasks, update table, etc
+    [self exploreTasks];
+    
+    return;
+}
 @end

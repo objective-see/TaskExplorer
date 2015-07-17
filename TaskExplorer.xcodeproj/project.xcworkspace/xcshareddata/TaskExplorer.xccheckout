@@ -11,7 +11,7 @@
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>61F07AFB33748EF0C810BEEF6126283DAC63A899</key>
-		<string>https://bitbucket.org/objective-see/knockknock.git</string>
+		<string>https://bitbucket.org/objective-see/taskexplorer.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>TaskExplorer.xcodeproj</string>
@@ -21,7 +21,7 @@
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://bitbucket.org/objective-see/knockknock.git</string>
+	<string>https://bitbucket.org/objective-see/taskexplorer.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>

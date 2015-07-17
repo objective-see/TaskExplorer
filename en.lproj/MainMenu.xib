@@ -78,8 +78,8 @@
                             <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
                         </connections>
                     </searchField>
-                    <button ambiguous="YES" misplaced="YES" tag="1001" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
-                        <rect key="frame" x="9" y="30" width="32" height="25"/>
+                    <button ambiguous="YES" misplaced="YES" tag="10003" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
+                        <rect key="frame" x="108" y="30" width="32" height="25"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="32" id="XGt-s5-weq"/>
                             <constraint firstAttribute="height" constant="25" id="wlR-bC-Msz"/>
@@ -93,15 +93,15 @@
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FRk-Fk-n4f">
-                        <rect key="frame" x="6" y="13" width="38" height="17"/>
+                        <rect key="frame" x="106" y="10" width="38" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="save" id="qeM-6t-Rz6">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button ambiguous="YES" misplaced="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="UiZ-UI-inM">
-                        <rect key="frame" x="67" y="30" width="32" height="25"/>
+                    <button ambiguous="YES" misplaced="YES" tag="10002" translatesAutoresizingMaskIntoConstraints="NO" id="UiZ-UI-inM">
+                        <rect key="frame" x="62" y="30" width="32" height="25"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="32" id="OtG-JF-PVX"/>
                             <constraint firstAttribute="height" constant="25" id="Suo-pl-wcf"/>
@@ -115,8 +115,16 @@
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MHi-Fa-fbk">
-                        <rect key="frame" x="64" y="13" width="38" height="17"/>
+                        <rect key="frame" x="59" y="10" width="38" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="search" id="tF8-E0-l1A">
+                            <font key="font" size="9" name="Menlo-Regular"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="msk-iH-gVd">
+                        <rect key="frame" x="8" y="10" width="46" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="refresh" id="C2m-Hn-7EE">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -141,16 +149,6 @@
                             </textField>
                         </subviews>
                     </customView>
-                    <button ambiguous="YES" misplaced="YES" tag="1003" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
-                        <rect key="frame" x="662" y="20" width="29" height="32"/>
-                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
-                            <behavior key="behavior" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="logoButtonHandler:" target="494" id="H4C-BT-arE"/>
-                        </connections>
-                    </button>
                     <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gtq-gn-VPL">
                         <rect key="frame" x="565" y="352" width="223" height="24"/>
                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="DHY-0u-YD7">
@@ -165,10 +163,38 @@
                             <action selector="selectBottomPaneContent:" target="494" id="CQa-nn-jVf"/>
                         </connections>
                     </segmentedControl>
+                    <button ambiguous="YES" misplaced="YES" tag="10004" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
+                        <rect key="frame" x="1314" y="20" width="29" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="18R-rR-Udp"/>
+                            <constraint firstAttribute="width" constant="29" id="JOy-gX-fMr"/>
+                        </constraints>
+                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
+                            <behavior key="behavior" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="logoButtonHandler:" target="494" id="H4C-BT-arE"/>
+                        </connections>
+                    </button>
+                    <button ambiguous="YES" misplaced="YES" tag="10001" translatesAutoresizingMaskIntoConstraints="NO" id="hum-Mj-cDd">
+                        <rect key="frame" x="20" y="30" width="32" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="ZaY-KC-vcE"/>
+                            <constraint firstAttribute="height" constant="25" id="dEM-O0-dda"/>
+                        </constraints>
+                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="refreshIcon" imagePosition="overlaps" alignment="center" alternateImage="refreshIconBG" imageScaling="proportionallyDown" inset="2" id="8g4-ku-EWh">
+                            <behavior key="behavior" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="refreshTasks:" target="494" id="QvB-ix-GUl"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="bNA-gy-9Ta" secondAttribute="trailing" constant="12" id="5N8-Ye-mhe"/>
-                    <constraint firstAttribute="centerX" secondItem="HoI-FQ-vTI" secondAttribute="centerX" constant="1" id="EcI-vS-3LG"/>
+                    <constraint firstAttribute="trailing" secondItem="HoI-FQ-vTI" secondAttribute="trailing" constant="10" id="OMm-dV-23S"/>
                 </constraints>
             </view>
             <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
@@ -250,6 +276,7 @@
                 <outlet property="logoButton" destination="HoI-FQ-vTI" id="bzc-wu-4Hv"/>
                 <outlet property="noItemsLabel" destination="kIC-ZZ-ldy" id="nOm-8E-tZA"/>
                 <outlet property="progressIndicator" destination="839" id="870"/>
+                <outlet property="refreshButton" destination="hum-Mj-cDd" id="SBd-mB-EWI"/>
                 <outlet property="searchButton" destination="UiZ-UI-inM" id="neL-LX-ZHh"/>
                 <outlet property="showPreferencesButton" destination="gSG-Nq-plb" id="AQZ-wC-I5a"/>
                 <outlet property="statusText" destination="745" id="871"/>
@@ -273,6 +300,8 @@
     <resources>
         <image name="logoApple" width="194" height="236"/>
         <image name="logoAppleBG" width="194" height="236"/>
+        <image name="refreshIcon" width="256" height="256"/>
+        <image name="refreshIconBG" width="256" height="256"/>
         <image name="saveIcon" width="256" height="256"/>
         <image name="saveIconBG" width="256" height="256"/>
         <image name="search" width="256" height="256"/>

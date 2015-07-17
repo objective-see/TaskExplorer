@@ -123,6 +123,13 @@
 @property (weak) IBOutlet NSTextField *noItemsLabel;
 @property (weak) IBOutlet NSButton *searchButton;
 
+//refresh button
+@property (weak) IBOutlet NSButton *refreshButton;
+
+//action for 'refresh' button
+// ->query OS to refresh/reload all tasks
+- (IBAction)refreshTasks:(id)sender;
+
 /* METHODS */
 - (IBAction)switchView:(id)sender;
 
@@ -136,30 +143,18 @@
 // ->reload table, etc
 -(void)applyPreferences;
 
-//update a single row
-//-(void)itemProcessed:(Binary*)fileObj rowIndex:(NSUInteger)rowIndex;
-
 //action
 // ->invoked when user clicks 'About/Info' or Objective-See logo in main UI
 //-(void)displayScanStats;
 
--(IBAction)scanButtonHandler:(id)sender;
-
 //button handler for when settings icon (gear) is clicked
 -(IBAction)showPreferences:(id)sender;
-
-//kickoff a thread to query VT
-//-(void)queryVT:(PluginBase*)plugin;
 
 //button handler for logo
 -(IBAction)logoButtonHandler:(id)sender;
 
 //action for 'about' in menu/logo in UI
 -(IBAction)about:(id)sender;
-
-//TODO add this, and move into properties
-//version string
-@property (weak) IBOutlet NSTextField *versionString;
 
 //reload (to re-draw) a specific row in table
 -(void)reloadRow:(id)item;
@@ -177,9 +172,6 @@
 //sort tasks
 // ->either name (flat view) or pid (tree view)
 -(void)sortTasksForView:(OrderedDictionary*)tasks;
-
-//filter tasks
--(void)filterTasks:(NSString*)filterText;
 
 //VT callback to reload a binary
 -(void)reloadBinary:(Binary*)binary;

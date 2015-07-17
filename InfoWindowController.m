@@ -130,6 +130,7 @@
         //set args
         [self.arguments setStringValue:[self valueForStringItem:[task.arguments componentsJoinedByString:@""] default:@"no arguments"]];
         
+        //TODO:enable
         /*
         //flagged files
         // ->make name red!

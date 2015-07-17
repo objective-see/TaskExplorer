@@ -2,12 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../TaskEnumerator.h">
-   </FileRef>
-   <FileRef
-      location = "group:../TaskEnumerator.m">
-   </FileRef>
-   <FileRef
       location = "self:TaskExplorer.xcodeproj">
    </FileRef>
 </Workspace>

@@ -26,10 +26,6 @@ SInt32 getVersion(OSType selector);
 // ->truncate and insert ellipises before /file
 NSString* stringByTruncatingString(NSTextField* textField, NSString* string, float width);
 
-//get an icon for a process
-// ->for apps, this will be app's icon, otherwise just a standard system one
-NSImage* getIconForBinary(NSString* binary, NSBundle* bundle);
-
 //given a path to binary
 // parse it back up to find app's bundle
 NSBundle* findAppBundle(NSString* binaryPath);

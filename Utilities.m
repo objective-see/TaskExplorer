@@ -18,6 +18,7 @@
 #import <CommonCrypto/CommonDigest.h>
 
 //check if OS is supported
+// ->Lion and newer
 BOOL isSupportedOS()
 {
     //return
@@ -118,7 +119,6 @@ NSDictionary* extractSigningInfo(NSString* path)
     //create static code
     status = SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode);
     
-    //TODO: called same before!?
     //save signature status
     signingStatus[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
     
@@ -135,7 +135,6 @@ NSDictionary* extractSigningInfo(NSString* path)
     //check signature
     status = SecStaticCodeCheckValidityWithErrors(staticCode, kSecCSDoNotValidateResources, NULL, NULL);
     
-    //TODO: called same above?
     //(re)save signature status
     signingStatus[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
     
@@ -299,88 +298,6 @@ bail:
 
     
     return isApple;
-}
-
-
-//get an icon for a process
-// ->for apps, this will be app's icon, otherwise just a standard system one
-NSImage* getIconForBinary(NSString* binary, NSBundle* bundle)
-{
-    //icon's file name
-    NSString* iconFile = nil;
-    
-    //icon's path
-    NSString* iconPath = nil;
-    
-    //icon's path extension
-    NSString* iconExtension = nil;
-    
-    //system's document icon
-    NSData* documentIcon = nil;
-    
-    //icon
-    NSImage* icon = nil;
-    
-    //since path is always full path to binary
-    // ->manaully try to find & load bundle (for .apps)
-    if(nil == bundle)
-    {
-        //load bundle
-        bundle = findAppBundle(binary);
-    }
-    
-    //for app's
-    // ->extract their icon
-    if(nil != bundle)
-    {
-        //get file
-        iconFile = bundle.infoDictionary[@"CFBundleIconFile"];
-        
-        //get path extension
-        iconExtension = [iconFile pathExtension];
-        
-        //if its blank (i.e. not specified)
-        // ->go with 'icns'
-        if(YES == [iconExtension isEqualTo:@""])
-        {
-            //set type
-            iconExtension = @"icns";
-        }
-        
-        //set full path
-        iconPath = [bundle pathForResource:[iconFile stringByDeletingPathExtension] ofType:iconExtension];
-        
-        //load it
-        icon = [[NSImage alloc] initWithContentsOfFile:iconPath];
-    }
-    
-    //process is not an app or couldn't get icon
-    // ->try to get it via shared workspace
-    if( (nil == bundle) ||
-        (nil == icon) )
-    {
-        //extract icon
-        icon = [[NSWorkspace sharedWorkspace] iconForFile:binary];
-        
-        //load system document icon
-        documentIcon = [[[NSWorkspace sharedWorkspace] iconForFileType:
-                         NSFileTypeForHFSTypeCode(kGenericDocumentIcon)] TIFFRepresentation];
-        
-        //if 'iconForFile' method doesn't find and icon, it returns the system 'document' icon
-        // ->the system 'applicaiton' icon seems more applicable, so use that here...
-        if(YES == [[icon TIFFRepresentation] isEqual:documentIcon])
-        {
-            //set icon to system 'applicaiton' icon
-            icon = [[NSWorkspace sharedWorkspace]
-                         iconForFileType: NSFileTypeForHFSTypeCode(kGenericApplicationIcon)];
-        }
-        
-        //'iconForFileType' returns small icons
-        // ->so set size to 64
-        [icon setSize:NSMakeSize(64, 64)];
-    }
-    
-    return icon;
 }
 
 
@@ -696,8 +613,17 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     //set task's output
     [task setStandardOutput:outPipe];
     
-    //launch the task
-    [task launch];
+    //wrap task launch
+    @try {
+        
+        //launch
+        [task launch];
+    }
+    @catch(NSException *exception)
+    {
+        //bail
+        goto bail;
+    }
     
     //read in output
     while(YES == [task isRunning])
@@ -709,7 +635,9 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     //grab any left over data
     [output appendData:[readHandle readDataToEndOfFile]];
     
-    //return output as string
+//bail
+bail:
+    
     return output;
 }
 

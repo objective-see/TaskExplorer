@@ -83,17 +83,17 @@
 #define TABLE_BUTTONS_EXTENTION 135
 
 
-//scan button
-#define SCAN_BUTTON_TAG 1000
+//refresh button
+#define REFRESH_BUTTON_TAG 10001
 
 //pref button
-#define PREF_BUTTON_TAG 1001
+#define SEARCH_BUTTON_TAG 10002
 
 //logo button
-#define SEARCH_BUTTON_TAG 1002
+#define SAVE_BUTTON_TAG 10003
 
 //logo button
-#define LOGO_BUTTON_TAG 1003
+#define LOGO_BUTTON_TAG 10004
 
 //category table
 

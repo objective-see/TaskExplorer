@@ -15,17 +15,28 @@
     
 }
 
-//white listed file hashes
-@property(nonatomic, retain)NSDictionary* trustedFiles;
-
-//white listed commands
-@property(nonatomic, retain)NSDictionary* knownCommands;
-
-//white listed extensions
-@property(nonatomic, retain)NSDictionary* trustedExtensions;
-
-
 /* METHODS */
+
+//determine if search string is #keyword
+-(BOOL)isKeyword:(NSString*)searchString;
+
+//check if a binary fulfills a keyword
+-(BOOL)binaryFulfillsKeyword:(NSString*)keyword binary:(Binary*)binary;
+
+//keyword filter '#apple'
+// ->determine if binary is signed by apple
+-(BOOL)isApple:(Binary*)item;
+
+//keyword filter '#signed' (and indirectly #unsigned)
+// ->determine if binary is signed
+-(BOOL)isSigned:(Binary*)item;
+
+//keyword filter '#flagged'
+// ->determine if binary is flagged by VT
+-(BOOL)isFlagged:(Binary*)item;
+
+
+
 
 //filter tasks
 -(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
@@ -35,20 +46,6 @@
 
 //filter network connections
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
-
-//load a (JSON) white list
-// ->file hashes, known commands, etc
--(NSDictionary*)loadWhitelist:(NSString*)fileName;
-
-//check if a File obj is whitelisted
--(BOOL)isTrustedFile:(Binary*)fileObj;
-
-//check if a Command obj is whitelisted
-//-(BOOL)isKnownCommand:(Command*)commandObj;
-
-//check if a Extension obj is whitelisted
-//-(BOOL)isTrustedExtension:(Extension*)extensionObj;
-
 
 
 @end

@@ -14,50 +14,51 @@
 
 @implementation Filter
 
-@synthesize trustedFiles;
-@synthesize knownCommands;
-@synthesize trustedExtensions;
+//filter keywords
+NSString * const KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
 
-#define SOFTWARE_SIGNING @"Software Signing"
-#define APPLE_SIGNING_AUTH @"Apple Code Signing Certification Authority"
-#define APPLE_ROOT_CA @"Apple Root CA"
-
-//init
--(id)init
+//determine if search string is #keyword
+-(BOOL)isKeyword:(NSString*)searchString
 {
-    //super
-    self = [super init];
-    if(self)
+    //flag
+    BOOL isKeyword = NO;
+    
+    //iterate over all keywords
+    // ->check for match
+    for(NSUInteger i=0; i < sizeof(KEYWORDS)/sizeof(KEYWORDS[0]); i++)
     {
-        //load known file hashes
-        //self.trustedFiles = [self loadWhitelist:WHITE_LISTED_FILES];
-        
-        //load known commands
-        //self.knownCommands = [self loadWhitelist:WHITE_LISTED_COMMANDS];
-        
-        //load known extensions
-        //self.trustedExtensions = [self loadWhitelist:WHITE_LISTED_EXTENSIONS];
+        //check
+        if(YES == [KEYWORDS[i] isEqualToString:searchString])
+        {
+            //match
+            isKeyword = YES;
+            
+            //bail
+            break;
+        }
+    
     }
     
-    return self;
+    return isKeyword;
 }
 
+
 //filter tasks
-// ->for now, just name & path
-//  TODO filter on everything
+// ->name, path, pid
 -(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results
 {
     //task
     Task* task = nil;
     
-    //name range
-    NSRange nameRange = {0};
-    
-    //path range
-    NSRange pathRange = {0};
+    //flag for keyword filter
+    BOOL isKeyword = NO;
     
     //first reset filter'd items
     [results removeAllObjects];
+    
+    //set keyword flag
+    // ->note: already checked its a full/matching keyword
+    isKeyword = [filterText hasPrefix:@"#"];
     
     //iterate over all tasks
     for(NSNumber* taskKey in items)
@@ -65,20 +66,50 @@
         //extract task
         task = items[taskKey];
         
-        //init name range
-        nameRange = [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //init path range
-        pathRange = [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //check for match
-        if( (NSNotFound != nameRange.location) ||
-            (NSNotFound != pathRange.location) )
+        //handle keyword filtering
+        if( (YES == isKeyword) &&
+            (YES == [self binaryFulfillsKeyword:filterText binary:task.binary]) )
         {
-            //save match
+            //add
             [results addObject:task];
+
+        }//keywords
+       
+        //no keyword search
+        else
+        {
+            //check path first
+            // ->mostly likely to match
+            if(NSNotFound != [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            {
+                //save match
+                [results addObject:task];
+                
+                //next
+                continue;
+            }
+            
+            //check name
+            if(NSNotFound != [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            {
+                //save match
+                [results addObject:task];
+                
+                //next
+                continue;
+            }
+            
+            //check pid
+            if(NSNotFound != [[task.pid stringValue] rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            {
+                //save match
+                [results addObject:task];
+                
+                //next
+                continue;
+            }
         }
-        
+
     }//all tasks
     
     return;
@@ -90,30 +121,53 @@
 // ->name and path
 -(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
-    //name range
-    NSRange nameRange = {0};
-    
-    //path range
-    NSRange pathRange = {0};
+    //flag for keyword filter
+    BOOL isKeyword = NO;
     
     //first reset filter'd items
     [results removeAllObjects];
     
+    //set keyword flag
+    // ->note: already checked its a full/matching keyword
+    isKeyword = [filterText hasPrefix:@"#"];
+    
     //iterate over all tasks
     for(ItemBase* item in items)
     {
-        //init name range
-        nameRange = [item.name rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //init path range
-        pathRange = [item.path rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //check for match
-        if( (NSNotFound != nameRange.location) ||
-           (NSNotFound != pathRange.location) )
+        //handle keyword filtering
+        // ->for now, only for dylibs (binaries)
+        if( (YES == [item isKindOfClass:[Binary class]]) &&
+            (YES == isKeyword) &&
+            (YES == [self binaryFulfillsKeyword:filterText binary:(Binary*)item]) )
         {
-            //save match
+            //add
             [results addObject:item];
+        
+        }//keywords
+        
+        //no keyword search
+        else
+        {
+            //check path first
+            // ->most likely to match
+            if(NSNotFound != [item.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
+
+            //check name
+            if(NSNotFound != [item.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
         }
         
     }//all items
@@ -122,6 +176,8 @@
 }
 
 //filter network connections
+//TODO: match on state, etc?
+//TODO: make format of range seach/check/continue
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
     //local IP addr range
@@ -157,64 +213,148 @@
     return;
 }
 
-//load a (JSON) white list
-// ->file hashes, known commands, etc
--(NSDictionary*)loadWhitelist:(NSString*)fileName
+//check if a binary fulfills a keyword
+-(BOOL)binaryFulfillsKeyword:(NSString*)keyword binary:(Binary*)binary
 {
-    //whitelisted data
-    NSDictionary* whiteList = nil;
+    //flag
+    BOOL fulfills = NO;
     
-    //path
-    NSString* path = nil;
+    //handle '#apple'
+    // ->signed by apple
+    if( (YES == [keyword isEqualToString:@"#apple"]) &&
+        (YES == [self isApple:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
-    //error var
-    NSError *error = nil;
+    //handle '#nonapple'
+    // ->not signed by apple
+    else if( (YES == [keyword isEqualToString:@"#nonapple"]) &&
+        (YES != [self isApple:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
-    //json data
-    NSData* whiteListJSON = nil;
+    //handle '#signed'
+    // ->signed
+    else if( (YES == [keyword isEqualToString:@"#signed"]) &&
+             (YES == [self isSigned:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
-    //init path
-    path = [[NSBundle mainBundle] pathForResource:fileName ofType: @"json"];
+    //handle '#unsigned'
+    // ->not signed
+    else if( (YES == [keyword isEqualToString:@"#unsigned"]) &&
+             (YES != [self isSigned:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
-    //load whitelist file data
-    whiteListJSON = [NSData dataWithContentsOfFile:path];
+    //handle '#flagged'
+    // ->flagged by VT
+    else if( (YES == [keyword isEqualToString:@"#flagged"]) &&
+             (YES == [self isFlagged:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
-    //convert JSON into dictionary
-    whiteList = [NSJSONSerialization JSONObjectWithData:whiteListJSON options:kNilOptions error:&error];
+//bail
+bail:
     
-    return whiteList;
+    return fulfills;
 }
 
 
-//check if a File obj is known
-// ->whitelisted *or* signed by apple
--(BOOL)isTrustedFile:(Binary*)fileObj
+//keyword filter '#apple' (and indirectly #nonapple)
+// ->determine if binary is signed by apple
+-(BOOL)isApple:(Binary*)item
 {
     //flag
-    BOOL isTrusted = NO;
+    BOOL isApple = NO;
     
-    //known hashes for file name
-    NSArray* knownHashes = nil;
-    
-    //lookup based on name
-    knownHashes = self.trustedFiles[fileObj.path];
-    
-    //first check if hash is known
-    if( (nil != knownHashes) &&
-        (YES == [knownHashes containsObject:[fileObj.hashes[KEY_HASH_MD5] lowercaseString]]) )
+    //make sure signing info has been generated
+    // ->when no, generate it
+    if(nil == item.signingInfo)
     {
-        //got match
-        isTrusted = YES;
-    }
-    //then check if its signed by apple
-    // ->apple-signed files are always trusted
-    else
-    {
-        //check for apple signature
-        isTrusted = isApple(fileObj.path);
+        //generate
+        [item generatedSigningInfo];
     }
     
-    return isTrusted;
+    //check
+    // ->just look at signing info
+    if(YES == [item.signingInfo[KEY_SIGNING_IS_APPLE] boolValue])
+    {
+        //set flag
+        isApple = YES;
+    }
+    
+    return isApple;
+}
+
+//keyword filter '#signed' (and indirectly #unsigned)
+// ->determine if binary is signed
+-(BOOL)isSigned:(Binary*)item
+{
+    //flag
+    BOOL isSigned = NO;
+    
+    //make sure signing info has been generated
+    // ->when no, generate it
+    if(nil == item.signingInfo)
+    {
+        //generate
+        [item generatedSigningInfo];
+    }
+    
+    //check
+    // ->just look at signing info
+    if(STATUS_SUCCESS == [item.signingInfo[KEY_SIGNATURE_STATUS] integerValue])
+    {
+        //set flag
+        isSigned = YES;
+    }
+    
+    return isSigned;
+}
+
+//keyword filter '#flagged'
+// ->determine if binary is flagged by VT
+-(BOOL)isFlagged:(Binary*)item
+{
+    //flag
+    BOOL isFlagged = NO;
+    
+    //check
+    //TODO: query VT if needed?
+    if( (nil != item.vtInfo) &&
+        (0 != [item.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+    {
+        //set flag
+        isFlagged = YES;
+    }
+    
+    return isFlagged;
 }
 
 

@@ -61,6 +61,7 @@
     self = [super init];
     if(nil != self)
     {
+        //TODO: sync? or always access w/ direct var
         //grab existings binaries
         existingBinaries = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables;
         
@@ -577,6 +578,105 @@ bail:
 - (NSComparisonResult)compare:(Task*)otherTask
 {
     return [self.binary.name compare:otherTask.binary.name options:NSCaseInsensitiveSearch];
+}
+
+
+//convert self to JSON string
+// TODO: add dylibs, files, networking
+-(NSString*)toJSON
+{
+    //json string
+    NSString *json = nil;
+    
+    //json data
+    // ->for intermediate conversions
+    NSData *jsonData = nil;
+    
+    //task command line
+    NSString* taskCommandLine = nil;
+    
+    //hashes
+    NSString* fileHashes = nil;
+    
+    //signing info
+    NSString* fileSigs = nil;
+    
+    //VT detection ratio
+    NSString* vtDetectionRatio = nil;
+    
+    //init task's command line
+    taskCommandLine = [self.arguments componentsJoinedByString:@" "];
+    
+    //no args
+    // ->provide default
+    if((nil == taskCommandLine) ||
+       (0 == taskCommandLine.length))
+    {
+        //default
+        taskCommandLine = @"no arguments";
+    }
+    
+    //init file hash to default string
+    // ->used when hashes are nil, or serialization fails
+    fileHashes = @"\"unknown\"";
+    
+    //init file signature to default string
+    // ->used when signatures are nil, or serialization fails
+    fileSigs = @"\"unknown\"";
+    
+    //convert hashes to JSON
+    if(nil != self.binary.hashes)
+    {
+        //convert hash dictionary
+        // ->wrap since we are serializing JSON
+        @try
+        {
+            //convert
+            jsonData = [NSJSONSerialization dataWithJSONObject:self.binary.hashes options:kNilOptions error:NULL];
+            if(nil != jsonData)
+            {
+                //convert data to string
+                fileHashes = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            }
+        }
+        //ignore exceptions
+        // ->file hashes will just be 'unknown'
+        @catch(NSException *exception)
+        {
+            ;
+        }
+    }
+    
+    //convert signing dictionary to JSON
+    if(nil != self.binary.signingInfo)
+    {
+        //convert signing dictionary
+        // ->wrap since we are serializing JSON
+        @try
+        {
+            //convert
+            jsonData = [NSJSONSerialization dataWithJSONObject:self.binary.signingInfo options:kNilOptions error:NULL];
+            if(nil != jsonData)
+            {
+                //convert data to string
+                fileSigs = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            }
+        }
+        //ignore exceptions
+        // ->file sigs will just be 'unknown'
+        @catch(NSException *exception)
+        {
+            ;
+        }
+    }
+    
+    //init VT detection ratio
+    vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.binary.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
+    
+    //init json
+    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\"", self.binary.name, self.binary.path, self.pid, fileHashes, fileSigs, vtDetectionRatio];
+    
+    return json;
 }
 
 

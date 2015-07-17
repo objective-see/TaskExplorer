@@ -27,7 +27,7 @@
 
 //flag if known
 // ->signed by apple and/or whitelisted
-@property BOOL isTrusted;
+//@property BOOL isTrusted;
 
 
 

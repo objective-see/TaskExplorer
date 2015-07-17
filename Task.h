@@ -32,21 +32,6 @@ struct dyld_image_info_32 {
     //main binary
     Binary* binary;
     
-    //app bundle
-    // ->only for apps of course...
-    //NSBundle* bundle;
-    
-    //process's full path
-    // ->e.g. /Applications/Calculator.app/Contents/MacOS/Calculator
-    //NSString* path;
-    
-    //process's name
-    // ->e.g Calculator
-    //NSString* name;
-    
-    //icon
-    //NSImage* icon;
-    
     //parent id
     NSNumber* ppid;
     
@@ -77,7 +62,7 @@ struct dyld_image_info_32 {
 
 
 //signing info
-@property(nonatomic, retain)NSDictionary* signingInfo;
+//@property(nonatomic, retain)NSDictionary* signingInfo;
 
 //children
 @property (nonatomic, retain)NSMutableArray* children;
@@ -104,9 +89,8 @@ struct dyld_image_info_32 {
 //enumerate network sockets/connections
 -(void)enumerateNetworking:(NSXPCConnection*)xpcConnection;
 
-
-
-//get UID for process (by pid)
-//-(void)determineUID;
+//convert self to JSON string
+// TODO: add dylibs, files, networking
+-(NSString*)toJSON;
 
 @end

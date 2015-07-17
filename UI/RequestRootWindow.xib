@@ -9,7 +9,6 @@
             <connections>
                 <outlet property="arrowIcon" destination="JGI-8Z-D0q" id="gEn-iQ-dvN"/>
                 <outlet property="authButton" destination="sNs-lK-0YZ" id="kpr-Lu-dOv"/>
-                <outlet property="help" destination="gwN-t1-KG9" id="5RR-UU-xFA"/>
                 <outlet property="helpButton" destination="gwN-t1-KG9" id="vn3-vU-fZA"/>
                 <outlet property="statusMsg" destination="OSm-xS-Dmd" id="mh0-TD-SLI"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>

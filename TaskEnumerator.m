@@ -95,13 +95,15 @@
 
 
 //enumerate all tasks
-// ->call back into app delegate to update task (top) table
-//   call every x # of seconds~
-
+// ->calls back into app delegate to update task (top) table when pau
+//   TOOD: call every x # of seconds?
 -(void)enumerateTasks
 {
     //(new) task item
     Task* newTask = nil;
+    
+    //dead tasks
+    NSArray *deadTasks = nil;
 
     //new tasks
     OrderedDictionary* newTasks = nil;
@@ -111,7 +113,19 @@
     newTasks = [self getAllTasks];
     
     //build ancestries
+    // ->do here, and use 'new tasks' since there might be new parents too
     [self generateAncestries:newTasks];
+    
+    //get all tasks that are pau
+    deadTasks = [self.tasks.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT SELF IN %@", newTasks.allKeys]];
+    
+    //remove any old tasks that have exited/died
+    // ->invoke custom method to handle kids too...
+    for(NSNumber* key in deadTasks)
+    {
+        //remove
+        [self removeTask:self.tasks[key]];
+    }
     
     //add all tasks that are really new to 'tasks' iVar
     // ->ensures existing task and their info are reused
@@ -120,16 +134,23 @@
         //get task
         newTask = newTasks[key];
         
-        //remove any non-new (i.e. existing) tasks
+        //handle and non-new (i.e. existing) tasks
+        // ->first, update the existing task's children (as it may contain a new child)
+        //   then delete the task from the 'newTasks' array - since its not new :)
         if(nil != self.tasks[newTask.pid])
         {
+            //update children
+            ((Task*)self.tasks[newTask.pid]).children = newTask.children;
+            
             //not new
-            // ->remove
+            // ->so remove
             [newTasks removeObjectForKey:key];
             
             //next
             continue;
         }
+        
+        //TODO: sync?
         
         //add new task
         [self.tasks setObject:newTask forKey:newTask.pid];
@@ -143,12 +164,15 @@
     //reload task table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
     
-    //TODO: only do if current task is nil?
-    //reload bottom pane
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    //call on main thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        
+        //reload bottom pane
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+    });
     
     //now generate signing info
-    // ->for (new) tasks & their dylibs
+    // ->for (new) tasks
     for(NSNumber* key in newTasks)
     {
         //get task
@@ -172,7 +196,7 @@
         // ->this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
 
-    }//signing info for all tasks and dylibs
+    }//signing info for all new tasks
     
     return;
 }
@@ -289,9 +313,11 @@ bail:
     return allTasks;
 }
 
+//TODO: remove!
 //insert tasks into appropriate parent
 // ->ensures order of parent's (by pid), is preserved
 //TODO: what about parentless procs!? (e.g. malware?)
+//TODO: what about dead-parents, 'desktop helper'
 -(void)generateAncestries:(OrderedDictionary*)newTasks
 {
     //task
@@ -330,6 +356,14 @@ bail:
         //get parent
         parent = newTasks[task.ppid];
         
+        //when parent is nil
+        // ->default to launchd (pid 0x1)
+        if(nil == parent)
+        {
+            //default
+            parent = self.tasks[@1];
+        }
+        
         //ignore tasks that are their own parent
         // ->i.e. kernel_task
         if(YES == [task.pid isEqualToNumber:task.ppid])
@@ -352,39 +386,60 @@ bail:
 }
 
 //remove a task
-// ->contain extra logic to remove children, etc
--(void)removeTask:(Task*)task
+// ->contains extra logic to remove children, etc
+-(void)removeTask:(Task*)deadTask
 {
     //parent
     Task* parent = nil;
+    
+    //child
+    Task* child = nil;
+    
+    //launchd
+    // ->will host orphaned kids
+    Task* launchdTask = nil;
     
     //children
     NSMutableArray* children = nil;
     
     //alloc array for children
     children = [NSMutableArray array];
+    
+    //get launchd's task
+    // ->its 'pid' is 0x1
+    launchdTask = self.tasks[@1];
 
     //get all children
-    [self getAllChildren:task children:children];
+    [self getAllChildren:deadTask children:children];
     
-    //remove all child tasks
+    //these are now orphans :/
+    // ->add under launchd
     for(NSNumber* childPid in children)
     {
-        //remove
-        [self.tasks removeObjectForKey:childPid];
+        //get child task
+        child = self.tasks[childPid];
+        
+        //update child's parent
+        if(nil != child)
+        {
+            //update parent
+            child.ppid = @0;
+            
+            //force adoption
+            [launchdTask.children addObject:childPid];
+        }
     }
     
-    //remove task
-    [self.tasks removeObjectForKey:task.pid];
+    //remove dead task task
+    [self.tasks removeObjectForKey:deadTask.pid];
     
     //get parent
-    parent = [self.tasks objectForKey:task.ppid];
+    parent = [self.tasks objectForKey:deadTask.ppid];
     
     //remove task from parent's list of children
-    [parent.children removeObject:task.pid];
+    [parent.children removeObject:deadTask.pid];
     
     return;
-    
 }
 
 //given a task

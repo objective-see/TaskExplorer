@@ -19,10 +19,9 @@
 @synthesize icon;
 @synthesize bundle;
 @synthesize hashes;
+@synthesize vtInfo;
 @synthesize signingInfo;
 @synthesize isTaskBinary;
-
-@synthesize vtInfo;
 
 //init method
 -(id)initWithParams:(NSDictionary*)params
@@ -47,13 +46,7 @@
         self.icon = [self getIcon];
         
         //grab attributes
-        //self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
-
-
-        //call into filter object to check if file is known
-        // ->apple-signed or whitelisted
-        //self.isTrusted = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).filterObj isTrustedFile:self];
-        
+        //self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];        
     }
            
 //bail
@@ -100,7 +93,6 @@ bail:
     return taskName;
 }
 
-//TODO: fix: "Path kernel_task given to -[NSWorkspace iconForFile:] is not a full path." 
 //get an icon for a process
 // ->for apps, this will be app's icon, otherwise just a standard system one
 -(NSImage*)getIcon
@@ -177,7 +169,7 @@ bail:
     
     //call into filter object to check if file is known
     // ->apple-signed or whitelisted
-    self.isTrusted = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).filterObj isTrustedFile:self];
+    //self.isTrusted = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).filterObj isTrustedFile:self];
     
     return;
     
