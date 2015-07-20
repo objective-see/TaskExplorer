@@ -22,10 +22,6 @@ BOOL isSupportedOS();
 //get OS's major or minor version
 SInt32 getVersion(OSType selector);
 
-//if string is too long to fit into a the text field
-// ->truncate and insert ellipises before /file
-NSString* stringByTruncatingString(NSTextField* textField, NSString* string, float width);
-
 //given a path to binary
 // parse it back up to find app's bundle
 NSBundle* findAppBundle(NSString* binaryPath);

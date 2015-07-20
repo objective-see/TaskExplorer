@@ -71,6 +71,9 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    //TODO: remove
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
+    
     //user defaults
     //NSUserDefaults* defaults = nil;
     
@@ -151,12 +154,18 @@
     
     //set flag
     self.bottomViewController.isBottomPane = YES;
+   
+    //disable autosize translations
+    self.bottomViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     
     //add subview
-    [self.bottomPane addSubview:[self.bottomViewController view]];
+    [self.bottomPane addSubview:self.bottomViewController.view];
     
     //set frame
     [[self.bottomViewController view] setFrame:[self.bottomPane bounds]];
+    
+    //constrain to parent
+    [self constrainView:self.bottomPane subView:self.bottomViewController.view];
     
     //add 'items' not found msg
     [self.bottomViewController.view addSubview:self.noItemsLabel];
@@ -284,10 +293,16 @@
     self.bottomPaneBtn.selectedSegment = DYLIBS_VIEW;
     
     //add subview
-    [self.topPane addSubview:[self.taskTableController view]];
+    [self.topPane addSubview:self.taskTableController.view];
+    
+    //disable autosize translations
+    self.taskTableController.view.translatesAutoresizingMaskIntoConstraints = NO;
     
     //set frame
     [[self.taskTableController view] setFrame:[self.topPane bounds]];
+    
+    //constrain to parent
+    [self constrainView:self.topPane subView:self.taskTableController.view];
     
     return;
 }
@@ -535,7 +550,7 @@ bail:
         // ->use all tasks
         if(YES != self.taskTableController.isFiltered)
         {
-            //TODO: sync?
+            //TODO: sync? YESSS!!!!
             
             //get tasks
             tasks = self.taskEnumerator.tasks;
@@ -1576,4 +1591,64 @@ bail:
     
     return;
 }
+
+//constrain subview to parent view
+-(void)constrainView:(NSView*)containerView subView:(NSView*)subView
+{
+    //remove top constraint
+    if(nil != self.topConstraint)
+    {
+        //remove
+        [containerView removeConstraint:self.topConstraint];
+    }
+    
+    //remove bottom constraint
+    if(nil != self.bottomConstraint)
+    {
+        //remove
+        [containerView removeConstraint:self.bottomConstraint];
+    }
+    
+    //remove leading constraint
+    if(nil != self.leadingConstraint)
+    {
+        //remove
+        [containerView removeConstraint:self.leadingConstraint];
+    }
+    
+    //remove trailing constraint
+    if(nil != self.trailingConstraint)
+    {
+        //remove
+        [containerView removeConstraint:self.trailingConstraint];
+    }
+    
+    //create top constraint
+    self.topConstraint = [NSLayoutConstraint constraintWithItem:subView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:containerView attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
+    
+    //add top constraint
+    [containerView addConstraint:self.topConstraint];
+    
+    //create bottom constraint
+    self.bottomConstraint = [NSLayoutConstraint constraintWithItem:subView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:containerView attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
+    
+    //add bottom constraint
+    [containerView addConstraint:self.bottomConstraint];
+    
+    //create leading constraint
+    self.leadingConstraint = [NSLayoutConstraint constraintWithItem:subView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:containerView attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0.0];
+    
+    //add leading constraint
+    [containerView addConstraint:self.leadingConstraint];
+    
+    //create trailing constraint
+    self.trailingConstraint = [NSLayoutConstraint constraintWithItem:subView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:containerView attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:0.0];
+    
+    //add trailing constraint
+    [containerView addConstraint:self.trailingConstraint];
+    
+    return;
+}
+
+
 @end

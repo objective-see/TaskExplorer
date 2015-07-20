@@ -69,7 +69,7 @@
 -(void)windowWillClose:(NSNotification *)notification
 {
     //save prefs
-    [self savePrefs];
+    //[self savePrefs];
     
     //make un-modal
     [[NSApplication sharedApplication] stopModal];
@@ -77,6 +77,7 @@
     return;
 }
 
+/*
 //save prefs
 -(void)savePrefs
 {
@@ -111,6 +112,7 @@
 
     return;
 }
+*/
 
 
 //'OK' button handler

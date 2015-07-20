@@ -378,8 +378,6 @@
 				CDF08CC81AC4C678009B3423 /* PrefsWindowController.m */,
 				CDA81D731A95B4FB009790E2 /* icon.iconset */,
 				CDA81D561A95B4B4009790E2 /* MainMenu.xib */,
-				CD6AFB841B4BABB200D42C34 /* refreshIconBG.png */,
-				CD6AFB851B4BABB200D42C34 /* refreshIconOver.png */,
 				CDF08CC41AC46E75009B3423 /* VTButton.h */,
 				CDF08CC51AC46E75009B3423 /* VTButton.m */,
 				CDA81D441A95B492009790E2 /* AppDelegate.h */,
@@ -408,6 +406,8 @@
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				CD6AFB841B4BABB200D42C34 /* refreshIconBG.png */,
+				CD6AFB851B4BABB200D42C34 /* refreshIconOver.png */,
 				CD6AFB821B4BAA2100D42C34 /* refreshIcon.png */,
 				CD6AFB801B4737AC00D42C34 /* arrow.png */,
 				CD6AFB7E1B4736DF00D42C34 /* flatIcon.png */,

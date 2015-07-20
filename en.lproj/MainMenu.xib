@@ -130,10 +130,10 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TNF-7q-Loy" userLabel="Top Pane">
+                    <customView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TNF-7q-Loy" userLabel="Top Pane">
                         <rect key="frame" x="-1" y="394" width="1353" height="281"/>
                     </customView>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="E4M-PF-VD0" userLabel="Bottom Pane">
+                    <customView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="E4M-PF-VD0" userLabel="Bottom Pane">
                         <rect key="frame" x="-1" y="60" width="1353" height="281"/>
                         <subviews>
                             <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="LMT-Bu-FAk">
@@ -194,7 +194,11 @@
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="bNA-gy-9Ta" secondAttribute="trailing" constant="12" id="5N8-Ye-mhe"/>
+                    <constraint firstAttribute="trailing" secondItem="E4M-PF-VD0" secondAttribute="trailing" constant="1" id="7em-dD-W3w"/>
+                    <constraint firstItem="E4M-PF-VD0" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="-1" id="IGR-bI-Hsm"/>
+                    <constraint firstAttribute="trailing" secondItem="TNF-7q-Loy" secondAttribute="trailing" constant="1" id="Lso-h9-MIt"/>
                     <constraint firstAttribute="trailing" secondItem="HoI-FQ-vTI" secondAttribute="trailing" constant="10" id="OMm-dV-23S"/>
+                    <constraint firstItem="TNF-7q-Loy" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="-1" id="bnH-c7-461"/>
                 </constraints>
             </view>
             <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">

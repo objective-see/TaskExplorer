@@ -126,9 +126,23 @@
 //refresh button
 @property (weak) IBOutlet NSButton *refreshButton;
 
+//top constraint
+@property(nonatomic, retain)NSLayoutConstraint* topConstraint;
+
+//bottom constraint
+@property(nonatomic, retain)NSLayoutConstraint* bottomConstraint;
+
+//top constraint
+@property(nonatomic, retain)NSLayoutConstraint* leadingConstraint;
+
+//top constraint
+@property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
+
 //action for 'refresh' button
 // ->query OS to refresh/reload all tasks
 - (IBAction)refreshTasks:(id)sender;
+
+
 
 /* METHODS */
 - (IBAction)switchView:(id)sender;
@@ -141,11 +155,7 @@
 
 //callback when user has updated prefs
 // ->reload table, etc
--(void)applyPreferences;
-
-//action
-// ->invoked when user clicks 'About/Info' or Objective-See logo in main UI
-//-(void)displayScanStats;
+//-(void)applyPreferences;
 
 //button handler for when settings icon (gear) is clicked
 -(IBAction)showPreferences:(id)sender;
@@ -181,5 +191,8 @@
 
 //search button handler
 -(IBAction)search:(id)sender;
+
+//constrain subview to parent view
+-(void)constrainView:(NSView*)containerView subView:(NSView*)subView;
 
 @end

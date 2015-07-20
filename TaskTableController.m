@@ -271,7 +271,7 @@ bail:
     KKRow* rowView = nil;
     
     //row ID
-    static NSString* const kRowIdentifier = @"RowView";
+    static NSString* const kRowIdentifier = @"TableRowView";
     
     //try grab existing row view
     rowView = [tableView makeViewWithIdentifier:kRowIdentifier owner:self];
@@ -862,7 +862,7 @@ bail:
     KKRow* rowView = nil;
     
     //row ID
-    static NSString* const kRowIdentifier = @"RowView";
+    static NSString* const kRowIdentifier = @"OutlineRowView";
     
     //try grab existing row view
     rowView = [outlineView makeViewWithIdentifier:kRowIdentifier owner:self];

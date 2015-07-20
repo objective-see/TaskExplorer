@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <development version="5000" identifier="xcode"/>
@@ -31,7 +31,7 @@
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 <tableColumns>
-                                    <tableColumn identifier="MainCell" editable="NO" width="1301" minWidth="40" maxWidth="2000" id="sUM-Cl-ag5">
+                                    <tableColumn identifier="MainCell" editable="NO" width="1301" minWidth="500" maxWidth="2000" id="sUM-Cl-ag5">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -75,10 +75,10 @@
                                                     <button toolTip="show in finder" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="107" translatesAutoresizingMaskIntoConstraints="NO" id="Y4J-KD-8iy">
                                                         <rect key="frame" x="1263" y="15" width="18" height="18"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="18" id="Nro-9M-6Xg"/>
-                                                            <constraint firstAttribute="width" constant="18" id="rEk-W0-lvD"/>
+                                                            <constraint firstAttribute="height" constant="18" id="3hg-GE-xpO"/>
+                                                            <constraint firstAttribute="width" constant="18" id="ap5-un-UhM"/>
                                                         </constraints>
-                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="show" imagePosition="only" alignment="center" alternateImage="showBG" state="on" imageScaling="proportionallyDown" inset="2" id="Xle-cK-MOQ">
+                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="show" imagePosition="overlaps" alignment="center" alternateImage="showBG" state="on" imageScaling="proportionallyDown" inset="2" id="Xle-cK-MOQ">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
@@ -87,10 +87,10 @@
                                                         </connections>
                                                     </button>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="108" translatesAutoresizingMaskIntoConstraints="NO" id="gpF-bM-EQR">
-                                                        <rect key="frame" x="1259" y="4" width="25" height="12"/>
+                                                        <rect key="frame" x="1258" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="25" id="F3C-cT-yKu"/>
-                                                            <constraint firstAttribute="height" constant="12" id="k1Q-YJ-vSj"/>
+                                                            <constraint firstAttribute="width" constant="21" id="HkT-cR-NVu"/>
+                                                            <constraint firstAttribute="height" constant="12" id="Zsp-fV-vl4"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="show" id="B5F-50-OCm">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -99,7 +99,7 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="101" translatesAutoresizingMaskIntoConstraints="NO" id="miW-QO-gna">
-                                                        <rect key="frame" x="31" y="2" width="1093" height="21"/>
+                                                        <rect key="frame" x="31" y="2" width="1118" height="21"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="item path" id="7xA-XP-LK6">
                                                             <font key="font" size="11" name="Menlo-Regular"/>
                                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -109,8 +109,8 @@
                                                     <button toolTip="show virustotal info" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="103" translatesAutoresizingMaskIntoConstraints="NO" id="Dtg-ac-EVZ" customClass="VTButton">
                                                         <rect key="frame" x="1155" y="17" width="49" height="20"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="29" id="0ZR-hE-oUJ"/>
-                                                            <constraint firstAttribute="width" constant="49" id="i1N-eU-GWT"/>
+                                                            <constraint firstAttribute="width" constant="49" id="buk-Yc-uUT"/>
+                                                            <constraint firstAttribute="height" constant="29" id="r4B-hT-di9"/>
                                                         </constraints>
                                                         <buttonCell key="cell" type="bevel" title="▪ ▪ ▪" bezelStyle="regularSquare" imagePosition="overlaps" alignment="center" enabled="NO" refusesFirstResponder="YES" state="on" imageScaling="proportionallyDown" inset="2" id="WMp-cU-Uct">
                                                             <behavior key="behavior" lightByContents="YES"/>
@@ -120,8 +120,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="104" translatesAutoresizingMaskIntoConstraints="NO" id="aPz-9H-xyy">
                                                         <rect key="frame" x="1148" y="4" width="65" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="61" id="Mn9-1j-NeM"/>
-                                                            <constraint firstAttribute="height" constant="12" id="pgg-Gc-7aV"/>
+                                                            <constraint firstAttribute="height" constant="12" id="Vy6-PI-Kk7"/>
+                                                            <constraint firstAttribute="width" constant="61" id="yfd-yV-lFN"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="virustotal" id="WbN-3u-Ihr">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -132,10 +132,10 @@
                                                     <button toolTip="show file info" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="105" translatesAutoresizingMaskIntoConstraints="NO" id="eBe-7K-OiH">
                                                         <rect key="frame" x="1226" y="17" width="15" height="15"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="15" id="3YM-AG-8um"/>
-                                                            <constraint firstAttribute="width" constant="15" id="iZ2-6y-WKB"/>
+                                                            <constraint firstAttribute="height" constant="15" id="TgP-gr-4tL"/>
+                                                            <constraint firstAttribute="width" constant="15" id="sZa-Zj-0Le"/>
                                                         </constraints>
-                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="only" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="TCH-R3-DzT">
+                                                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="overlaps" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="TCH-R3-DzT">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
@@ -146,7 +146,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="MqO-G8-w9L">
                                                         <rect key="frame" x="1220" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="12" id="xID-bs-CI7"/>
+                                                            <constraint firstAttribute="height" constant="12" id="1No-bf-V8g"/>
+                                                            <constraint firstAttribute="width" constant="21" id="tBf-7k-HXJ"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="info" id="ljw-jb-ljM">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -169,15 +170,15 @@
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstItem="Nky-Qb-S7Z" firstAttribute="leading" secondItem="ryD-lC-8IR" secondAttribute="trailing" constant="8" id="7Og-f1-rQH"/>
-                                                    <constraint firstItem="cG6-PF-La2" firstAttribute="leading" secondItem="sdY-t5-tbW" secondAttribute="leading" constant="5" id="7ms-dD-as0"/>
-                                                    <constraint firstItem="eBe-7K-OiH" firstAttribute="leading" secondItem="Dtg-ac-EVZ" secondAttribute="trailing" constant="18" id="Dd1-7F-oi4"/>
+                                                    <constraint firstItem="cG6-PF-La2" firstAttribute="leading" secondItem="sdY-t5-tbW" secondAttribute="leading" constant="8" id="7ms-dD-as0"/>
+                                                    <constraint firstItem="MqO-G8-w9L" firstAttribute="leading" secondItem="aPz-9H-xyy" secondAttribute="trailing" constant="11" id="AYq-NQ-9ty"/>
+                                                    <constraint firstItem="Y4J-KD-8iy" firstAttribute="leading" secondItem="eBe-7K-OiH" secondAttribute="trailing" constant="22" id="AeK-oE-FOW"/>
                                                     <constraint firstItem="miW-QO-gna" firstAttribute="leading" secondItem="cG6-PF-La2" secondAttribute="trailing" constant="8" id="J3y-8b-F3q"/>
-                                                    <constraint firstItem="MqO-G8-w9L" firstAttribute="leading" secondItem="aPz-9H-xyy" secondAttribute="trailing" constant="9" id="Rfl-hR-rxD"/>
-                                                    <constraint firstItem="Y4J-KD-8iy" firstAttribute="leading" secondItem="eBe-7K-OiH" secondAttribute="trailing" constant="17" id="TAx-KS-R7a"/>
-                                                    <constraint firstAttribute="trailing" secondItem="Y4J-KD-8iy" secondAttribute="trailing" constant="8" id="iMf-M4-bv0"/>
-                                                    <constraint firstAttribute="trailing" secondItem="gpF-bM-EQR" secondAttribute="trailing" constant="4" id="myW-Ol-OIp"/>
-                                                    <constraint firstItem="Dtg-ac-EVZ" firstAttribute="leading" secondItem="miW-QO-gna" secondAttribute="trailing" constant="8" id="rxd-Fp-O3o"/>
-                                                    <constraint firstItem="gpF-bM-EQR" firstAttribute="leading" secondItem="MqO-G8-w9L" secondAttribute="trailing" constant="10" id="tLu-Y9-F4d"/>
+                                                    <constraint firstItem="aPz-9H-xyy" firstAttribute="leading" secondItem="miW-QO-gna" secondAttribute="trailing" constant="8" id="Uzg-uC-v3U"/>
+                                                    <constraint firstItem="gpF-bM-EQR" firstAttribute="leading" secondItem="MqO-G8-w9L" secondAttribute="trailing" constant="17" id="YUh-1b-zZn"/>
+                                                    <constraint firstAttribute="trailing" secondItem="gpF-bM-EQR" secondAttribute="trailing" constant="20" id="ZwL-8K-oUV"/>
+                                                    <constraint firstItem="eBe-7K-OiH" firstAttribute="leading" secondItem="Dtg-ac-EVZ" secondAttribute="trailing" constant="22" id="llC-i6-MPv"/>
+                                                    <constraint firstAttribute="trailing" secondItem="Y4J-KD-8iy" secondAttribute="trailing" constant="20" id="qVu-zJ-0T1"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="imageView" destination="cG6-PF-La2" id="v1M-Zn-U5X"/>
@@ -219,10 +220,10 @@
                                                         </connections>
                                                     </button>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="108" translatesAutoresizingMaskIntoConstraints="NO" id="DCt-ke-ecy">
-                                                        <rect key="frame" x="1259" y="4" width="25" height="12"/>
+                                                        <rect key="frame" x="1258" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="25" id="SHJ-Pm-wjU"/>
-                                                            <constraint firstAttribute="height" constant="12" id="dsu-l8-dLe"/>
+                                                            <constraint firstAttribute="height" constant="12" id="4eI-5z-Oad"/>
+                                                            <constraint firstAttribute="width" constant="21" id="aqc-L6-n7H"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="show" id="SbY-jh-Hwi">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -231,7 +232,7 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="101" translatesAutoresizingMaskIntoConstraints="NO" id="s79-UC-kl8">
-                                                        <rect key="frame" x="11" y="2" width="1093" height="21"/>
+                                                        <rect key="frame" x="11" y="2" width="1133" height="21"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="item path" id="efL-9x-1ue">
                                                             <font key="font" size="11" name="Menlo-Regular"/>
                                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -278,7 +279,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="d6d-We-r4h">
                                                         <rect key="frame" x="1220" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="12" id="x00-pi-4zx"/>
+                                                            <constraint firstAttribute="height" constant="12" id="Rfc-NH-1Qu"/>
+                                                            <constraint firstAttribute="width" constant="21" id="uLd-e1-gpg"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="info" id="mzh-KR-osn">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -288,14 +290,14 @@
                                                     </textField>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstItem="Nvb-5R-deG" firstAttribute="leading" secondItem="FC1-IO-3xs" secondAttribute="trailing" constant="18" id="B3b-K8-iKu"/>
-                                                    <constraint firstItem="d6d-We-r4h" firstAttribute="leading" secondItem="mKM-Ea-CdX" secondAttribute="trailing" constant="9" id="Geb-Pj-PW9"/>
-                                                    <constraint firstItem="FC1-IO-3xs" firstAttribute="leading" secondItem="s79-UC-kl8" secondAttribute="trailing" constant="8" id="Rb2-Pf-nT9"/>
-                                                    <constraint firstAttribute="trailing" secondItem="bau-Td-7ST" secondAttribute="trailing" constant="8" id="YV7-dd-VnF"/>
+                                                    <constraint firstItem="mKM-Ea-CdX" firstAttribute="leading" secondItem="s79-UC-kl8" secondAttribute="trailing" constant="8" id="0SL-Ue-D05"/>
+                                                    <constraint firstItem="d6d-We-r4h" firstAttribute="leading" secondItem="mKM-Ea-CdX" secondAttribute="trailing" constant="11" id="PCm-qd-72F"/>
+                                                    <constraint firstItem="Nvb-5R-deG" firstAttribute="leading" secondItem="FC1-IO-3xs" secondAttribute="trailing" constant="22" id="TpA-qO-SIz"/>
+                                                    <constraint firstAttribute="trailing" secondItem="DCt-ke-ecy" secondAttribute="trailing" constant="20" id="Ygr-Me-dTy"/>
+                                                    <constraint firstAttribute="trailing" secondItem="bau-Td-7ST" secondAttribute="trailing" constant="20" id="gcZ-o1-9C7"/>
                                                     <constraint firstItem="s79-UC-kl8" firstAttribute="leading" secondItem="AMp-Sl-IUz" secondAttribute="leading" constant="13" id="jUo-Cu-hm3"/>
-                                                    <constraint firstItem="DCt-ke-ecy" firstAttribute="leading" secondItem="d6d-We-r4h" secondAttribute="trailing" constant="10" id="mQm-zs-mcQ"/>
-                                                    <constraint firstItem="bau-Td-7ST" firstAttribute="leading" secondItem="Nvb-5R-deG" secondAttribute="trailing" constant="17" id="p6O-3z-4Kx"/>
-                                                    <constraint firstAttribute="trailing" secondItem="DCt-ke-ecy" secondAttribute="trailing" constant="4" id="paK-cH-SPa"/>
+                                                    <constraint firstItem="bau-Td-7ST" firstAttribute="leading" secondItem="Nvb-5R-deG" secondAttribute="trailing" constant="22" id="qH0-Xo-jUQ"/>
+                                                    <constraint firstItem="DCt-ke-ecy" firstAttribute="leading" secondItem="d6d-We-r4h" secondAttribute="trailing" constant="17" id="rIC-Ya-1Ny"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="textField" destination="kE0-h4-XoU" id="ngK-iU-Wtk"/>
@@ -316,7 +318,8 @@
                                                     <button toolTip="show in finder" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="107" translatesAutoresizingMaskIntoConstraints="NO" id="yDq-tI-YQJ">
                                                         <rect key="frame" x="1263" y="15" width="18" height="18"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="18" id="weN-ut-xDd"/>
+                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="18" id="eNG-fJ-CN9"/>
+                                                            <constraint firstAttribute="height" constant="18" id="rLe-2D-dO0"/>
                                                             <constraint firstAttribute="width" constant="18" id="zwd-5o-XMf"/>
                                                         </constraints>
                                                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="show" imagePosition="only" alignment="center" alternateImage="showBG" state="on" imageScaling="proportionallyDown" inset="2" id="i29-A9-Sv1">
@@ -330,8 +333,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="108" translatesAutoresizingMaskIntoConstraints="NO" id="27e-wh-BEp">
                                                         <rect key="frame" x="1259" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="12" id="M8u-tp-mKC"/>
-                                                            <constraint firstAttribute="width" constant="25" id="nMd-Wy-wvB"/>
+                                                            <constraint firstAttribute="height" constant="12" id="eof-Tt-IAE"/>
+                                                            <constraint firstAttribute="width" constant="21" id="wX1-VI-Vh0"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="show" id="VHL-k9-JxN">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -340,7 +343,7 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="101" translatesAutoresizingMaskIntoConstraints="NO" id="gwn-Wz-bDY">
-                                                        <rect key="frame" x="11" y="2" width="1093" height="21"/>
+                                                        <rect key="frame" x="11" y="2" width="1205" height="21"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="item path" id="1WZ-C2-VvW">
                                                             <font key="font" size="11" name="Menlo-Regular"/>
                                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -350,8 +353,8 @@
                                                     <button toolTip="show file info" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="105" translatesAutoresizingMaskIntoConstraints="NO" id="8Vk-bl-kjr">
                                                         <rect key="frame" x="1226" y="17" width="15" height="15"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="15" id="FLn-RP-zYu"/>
-                                                            <constraint firstAttribute="height" constant="15" id="dM6-uC-lks"/>
+                                                            <constraint firstAttribute="width" constant="15" id="GbP-ai-1DY"/>
+                                                            <constraint firstAttribute="height" constant="15" id="smR-eU-myP"/>
                                                         </constraints>
                                                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="only" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="UDk-8x-xVs">
                                                             <behavior key="behavior" lightByContents="YES"/>
@@ -364,7 +367,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="tIY-Ij-plN">
                                                         <rect key="frame" x="1220" y="4" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="12" id="VXj-Yu-ucw"/>
+                                                            <constraint firstAttribute="width" constant="21" id="5Ju-2z-eFY"/>
+                                                            <constraint firstAttribute="height" constant="12" id="qIi-jF-L0o"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="info" id="Jha-96-Egc">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -374,11 +378,12 @@
                                                     </textField>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="27e-wh-BEp" secondAttribute="trailing" constant="4" id="Ft1-LY-Scf"/>
+                                                    <constraint firstItem="tIY-Ij-plN" firstAttribute="leading" secondItem="gwn-Wz-bDY" secondAttribute="trailing" constant="8" id="9DH-Ry-7of"/>
                                                     <constraint firstItem="gwn-Wz-bDY" firstAttribute="leading" secondItem="zC6-7V-PKY" secondAttribute="leading" constant="13" id="GEK-N3-wIC"/>
-                                                    <constraint firstItem="yDq-tI-YQJ" firstAttribute="leading" secondItem="8Vk-bl-kjr" secondAttribute="trailing" constant="17" id="aV6-Hu-Y5b"/>
-                                                    <constraint firstAttribute="trailing" secondItem="yDq-tI-YQJ" secondAttribute="trailing" constant="8" id="fqn-su-UYW"/>
-                                                    <constraint firstItem="27e-wh-BEp" firstAttribute="leading" secondItem="tIY-Ij-plN" secondAttribute="trailing" constant="10" id="w6k-vz-Q6U"/>
+                                                    <constraint firstItem="yDq-tI-YQJ" firstAttribute="leading" secondItem="8Vk-bl-kjr" secondAttribute="trailing" constant="22" id="INM-yt-gBv"/>
+                                                    <constraint firstAttribute="trailing" secondItem="27e-wh-BEp" secondAttribute="trailing" constant="19" id="TIZ-YV-Bud"/>
+                                                    <constraint firstAttribute="trailing" secondItem="yDq-tI-YQJ" secondAttribute="trailing" constant="20" id="igS-YC-KW1"/>
+                                                    <constraint firstItem="27e-wh-BEp" firstAttribute="leading" secondItem="tIY-Ij-plN" secondAttribute="trailing" constant="18" id="jXy-Fb-Tj8"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="textField" destination="LkX-uS-hKH" id="XKi-AB-R3o"/>
@@ -397,7 +402,7 @@
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="5ar-gc-DMu"/>
                                                     </imageView>
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="101" translatesAutoresizingMaskIntoConstraints="NO" id="clK-51-yQN">
-                                                        <rect key="frame" x="31" y="2" width="1093" height="21"/>
+                                                        <rect key="frame" x="31" y="2" width="1228" height="21"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="item path" id="DlS-aR-tJt">
                                                             <font key="font" size="11" name="Menlo-Regular"/>
                                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -415,8 +420,8 @@
                                                     <button toolTip="show file info" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="105" translatesAutoresizingMaskIntoConstraints="NO" id="ajd-Yb-p6i">
                                                         <rect key="frame" x="1265" y="16" width="15" height="15"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="15" id="hAL-Nd-GfV"/>
-                                                            <constraint firstAttribute="width" constant="15" id="pQu-Dd-9Ib"/>
+                                                            <constraint firstAttribute="width" constant="15" id="N37-px-tFV"/>
+                                                            <constraint firstAttribute="height" constant="15" id="Urm-Y9-bfb"/>
                                                         </constraints>
                                                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="info" imagePosition="only" alignment="center" alternateImage="infoBG" state="on" imageScaling="proportionallyDown" inset="2" id="bO6-PR-DSy">
                                                             <behavior key="behavior" lightByContents="YES"/>
@@ -429,7 +434,8 @@
                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="YYR-6I-wYA">
                                                         <rect key="frame" x="1259" y="3" width="25" height="12"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="12" id="NRE-yK-7X4"/>
+                                                            <constraint firstAttribute="width" constant="21" id="EaT-N5-Zdl"/>
+                                                            <constraint firstAttribute="height" constant="12" id="Jhc-wY-c3E"/>
                                                         </constraints>
                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="info" id="bNN-kN-4zL">
                                                             <font key="font" size="9" name="Menlo-Regular"/>
@@ -439,9 +445,10 @@
                                                     </textField>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="ajd-Yb-p6i" secondAttribute="trailing" constant="15" id="4j1-1P-atZ"/>
-                                                    <constraint firstAttribute="trailing" secondItem="YYR-6I-wYA" secondAttribute="trailing" constant="13" id="MHU-AY-rcs"/>
+                                                    <constraint firstAttribute="trailing" secondItem="YYR-6I-wYA" secondAttribute="trailing" constant="19" id="VBr-Y6-gzg"/>
+                                                    <constraint firstAttribute="trailing" secondItem="ajd-Yb-p6i" secondAttribute="trailing" constant="20" id="dkh-kB-hLV"/>
                                                     <constraint firstItem="n84-aN-dS4" firstAttribute="leading" secondItem="vkh-K9-CiP" secondAttribute="leading" constant="5" id="iJH-Aa-QGY"/>
+                                                    <constraint firstItem="YYR-6I-wYA" firstAttribute="leading" secondItem="clK-51-yQN" secondAttribute="trailing" constant="8" id="jm8-jP-xgx"/>
                                                     <constraint firstItem="clK-51-yQN" firstAttribute="leading" secondItem="n84-aN-dS4" secondAttribute="trailing" constant="8" id="zd5-Ae-yYB"/>
                                                 </constraints>
                                                 <connections>
