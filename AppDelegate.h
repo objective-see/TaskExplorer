@@ -138,6 +138,9 @@
 //top constraint
 @property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
 
+//remote XPC interface
+@property (nonatomic, retain) NSXPCConnection* xpcConnection;
+
 //action for 'refresh' button
 // ->query OS to refresh/reload all tasks
 - (IBAction)refreshTasks:(id)sender;
@@ -145,6 +148,14 @@
 
 
 /* METHODS */
+
+//complete a few inits
+// ->then invoke helper method to start enum'ing task (in bg thread)
+-(void)go;
+
+//init (setup) XPC connection
+-(BOOL)initXPC;
+
 - (IBAction)switchView:(id)sender;
 
 //init tracking areas for buttons

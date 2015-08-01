@@ -19,9 +19,6 @@
 
 /* PROPERTIES */
 
-//flag indicating first scan is complete
-//@property BOOL firstScanComplete;
-
 //all tasks objects
 @property(nonatomic, retain)OrderedDictionary* tasks;
 
@@ -33,10 +30,6 @@
 
 //all dylibs
 @property(nonatomic, retain)NSMutableDictionary* dylibs;
-
-//remote XPC interface
-//TODO: weak OK?
-@property (nonatomic, retain) NSXPCConnection* xpcConnection;
 
 //queue
 // ->contains binaries that should be processed
@@ -55,10 +48,6 @@
 //insert tasks into appropriate parent
 // ->ensures order of parent's (by pid), is preserved
 -(void)generateAncestries:(OrderedDictionary*)newTasks;
-
-//determine if dylibs should be (re)enumerated
-// ->generally yes, unless the first enumeration (of all tasks) is not complete
-//-(BOOL)shouldEnumDylibs;
 
 //remove a task
 // ->contain extra logic to remove children, etc

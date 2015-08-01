@@ -19,7 +19,6 @@
 {
     //super
     //self = [super initWithParams:params];
-    //TODO: think about this - Connection doesn't share any baseItem stuffz
     self = [super init];
     if(nil != self)
     {

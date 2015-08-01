@@ -9,8 +9,9 @@
 
 #import "Utilities.h"
 #import "AppDelegate.h"
-
 #import "RequestRootWindowController.h"
+
+#import <syslog.h>
 
 
 @implementation RequestRootWindowController
@@ -123,7 +124,7 @@
     if(errAuthorizationSuccess != osStatus)
     {
         //err msg
-        NSLog(@"ERROR: AuthorizationCreate() failed with %d", osStatus);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: AuthorizationCreate() failed with %d", osStatus);
         
         //bail
         goto bail;
@@ -134,7 +135,7 @@
     if(errAuthorizationSuccess != osStatus)
     {
         //err msg
-        NSLog(@"ERROR: AuthorizationExecuteWithPrivileges() failed with %d", osStatus);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: AuthorizationExecuteWithPrivileges() failed with %d", osStatus);
         
         //set result msg
         [self.statusMsg setStringValue: [NSString stringWithFormat:@"error: failed with %d", osStatus]];
@@ -169,7 +170,7 @@
     if(errAuthorizationSuccess != osStatus)
     {
         //err msg
-        NSLog(@"ERROR: AuthorizationExecuteWithPrivileges() failed with %d", osStatus);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: AuthorizationExecuteWithPrivileges() failed with %d", osStatus);
         
         //set result msg
         [self.statusMsg setStringValue: [NSString stringWithFormat:@"error: failed with %d", osStatus]];
@@ -187,9 +188,11 @@
     //no exit
     self.shouldExit = NO;
     
-    //start enumerating tasks
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) exploreTasks];
+    //call back into app delegate
+    // ->kick off task enum, etc
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) go];
     
+
 //bail
 bail:
     

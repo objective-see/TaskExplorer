@@ -77,8 +77,6 @@ struct dyld_image_info_32 {
 //get command-line args
 -(void)getArguments;
 
--(void)generateBinaryInfo;
-
 //enumerate all dylibs
 // ->new ones are added to 'existingDylibs' (global) dictionary
 -(void)enumerateDylibs:(NSXPCConnection*)xpcConnection allDylibs:(NSMutableDictionary*)allDylibs;
@@ -90,7 +88,6 @@ struct dyld_image_info_32 {
 -(void)enumerateNetworking:(NSXPCConnection*)xpcConnection;
 
 //convert self to JSON string
-// TODO: add dylibs, files, networking
 -(NSString*)toJSON;
 
 @end

@@ -5,12 +5,12 @@
 //  Created by Patrick Wardle on 2/19/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
-
-
 #import "File.h"
 #import "Consts.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
+
+#import <syslog.h>
 
 @implementation File
 
@@ -26,11 +26,10 @@
     if(self)
     {
         //always skip not-existent paths
-        // ->also get set a directory flag at the same time ;)
         if(YES != [[NSFileManager defaultManager] fileExistsAtPath:params[KEY_RESULT_PATH]])
         {
             //err msg
-            NSLog(@"OBJECTIVE-SEE ERROR: %@ not found", params[KEY_RESULT_PATH]);
+            syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s not found", [params[KEY_RESULT_PATH] UTF8String]);
             
             //set self to nil
             self = nil;

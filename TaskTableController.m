@@ -25,8 +25,6 @@
 
 #import <AppKit/AppKit.h>
 
-//TODO: need to do some sync or logic to handle swaps -otherwise crashes!!!
-
 @implementation TaskTableController
 
 @synthesize itemView;
@@ -520,8 +518,6 @@ bail:
     return;
 }
 
-
-//TODO: make sure this works for outline view!!!
 //grab a task at a row
 -(Task*)taskForRow:(id)sender
 {
@@ -566,19 +562,9 @@ bail:
     //get row that's about to be selected
     rowView = [self.itemView viewAtColumn:0 row:taskRow makeIfNecessary:YES];
     
-    //TODO: need this?
-    //when not filtered, use all tasks
-    //if(YES != isFiltered)
-    //{
-        //extract task
-        // ->pid of task is view's id :)
-        task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
-    //}
-    //when filtered, use filtered items
-    //else
-    //{
-    //    task = self.filteredItems[
-    //}
+    //extract task
+    // ->pid of task is view's id :)
+    task = tasks[[NSNumber numberWithInteger:(rowView.tag - PID_TAG_DELTA)]];
     
 //bail
 bail:
@@ -837,9 +823,9 @@ bail:
 }
 
 
-//TODO: combine logic -
-//TODO: when combine, use pid of task is view's id - to lookup task :)
-- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+//automatically ccalled when row is selected in outline view
+// ->invoke helper function to handle selection
+-(void)outlineViewSelectionDidChange:(NSNotification *)notification
 {
     //handle selection
     [self handleRowSelection];

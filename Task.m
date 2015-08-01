@@ -32,22 +32,16 @@
 
 @synthesize pid;
 @synthesize uid;
-//@synthesize icon;
-//@synthesize name;
-//@synthesize path;
 @synthesize ppid;
 @synthesize files;
 @synthesize binary;
-//@synthesize bundle;
 @synthesize dylibs;
 @synthesize children;
 @synthesize arguments;
 @synthesize connections;
 
-//TODO: make sure we only check signature of binary once!!!
-
 //init w/ a pid + path
-// note: time consuming init's are done in '' method
+// note: time consuming init's are done in other methods
 -(id)initWithPID:(NSNumber*)taskPID andPath:(NSString*)taskPath
 {
     //existing binaries
@@ -61,7 +55,6 @@
     self = [super init];
     if(nil != self)
     {
-        //TODO: sync? or always access w/ direct var
         //grab existings binaries
         existingBinaries = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables;
         
@@ -118,8 +111,12 @@
             // ->this will process in background
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
             
-            //add it to 'global' list
-            existingBinaries[taskPath] = self.binary;
+            //sync
+            @synchronized(existingBinaries)
+            {
+                //add it to 'global' list
+                existingBinaries[taskPath] = self.binary;
+            }
         }
         
     }//init self
@@ -128,15 +125,6 @@
 bail:
     
     return self;
-}
-
-//
--(void)generateBinaryInfo
-{
-    //create main binary
-    //self.binary = [[Binary alloc] initWithParams:@{KEY_RESULT_PATH:self.path}];
-    
-    return;
 }
 
 //get command-line args
@@ -310,7 +298,6 @@ bail:
     {
         //free
         free(processArgs);
-        
     }
     
     return;
@@ -524,9 +511,12 @@ bail:
             //generate detailed info
             [newFile generateDetailedInfo];
             
-            //TODO: sync!
-            //save into global list
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files setObject:newFile forKey:filePath];
+            //sync
+            @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files)
+            {
+                //save into global list
+                [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files setObject:newFile forKey:filePath];
+            }
         }
     }];
     
@@ -542,7 +532,8 @@ bail:
     //remove any existing enum'd networking sockets/connections
     [self.connections removeAllObjects];
     
-    NSLog(@"invoking XPC to enumer networking");
+    //dbg msg
+    //NSLog(@"invoking XPC to enumer networking");
     
     //invoke XPC service (running as r00t)
     // ->will enumerate network sockets/connections, then invoke reply block so can save into iVar
@@ -565,10 +556,8 @@ bail:
             }
         }
     
-        ////TODO: on main thead?
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:NETWORKING_VIEW];
-        
     }];
     
     return;

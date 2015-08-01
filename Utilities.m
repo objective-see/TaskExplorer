@@ -11,6 +11,7 @@
 
 #import <signal.h>
 #import <unistd.h>
+#import <syslog.h>
 #import <libproc.h>
 #import <sys/sysctl.h>
 #import <Security/Security.h>
@@ -126,7 +127,7 @@ NSDictionary* extractSigningInfo(NSString* path)
     if(STATUS_SUCCESS != status)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %@ with %d", path, status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %s with %d", [path UTF8String], status);
         
         //bail
         goto bail;
@@ -149,7 +150,7 @@ NSDictionary* extractSigningInfo(NSString* path)
         if(STATUS_SUCCESS != status)
         {
             //err msg
-            NSLog(@"OBJECTIVE-SEE ERROR: SecCodeCopySigningInformation() failed on %@ with %d", path, status);
+            syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecCodeCopySigningInformation() failed on %s with %d", [path UTF8String], status);
             
             //bail
             goto bail;
@@ -158,9 +159,13 @@ NSDictionary* extractSigningInfo(NSString* path)
         //determine if binary is signed by Apple
         signingStatus[KEY_SIGNING_IS_APPLE] = [NSNumber numberWithBool:isApple(path)];
     }
-    
-    //TODO: bail, unsigned?
-    
+    //error
+    // ->not signed, or something else, so no need to check cert's names
+    else
+    {
+        //bail
+        goto bail;
+    }
     
     //init array for certificate names
     signingStatus[KEY_SIGNING_AUTHORITIES] = [NSMutableArray array];
@@ -245,7 +250,7 @@ BOOL isApple(NSString* path)
     if(STATUS_SUCCESS != status)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %@ with %d", path, status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %s with %d", [path UTF8String], status);
         
         //bail
         goto bail;
@@ -258,7 +263,7 @@ BOOL isApple(NSString* path)
         (requirementRef == NULL) )
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: SecRequirementCreateWithString() failed on %@ with %d", path, status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecRequirementCreateWithString() failed on %s with %d", [path UTF8String], status);
         
         //bail
         goto bail;
@@ -409,8 +414,7 @@ NSDictionary* hashFile(NSString* filePath)
     if(nil == (fileContents = [NSData dataWithContentsOfFile:filePath]))
     {
         //err msg
-        //TODO: re-enable
-        //NSLog(@"OBJECTIVE-SEE ERROR: couldn't load %@ to hash", filePath);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: couldn't load %s to hash", [filePath UTF8String]);
         
         //bail
         goto bail;
@@ -693,8 +697,6 @@ BOOL isAlive(pid_t targetPID)
         isAlive = NO;
 
     }
-    
-    //NSLog(@"killing %d: %d/%d", targetPID, result, errno);
     
     return isAlive;
 }

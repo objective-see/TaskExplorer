@@ -9,18 +9,19 @@
 #import "Exception.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
+#import "serviceInterface.h"
 
 #import "TaskTableController.h"
 #import "RequestRootWindowController.h"
 
 #import "Task.h"
 
-//TODO: add IPV6 :: as 0.0.0.0? (since we do this for IPV4 i think)
-//TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
-//TODO: first time (w/ auth) dylibs don't show up?
-//TODO: remove 'pref' from menu - or disable?
+//TODO: path truncated in 'info' window (1password mini) - but weird when selected :/
+//  resize text manually? http://stackoverflow.com/questions/6519995/modifying-an-nstextfields-font-size-according-to-content-length
 
+//TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: 'flagged' items button?
+//TODO: add 'am i on main thread' guard and test
 
 @implementation AppDelegate
 
@@ -46,6 +47,7 @@
 @synthesize taskEnumerator;
 @synthesize viewSelector;
 @synthesize searchButton;
+@synthesize xpcConnection;
 
 
 //@synthesize taskScrollView;
@@ -71,22 +73,10 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    //TODO: remove
-    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
-    
-    //user defaults
-    //NSUserDefaults* defaults = nil;
-    
-    //flag for first time
-    //BOOL isFirstRun = NO;
-    
     //first thing...
     // ->install exception handlers!
     //TODO: re-enable
     //installExceptionHandlers();
-    
-    //self.taskScrollView.wantsLayer = TRUE;
-    //self.taskScrollView.layer.cornerRadius = 20;
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -109,38 +99,16 @@
     if(YES != [self isAuthenticated])
     {
         //display auth popup
-        // ->will kick off task emun on successful auth :)
+        // ->will invoke 'go' method on successful auth
         [self askForRoot];
     }
+    //go!
+    // ->setup tracking areas and begin thread that explores tasks
     else
     {
-        //init mouse-over areas
-        [self initTrackingAreas];
-        
         //go!
-        [self exploreTasks];
+        [self go];
     }
-    
-    
-    
-    /*
-    //load defaults
-    defaults = [NSUserDefaults standardUserDefaults];
-    
-    //extact first run key
-    // ->nil means first time!
-    if(nil == [defaults objectForKey:PREF_FIRST_RUN])
-    {
-        //set flag
-        isFirstRun = YES;
-        
-        //set flag persistently
-        [defaults setBool:NO forKey:PREF_FIRST_RUN];
-        
-        //flush/save
-        [defaults synchronize];
-    }
-    */
     
     //set default top pane view to flat
     self.taskViewFormat = FLAT_VIEW;
@@ -177,10 +145,95 @@
     return;
 }
 
+//complete a few inits
+// ->then invoke helper method to start enum'ing task (in bg thread)
+-(void)go
+{
+    //init XPC
+    if(YES != [self initXPC])
+    {
+
+        //bail
+        goto bail;
+    }
+    
+    //init mouse-over areas
+    [self initTrackingAreas];
+    
+    //go!
+    [self exploreTasks];
+    
+//bail
+bail:
+    
+    return;
+}
+
+
+//init (setup) XPC connection
+-(BOOL)initXPC
+{
+    //status
+    BOOL initialized = NO;
+    
+    //alloc XPC connection
+    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
+    
+    //sanity check
+    if(nil == self.xpcConnection)
+    {
+        //err msg
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to find/initialize XPC service");
+        
+        //bail
+        goto bail;
+    }
+    
+    //set remote object interface
+    self.xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [self.xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
+     forSelector: @selector(enumerateDylibs:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [self.xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
+     forSelector: @selector(enumerateFiles:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [self.xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], [NSNumber class], nil]
+     forSelector: @selector(enumerateNetwork:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //resume
+    [self.xpcConnection resume];
+    
+    //happy
+    initialized = YES;
+    
+//bail
+bail:
+    
+    return initialized;
+}
+
 
 //check if app is auth'd
 // ->specifically, if XPC service is setuid
-//TODO: error checking!?
 -(BOOL)isAuthenticated
 {
     //flag
@@ -195,8 +248,28 @@
     //get path to XPC service
     xpcService = getPath2XPC();
     
+    //sanity check
+    if(nil == xpcService)
+    {
+        //err msg
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to get path to XPC service");
+        
+        //bail
+        goto bail;
+    }
+    
     //get XPC services' attributes
     fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:xpcService error:nil];
+    
+    //sanity check
+    if(nil == fileAttributes)
+    {
+        //err msg
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to file attributes for XPC service");
+        
+        //bail
+        goto bail;
+    }
     
     //check if (fully) auth'd
     // ->owned by r00t & SETUID
@@ -206,6 +279,9 @@
         //set flag
         isAuthenticated = YES;
     }
+    
+//bail
+bail:
 
     return isAuthenticated;
 }
@@ -426,6 +502,9 @@ bail:
     //tag
     NSUInteger segmentTag = 0;
     
+    //not found msg
+    NSString* noItemsMsg = nil;
+    
     //get segment tag
     segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
     
@@ -456,7 +535,7 @@ bail:
             self.bottomViewController.tableItems = self.currentTask.dylibs;
             
             //if there is none
-            self.noItemsLabel.stringValue = @"no dylibs found";
+            noItemsMsg = @"no dylibs found";
         
             break;
             
@@ -467,7 +546,7 @@ bail:
             self.bottomViewController.tableItems = self.currentTask.files;
             
             //if there is none
-            self.noItemsLabel.stringValue = @"no files found";
+            noItemsMsg = @"no files found";
             
             break;
             
@@ -478,7 +557,7 @@ bail:
             self.bottomViewController.tableItems = self.currentTask.connections;
             
             //if there is none
-            self.noItemsLabel.stringValue = @"no network connections found";
+            noItemsMsg = @"no network connections found";
             
             break;
             
@@ -486,8 +565,13 @@ bail:
             break;
     }
     
+    //execute on current thread
     if(YES == [NSThread isMainThread])
     {
+        //set not found label
+        self.noItemsLabel.stringValue = noItemsMsg;
+        
+        //finalize
         [self finalizeBottomReload];
     }
     else
@@ -496,7 +580,12 @@ bail:
         // ->in main UI thread
         dispatch_async(dispatch_get_main_queue(), ^{
             
+            //set not found label
+            self.noItemsLabel.stringValue = noItemsMsg;
+            
+            //finalize
             [self finalizeBottomReload];
+            
         });
     }
     
@@ -550,10 +639,14 @@ bail:
         // ->use all tasks
         if(YES != self.taskTableController.isFiltered)
         {
-            //TODO: sync? YESSS!!!!
-            
+            //sync
+            @synchronized(self.taskEnumerator.tasks)
+            {
+                
             //get tasks
             tasks = self.taskEnumerator.tasks;
+            
+            //reload each row w/ new VT info
             for(NSNumber* taskPid in tasks)
             {
                 //extract task
@@ -566,11 +659,18 @@ bail:
                     [self reloadRow:task];
                 }
             }
+
+            }//sync
+            
         }
         //when filtered
         // ->use filtered items
         else
         {
+            //sync
+            @synchronized(self.taskTableController.filteredItems)
+            {
+            
             //filtered items
             for(Task* task in self.taskTableController.filteredItems)
             {
@@ -581,13 +681,14 @@ bail:
                     [self reloadRow:task];
                 }
             }
+                
+            }//sync
         }
-        
         
     }//top pane
     
     //bottom pane
-    // ->can just invoke 'reloadRow' method (which has logic to handle filtering, ignoring 'not found' items, etc.
+    // ->can just invoke 'reloadRow' method (which has logic to handle filtering, ignoring 'not found' items, etc.)
     else
     {
         //reload
@@ -708,9 +809,8 @@ bail:
     return;
 }
 
-//TODO: don't think we need to sort by pid, since tree view, just uses kids!!!
 //sort tasks
-// ->either name (flat view) or pid (tree view)
+// ->just by name (for flat view)
 -(void)sortTasksForView:(OrderedDictionary*)tasks;
 {
     //sort tasks
@@ -719,13 +819,6 @@ bail:
     {
         //sort
         [tasks sort:SORT_BY_NAME];
-    }
-    //sort tasks
-    // ->tree view, sort by pid
-    else
-    {
-        //sort
-        [tasks sort:SORT_BY_PID];
     }
     
     return;
@@ -746,7 +839,6 @@ bail:
         dispatch_async(dispatch_get_main_queue(), ^{
             
             //refresh
-            //[self.taskTableController refresh];
             [(id)self.taskTableController refresh];
             
         });
@@ -756,92 +848,12 @@ bail:
     // ->just refresh
     else
     {
-        //TODO: currentViewCont?!?
         //refresh
         [(id)self.taskTableController refresh];
     }
     
     return;
 }
-
-
-/*
-//callback method, invoked by virus total when plugin's items have been processed
-// ->reload table if plugin matches active plugin
--(void)itemsProcessed:(PluginBase*)plugin
-{
-    //if there are any flagged items
-    // ->reload category table (to trigger title turning red)
-    if(0 != plugin.flaggedItems.count)
-    {
-        //execute on main (UI) thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            
-            //reload category table
-            [self.categoryTableController customReload];
-            
-        });
-    }
-
-    //check if active plugin matches
-    if(plugin == self.selectedPlugin)
-    {
-        //execute on main (UI) thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
-        
-            //scroll to top of item table
-            [self.taskTableController scrollToTop];
-            
-            //reload item table
-            [self.taskTableController.itemTableView reloadData];
-
-        });
-    }
-    
-    return;
-}
-*/
-
-/*
- 
-//update a single row
--(void)itemProcessed:(File*)fileObj rowIndex:(NSUInteger)rowIndex
-{
-    //reload category table (on main thread)
-    // ->ensures correct title color (red, or reset)
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        
-        //reload category table
-        [self.categoryTableController customReload];
-        
-    });
-    
- 
-
-    //check if active plugin matches
-    if(fileObj.plugin == self.selectedPlugin)
-    {
-        //execute on main (UI) thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            
-            //start table updates
-            [self.taskTableController.itemTableView beginUpdates];
-            
-            //update
-            [self.taskTableController.itemTableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
-            
-            //end table updates
-            [self.taskTableController.itemTableView endUpdates];
-            
-        });
-    }
- 
-     
-    return;
-}
-
-*/
-
 
 //callback when user has updated prefs
 // ->reload table, etc
@@ -1064,8 +1076,10 @@ bail:
             //start JSON
             [output appendString:@"{\"tasks:\":["];
             
-            //TODO: sync taskEnumerator.tasks!! since user can click 'refresh' etc?
-            
+            //sync
+            @synchronized(self.taskEnumerator.tasks)
+            {
+                
             //get tasks
             for(NSNumber* taskPid in self.taskEnumerator.tasks)
             {
@@ -1073,6 +1087,8 @@ bail:
                 [output appendFormat:@"{%@},", [self.taskEnumerator.tasks[taskPid] toJSON]];
             }
             
+            }//sync
+                
             //remove last ','
             if(YES == [output hasSuffix:@","])
             {
@@ -1088,7 +1104,7 @@ bail:
             if(YES != [output writeToURL:[panel URL] atomically:NO encoding:NSUTF8StringEncoding error:&error])
             {
                 //err msg
-                NSLog(@"OBJECTIVE-SEE ERROR: saving output to %@ failed with %@", [panel URL], error);
+                syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: saving output to %s failed with %s", [[panel URL] fileSystemRepresentation], [[error description] UTF8String]);
                 
                 //init popup w/ error msg
                 saveResultPopup = [NSAlert alertWithMessageText:@"ERROR: failed to save output" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"details: %@", error];
@@ -1117,11 +1133,11 @@ bail:
 
 //automatically invoked when user clicks 'search' button
 // ->perform global search
-//TODO: implement
+//TODO: implement (in next version)
 - (IBAction)search:(id)sender
 {
     //'unimplemented' msg
-    __block NSAlert* errorPopup = nil;
+    NSAlert* errorPopup = nil;
     
     //init popup w/ msg
     errorPopup = [NSAlert alertWithMessageText:@"sorry, 'global search' not yet implemented" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"...should be in next version :)"];
@@ -1267,7 +1283,6 @@ bail:
 
 //(automatically) invoked on segmented button click or (manually) on task (top pane) switch
 // ->change input (for pane) & then refresh it
-//TODO: make xpcConnection appDelegate iVar
 -(IBAction)selectBottomPaneContent:(id)sender
 {
     //tag
@@ -1295,21 +1310,6 @@ bail:
 
     //get segment tag
     segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
-    
-    /*
-    //for dylibs
-    // ->don't want to re-enum if initial enumerations is still occuring
-    if( (DYLIBS_VIEW == segmentTag) &&
-        (YES != [self.taskEnumerator shouldEnumDylibs]) &&
-        (0 != self.currentTask.dylibs.count) )
-    {
-        //just reload pane
-        [self reloadBottomPane:self.currentTask itemView:segmentTag];
-            
-        //bail
-        goto bail;
-    }
-    */
     
     //always hide 'no items' label
     self.noItemsLabel.hidden = YES;
@@ -1354,7 +1354,7 @@ bail:
             
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateDylibs:self.taskEnumerator.xpcConnection allDylibs:self.taskEnumerator.dylibs];
+            [self.currentTask enumerateDylibs:self.xpcConnection allDylibs:self.taskEnumerator.dylibs];
             
             break;
             
@@ -1366,7 +1366,7 @@ bail:
             
             //(re)enumerate files via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateFiles:self.taskEnumerator.xpcConnection];
+            [self.currentTask enumerateFiles:self.xpcConnection];
 
             break;
             
@@ -1378,7 +1378,7 @@ bail:
             
             //(re)enumerate network connections via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateNetworking:self.taskEnumerator.xpcConnection];
+            [self.currentTask enumerateNetworking:self.xpcConnection];
             
             break;
             
@@ -1571,7 +1571,6 @@ bail:
     
 }
 
-
 //action for 'refresh' button
 // ->query OS to refresh/reload all tasks
 -(IBAction)refreshTasks:(id)sender
@@ -1581,6 +1580,18 @@ bail:
     
     //select top row
     [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    
+    //TODO: don't reset filtered items?
+    // ...will require some smart filtering :/
+    
+    //unset filter flag
+    self.taskTableController.isFiltered = NO;
+    
+    //remove all filtered items
+    [self.taskTableController.filteredItems removeAllObjects];
+    
+    //reset filter box
+    self.filterTasksBox.stringValue = @"";
      
     //scroll to top
     [self.taskTableController scrollToTop];

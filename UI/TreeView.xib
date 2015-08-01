@@ -48,11 +48,11 @@
                                                 <rect key="frame" x="1" y="43" width="1323" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
-                                                    <imageView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0MH-nf-7QQ">
-                                                        <rect key="frame" x="5" y="9" width="26" height="23"/>
+                                                    <imageView misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0MH-nf-7QQ">
+                                                        <rect key="frame" x="5" y="9" width="25" height="25"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="20" id="H6L-AG-feD"/>
-                                                            <constraint firstAttribute="width" constant="20" id="ga9-0m-fXA"/>
+                                                            <constraint firstAttribute="height" constant="25" id="H6L-AG-feD"/>
+                                                            <constraint firstAttribute="width" constant="25" id="ga9-0m-fXA"/>
                                                         </constraints>
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="f0H-dZ-zgU"/>
                                                     </imageView>
@@ -172,13 +172,14 @@
                                                     <constraint firstAttribute="trailing" secondItem="TmP-0K-QL5" secondAttribute="trailing" constant="20" id="0bt-Nx-vbM"/>
                                                     <constraint firstItem="nqZ-Aq-OkZ" firstAttribute="leading" secondItem="GDK-Bv-5jW" secondAttribute="trailing" constant="8" id="5yT-0e-n5j"/>
                                                     <constraint firstItem="2ct-ht-5c2" firstAttribute="leading" secondItem="mDy-ep-li0" secondAttribute="trailing" constant="22" id="9gD-bt-2Vv"/>
-                                                    <constraint firstItem="GDK-Bv-5jW" firstAttribute="leading" secondItem="0MH-nf-7QQ" secondAttribute="trailing" constant="8" id="HOi-bL-Int"/>
+                                                    <constraint firstItem="GDK-Bv-5jW" firstAttribute="leading" secondItem="0MH-nf-7QQ" secondAttribute="trailing" constant="2" id="HOi-bL-Int"/>
                                                     <constraint firstItem="mDy-ep-li0" firstAttribute="leading" secondItem="Bla-ft-Ebs" secondAttribute="trailing" constant="22" id="ROe-3J-TzR"/>
                                                     <constraint firstItem="Gwh-Pi-Cr8" firstAttribute="leading" secondItem="1Zt-oA-mKx" secondAttribute="trailing" constant="8" id="g0l-EE-VzB"/>
                                                     <constraint firstItem="VXc-BM-7cb" firstAttribute="leading" secondItem="nqZ-Aq-OkZ" secondAttribute="trailing" constant="11" id="jvP-fF-CXE"/>
                                                     <constraint firstAttribute="trailing" secondItem="2ct-ht-5c2" secondAttribute="trailing" constant="20" id="mnd-fE-dNh"/>
                                                     <constraint firstItem="TmP-0K-QL5" firstAttribute="leading" secondItem="VXc-BM-7cb" secondAttribute="trailing" constant="17" id="r5M-1N-uEu"/>
-                                                    <constraint firstItem="0MH-nf-7QQ" firstAttribute="leading" secondItem="cj0-rp-Uha" secondAttribute="leading" constant="8" id="x6f-e1-y92"/>
+                                                    <constraint firstItem="0MH-nf-7QQ" firstAttribute="top" secondItem="cj0-rp-Uha" secondAttribute="top" constant="8" id="x2F-4g-SxS"/>
+                                                    <constraint firstItem="0MH-nf-7QQ" firstAttribute="leading" secondItem="cj0-rp-Uha" secondAttribute="leading" constant="4" id="x6f-e1-y92"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="imageView" destination="0MH-nf-7QQ" id="sAM-br-vYx"/>

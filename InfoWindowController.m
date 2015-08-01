@@ -119,6 +119,15 @@
         //set name
         [self.name setStringValue:[self valueForStringItem:task.binary.name default:@"unknown"]];
         
+        //flagged items
+        // ->make name red!
+        if( (nil != task.binary.vtInfo) &&
+            (0 != [task.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+        {
+            //red
+            self.name.textColor = [NSColor redColor];
+        }
+        
         //set command line
         // ->done just in time (first time)
         if(nil == task.arguments)
@@ -129,18 +138,6 @@
         
         //set args
         [self.arguments setStringValue:[self valueForStringItem:[task.arguments componentsJoinedByString:@""] default:@"no arguments"]];
-        
-        //TODO:enable
-        /*
-        //flagged files
-        // ->make name red!
-        if( (nil != ((File*)self.itemObj).vtInfo) &&
-           (0 != [((File*)self.itemObj).vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
-        {
-            //set color (light red)
-            self.name.textColor = [NSColor redColor];
-        }
-        */
          
         //set path
         [self.path setStringValue:[self valueForStringItem:task.binary.path default:@"unknown"]];
@@ -174,10 +171,10 @@
         [self.sign setStringValue:[self valueForStringItem:[task.binary formatSigningInfo] default:@"not signed"]];
     }
     
-    //handle binaries
+    //handle binaries (dylibs)
     else if(YES == [self.itemObj isKindOfClass:[Binary class]])
     {
-        //type cast
+        //cast as binary/dylib
         dylib = (Binary*)self.itemObj;
         
         //set icon
@@ -186,17 +183,14 @@
         //set name
         [self.name setStringValue:[self valueForStringItem:dylib.name default:@"unknown"]];
         
-        //TODO: enable?!
-        /*
-         //flagged files
-         // ->make name red!
-         if( (nil != ((File*)self.itemObj).vtInfo) &&
-         (0 != [((File*)self.itemObj).vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
-         {
-         //set color (light red)
-         self.name.textColor = [NSColor redColor];
-         }
-         */
+        //flagged items
+        // ->make name red!
+        if( (nil != dylib.vtInfo) &&
+            (0 != [dylib.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
+        {
+            //red
+            self.name.textColor = [NSColor redColor];
+        }
         
         //set path
         [self.path setStringValue:[self valueForStringItem:dylib.path default:@"unknown"]];

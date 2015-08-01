@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
@@ -8,16 +8,11 @@
         <customObject id="-2" userLabel="File's Owner" customClass="InfoWindowController">
             <connections>
                 <outlet property="connection" destination="NA2-2e-4hN" id="XMN-mp-7hv"/>
-                <outlet property="date" destination="Wbv-SK-w53" id="Li5-qD-Hxq"/>
                 <outlet property="family" destination="Wbv-SK-w53" id="Ed4-yA-B9v"/>
-                <outlet property="hashes" destination="GQc-va-MLN" id="ta6-6g-dzh"/>
                 <outlet property="icon" destination="l8H-S3-g8O" id="BO7-3z-ZLM"/>
                 <outlet property="name" destination="NA2-2e-4hN" id="0Lg-xP-m03"/>
-                <outlet property="plist" destination="vm8-PU-Bu0" id="9mC-ha-tfK"/>
                 <outlet property="protocol" destination="hLU-fi-qXH" id="tyd-MH-eeo"/>
-                <outlet property="size" destination="hLU-fi-qXH" id="wZf-h4-BKf"/>
                 <outlet property="state" destination="vm8-PU-Bu0" id="7w4-tn-ItA"/>
-                <outlet property="status" destination="vm8-PU-Bu0" id="nbA-pd-Eha"/>
                 <outlet property="type" destination="GQc-va-MLN" id="l7V-wT-132"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>

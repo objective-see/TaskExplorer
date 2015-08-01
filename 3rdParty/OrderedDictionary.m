@@ -101,12 +101,7 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
 	return [array objectEnumerator];
 }
 
-/*
-- (NSEnumerator *)reverseKeyEnumerator
-{
-	return [array reverseObjectEnumerator];
-}
-*/
+
  
 -(void)insertObject:(id)anObject forKey:(id)aKey atIndex:(NSUInteger)anIndex
 {
@@ -139,17 +134,11 @@ bail:
     return item;
 }
 
-//TODO: add sanity checks
-//given an key
+//given a key
 // ->return its index
 -(NSUInteger)indexOfKey:(id)aKey
 {
     return [array indexOfObject:aKey];
-}
-
--(void)reverse
-{
-    array = [[[array reverseObjectEnumerator] allObjects] mutableCopy];
 }
 
 //sort
@@ -159,13 +148,14 @@ bail:
     //task sorted by name
     NSArray* sortedTasks = nil;
     
-    //
+    //sort by pid
     if(SORT_BY_PID == sortBy)
     {
         [array sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
             return [obj1 compare:obj2];
         }];
     }
+    //sort by name
     else if(SORT_BY_NAME == sortBy)
     {
         //get array of tasks, sorted by binary name
@@ -174,37 +164,9 @@ bail:
         
         //extract sorted pids into array
         array = [[sortedTasks valueForKey:@"pid"] mutableCopy];
-        
     }
-    
     
     return;
 }
-
-
-
-/*
-- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level
-{
-	NSMutableString *indentString = [NSMutableString string];
-	NSUInteger i, count = level;
-	for (i = 0; i < count; i++)
-	{
-		[indentString appendFormat:@"    "];
-	}
-	
-	NSMutableString *description = [NSMutableString string];
-	[description appendFormat:@"%@{\n", indentString];
-	for (NSObject *key in self)
-	{
-		[description appendFormat:@"%@    %@ = %@;\n",
-			indentString,
-			DescriptionForObject(key, locale, level),
-			DescriptionForObject([self objectForKey:key], locale, level)];
-	}
-	[description appendFormat:@"%@}\n", indentString];
-	return description;
-}
-*/
 
 @end

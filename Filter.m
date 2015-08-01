@@ -176,39 +176,58 @@ NSString * const KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned"
 }
 
 //filter network connections
-//TODO: match on state, etc?
-//TODO: make format of range seach/check/continue
+//TODO: match on family/connection type
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
-    //local IP addr range
-    NSRange localIPRange = {0};
-    
-    //local port range
-    NSRange localPortRange = {0};
-
-    //TODO: add remote ip/port, state, proto, family?
-    
     //first reset filter'd items
     [results removeAllObjects];
     
     //iterate over all tasks
     for(Connection* item in items)
     {
-        //init name range
-        localIPRange = [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //init path range
-        localPortRange = [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch];
-        
-        //check for match
-        if( (NSNotFound != localIPRange.location) ||
-            (NSNotFound != localPortRange.location) )
+        //check local ip
+        if(NSNotFound != [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
         {
             //save match
             [results addObject:item];
+            
+            //next
+            continue;
         }
         
-    }//all items
+        //check local port
+        if(NSNotFound != [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+        //check remote ip
+        if( (nil != item.remoteIPAddr) &&
+            (NSNotFound != [item.remoteIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+        //check remote port
+        if( (nil != item.remoteIPAddr) &&
+            (NSNotFound != [[NSString stringWithFormat:@"%d", [item.remotePort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+    }//all connections
     
     return;
 }
@@ -346,7 +365,7 @@ bail:
     BOOL isFlagged = NO;
     
     //check
-    //TODO: query VT if needed?
+    // ->note: assumes that VT query has already completed...
     if( (nil != item.vtInfo) &&
         (0 != [item.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
     {

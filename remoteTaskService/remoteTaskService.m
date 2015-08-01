@@ -3,10 +3,8 @@
 //  remoteTaskService
 //
 //  Created by Patrick Wardle on 5/27/15.
-//  Copyright (c) 2015 Lucas Derraugh. All rights reserved.
+//  Copyright (c) 2015 Patrick Wardle. All rights reserved.
 //
-//TODO: make sure task is still active (maybe in client, b4 calling this?!
-
 #import "remoteTaskService.h"
 #import "Consts.h"
 
@@ -23,7 +21,7 @@
 #import <arpa/inet.h>
 #import <netinet/tcp_fsm.h>
 #import <netdb.h>
-
+#import <syslog.h>
 
 
 static const char *socketFamilies[] =
@@ -78,7 +76,8 @@ struct dyld_image_info_32 {
 
 @implementation remoteTaskService
 
-+ (remoteTaskService *)defaultService {
++(remoteTaskService *)defaultService
+{
     static dispatch_once_t onceToken;
     static remoteTaskService *shared;
     dispatch_once(&onceToken, ^{
@@ -145,7 +144,7 @@ struct dyld_image_info_32 {
     if(KERN_SUCCESS != status)
     {
         //err msg
-        NSLog(@"ERROR: task_for_pid() failed w/ %d", status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: task_for_pid() failed w/ %d", status);
         
         //bail
         goto bail;
@@ -171,7 +170,7 @@ struct dyld_image_info_32 {
     if(KERN_SUCCESS != status)
     {
         //err msg
-        NSLog(@"ERROR: mach_vm_read() failed w/ %d", status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: mach_vm_read() failed w/ %d", status);
         
         //bail
         goto bail;
@@ -206,7 +205,7 @@ struct dyld_image_info_32 {
     if(KERN_SUCCESS != status)
     {
         //err msg
-        NSLog(@"ERROR: mach_vm_read() failed w/ %d", status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: mach_vm_read() failed w/ %d", status);
         
         //bail
         goto bail;
@@ -243,6 +242,8 @@ struct dyld_image_info_32 {
         //remotely read into dylib's path!
         // ->seems to always fail for first image, which is base executable...
         status = mach_vm_read(remoteTask, (vm_address_t)remoteReadAddr, PATH_MAX, (vm_offset_t*)&dylibPath, &dpBytesRead);
+        
+        //sanity check
         if( (KERN_SUCCESS != status) ||
             (NULL == dylibPath) )
         {
@@ -262,7 +263,6 @@ struct dyld_image_info_32 {
         //dealloc
         mach_vm_deallocate(mach_task_self(), (vm_offset_t)dylibPath, dpBytesRead);
 
-        
     }//for all dyld_image_info_32/dyld_image_info structs
     
 //bail
@@ -545,6 +545,9 @@ bail:
         {
             //get local ip addr
             inet_ntop(AF_INET6, &socketInfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6, localIPAddr, sizeof(localIPAddr));
+            
+            //TODO: ::1 -> 'loopback' or 0:0:0:0:0:0:0:1
+            // or ::0, 'unspecified' (see: https://en.wikipedia.org/wiki/IPv6_address)
             
             //add local ip addr
             socket[KEY_LOCAL_ADDR] = [NSString stringWithUTF8String:localIPAddr];

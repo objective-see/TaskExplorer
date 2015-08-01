@@ -12,6 +12,8 @@
 #import "VirusTotal.h"
 #import "AppDelegate.h"
 
+#import <syslog.h>
+
 @implementation VirusTotal
 
 @synthesize items;
@@ -439,7 +441,7 @@
             if(nil == postData)
             {
                 //err msg
-                NSLog(@"OBJECTIVE-SEE ERROR: failed to convert request %@ to JSON", postData);
+                syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to convert request %s to JSON", [[postData description] UTF8String]);
                 
                 //bail
                 goto bail;
@@ -472,11 +474,11 @@
     
     //sanity check(s)
     if( (nil == vtData) ||
-       (nil != error) ||
-       (200 != (long)[(NSHTTPURLResponse *)httpResponse statusCode]) )
+        (nil != error) ||
+        (200 != (long)[(NSHTTPURLResponse *)httpResponse statusCode]) )
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to query VirusTotal (%@, %@)", error, httpResponse);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to query VirusTotal (%s, %s)", [[error description] UTF8String], [[httpResponse description] UTF8String]);
         
         //bail
         goto bail;
@@ -493,7 +495,7 @@
     @catch (NSException *exception)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: converting response %@ to JSON threw %@", vtData, exception);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: converting response %s to JSON threw %s", [[vtData description] UTF8String], [[exception description] UTF8String]);
         
         //bail
         goto bail;
@@ -503,7 +505,7 @@
     if(nil == results)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to convert response %@ to JSON", vtData);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to convert response %s to JSON", [[vtData description] UTF8String]);
         
         //bail
         goto bail;
@@ -578,7 +580,7 @@ bail:
     if(nil == fileContents)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to load %@ into memory for submission", item.path);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to load %s into memory for submission", [item.path UTF8String]);
         
         //bail
         goto bail;
@@ -618,7 +620,7 @@ bail:
         (200 != (long)[(NSHTTPURLResponse *)httpResponse statusCode]) )
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to query VirusTotal (%@, %@)", error, httpResponse);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to query VirusTotal (%s, %s)", [[error description] UTF8String], [[httpResponse description] UTF8String]);
         
         //bail
         goto bail;
@@ -635,7 +637,7 @@ bail:
     @catch (NSException *exception)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: converting response %@ to JSON threw %@", vtData, exception);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: converting response %s to JSON threw %s", [[vtData description] UTF8String], [[exception description] UTF8String]);
         
         //bail
         goto bail;
@@ -645,7 +647,7 @@ bail:
     if(nil == results)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to convert response %@ to JSON", vtData);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to convert response %s to JSON", [[vtData description] UTF8String]);
         
         //bail
         goto bail;
@@ -683,13 +685,12 @@ bail:
     if(nil == result)
     {
         //err msg
-        NSLog(@"OBJECTIVE-SEE ERROR: failed to re-scan %@", item.name);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to re-scan %s", [item.name UTF8String]);
         
         //bail
         goto bail;
     }
     
-
 //bail
 bail:
     
@@ -726,6 +727,7 @@ bail:
         
         
         //TODO: do something with detections!?
+        // ->blinking button, user's can click to see 'flagged items' popup
         //if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
     }
     

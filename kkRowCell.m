@@ -16,10 +16,6 @@
 //draw method
 - (void)drawRect:(NSRect)dirtyRect
 {
-    //TODO: bef0re/after/unneeded?
-    //super
-    [super drawRect:dirtyRect];
-    
     //draw custom color
     if(nil != self.color)
     {
@@ -30,7 +26,6 @@
         NSRectFill([self bounds]);
     }
 }
-
 
 //set background color
 // ->always light!

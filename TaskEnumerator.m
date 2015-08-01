@@ -14,9 +14,10 @@
 #import "AppDelegate.h"
 #import "Utilities.h"
 #import "TaskEnumerator.h"
-#import "serviceInterface.h"
-#include <signal.h>
-#include <unistd.h>
+
+#import <syslog.h>
+#import <signal.h>
+#import <unistd.h>
 
 
 
@@ -29,9 +30,8 @@
 @synthesize dylibs;
 @synthesize binaryQueue;
 @synthesize executables;
-@synthesize xpcConnection;
 
-//@synthesize firstScanComplete;
+
 
 //init
 -(id)init
@@ -49,42 +49,6 @@
         //alloc dylibs dictionary
         dylibs = [NSMutableDictionary dictionary];
         
-        //alloc XPC connection
-        xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
-        
-        //set remote object interface
-        self.xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
-        
-        //set classes
-        // ->arrays & strings are what is ok to vend
-        [self.xpcConnection.remoteObjectInterface
-         setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
-         forSelector: @selector(enumerateDylibs:withReply:)
-         argumentIndex: 0  // the first parameter
-         ofReply: YES // in the method itself.
-         ];
-        
-        //set classes
-        // ->arrays & strings are what is ok to vend
-        [self.xpcConnection.remoteObjectInterface
-         setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
-         forSelector: @selector(enumerateFiles:withReply:)
-         argumentIndex: 0  // the first parameter
-         ofReply: YES // in the method itself.
-         ];
-        
-        //set classes
-        // ->arrays & strings are what is ok to vend
-        [self.xpcConnection.remoteObjectInterface
-         setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], [NSNumber class], nil]
-         forSelector: @selector(enumerateNetwork:withReply:)
-         argumentIndex: 0  // the first parameter
-         ofReply: YES // in the method itself.
-         ];
-
-        //resume
-        [self.xpcConnection resume];
-        
         //init binary processing queue
         binaryQueue = [[Queue alloc] init];
 
@@ -96,7 +60,7 @@
 
 //enumerate all tasks
 // ->calls back into app delegate to update task (top) table when pau
-//   TOOD: call every x # of seconds?
+//   TODO: call every x # of seconds?
 -(void)enumerateTasks
 {
     //(new) task item
@@ -150,10 +114,14 @@
             continue;
         }
         
-        //TODO: sync?
+        //sync
+        @synchronized(self.tasks)
+        {
         
         //add new task
         [self.tasks setObject:newTask forKey:newTask.pid];
+            
+        }//sync
         
     }//add new tasks
     
@@ -243,7 +211,7 @@
     if(status < 0)
     {
         //err
-        NSLog(@"OBJECTIVE-SEE ERROR: proc_listpids() failed with %d", status);
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: proc_listpids() failed with %d", status);
         
         //bail
         goto bail;
@@ -313,11 +281,8 @@ bail:
     return allTasks;
 }
 
-//TODO: remove!
 //insert tasks into appropriate parent
 // ->ensures order of parent's (by pid), is preserved
-//TODO: what about parentless procs!? (e.g. malware?)
-//TODO: what about dead-parents, 'desktop helper'
 -(void)generateAncestries:(OrderedDictionary*)newTasks
 {
     //task
@@ -353,12 +318,20 @@ bail:
         //get task
         task = newTasks[key];
         
+        //ignore tasks that have died
+        if(YES != isAlive([task.pid intValue]))
+        {
+            //next
+            continue;
+        }
+        
         //get parent
         parent = newTasks[task.ppid];
         
-        //when parent is nil
+        //when parent is nil or dead
         // ->default to launchd (pid 0x1)
-        if(nil == parent)
+        if( (nil == parent) ||
+            (YES != isAlive([task.pid intValue])) )
         {
             //default
             parent = self.tasks[@1];

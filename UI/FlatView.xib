@@ -48,11 +48,11 @@
                                                 <rect key="frame" x="1" y="1" width="1301" height="40"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
-                                                    <imageView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cG6-PF-La2">
-                                                        <rect key="frame" x="5" y="9" width="26" height="23"/>
+                                                    <imageView misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cG6-PF-La2">
+                                                        <rect key="frame" x="1" y="7" width="25" height="25"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="20" id="9B3-Dt-CCW"/>
-                                                            <constraint firstAttribute="width" constant="20" id="XhL-Yo-1xA"/>
+                                                            <constraint firstAttribute="height" constant="25" id="9B3-Dt-CCW"/>
+                                                            <constraint firstAttribute="width" constant="25" id="XhL-Yo-1xA"/>
                                                         </constraints>
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="0cD-OF-kgr"/>
                                                     </imageView>
@@ -169,11 +169,12 @@
                                                     </textField>
                                                 </subviews>
                                                 <constraints>
+                                                    <constraint firstItem="cG6-PF-La2" firstAttribute="top" secondItem="sdY-t5-tbW" secondAttribute="top" constant="7" id="5Ro-94-5jo"/>
                                                     <constraint firstItem="Nky-Qb-S7Z" firstAttribute="leading" secondItem="ryD-lC-8IR" secondAttribute="trailing" constant="8" id="7Og-f1-rQH"/>
-                                                    <constraint firstItem="cG6-PF-La2" firstAttribute="leading" secondItem="sdY-t5-tbW" secondAttribute="leading" constant="8" id="7ms-dD-as0"/>
+                                                    <constraint firstItem="cG6-PF-La2" firstAttribute="leading" secondItem="sdY-t5-tbW" secondAttribute="leading" constant="4" id="7ms-dD-as0"/>
                                                     <constraint firstItem="MqO-G8-w9L" firstAttribute="leading" secondItem="aPz-9H-xyy" secondAttribute="trailing" constant="11" id="AYq-NQ-9ty"/>
                                                     <constraint firstItem="Y4J-KD-8iy" firstAttribute="leading" secondItem="eBe-7K-OiH" secondAttribute="trailing" constant="22" id="AeK-oE-FOW"/>
-                                                    <constraint firstItem="miW-QO-gna" firstAttribute="leading" secondItem="cG6-PF-La2" secondAttribute="trailing" constant="8" id="J3y-8b-F3q"/>
+                                                    <constraint firstItem="miW-QO-gna" firstAttribute="leading" secondItem="cG6-PF-La2" secondAttribute="trailing" constant="2" id="J3y-8b-F3q"/>
                                                     <constraint firstItem="aPz-9H-xyy" firstAttribute="leading" secondItem="miW-QO-gna" secondAttribute="trailing" constant="8" id="Uzg-uC-v3U"/>
                                                     <constraint firstItem="gpF-bM-EQR" firstAttribute="leading" secondItem="MqO-G8-w9L" secondAttribute="trailing" constant="17" id="YUh-1b-zZn"/>
                                                     <constraint firstAttribute="trailing" secondItem="gpF-bM-EQR" secondAttribute="trailing" constant="20" id="ZwL-8K-oUV"/>
