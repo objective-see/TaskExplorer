@@ -141,11 +141,6 @@
 //remote XPC interface
 @property (nonatomic, retain) NSXPCConnection* xpcConnection;
 
-//action for 'refresh' button
-// ->query OS to refresh/reload all tasks
-- (IBAction)refreshTasks:(id)sender;
-
-
 
 /* METHODS */
 
@@ -162,6 +157,9 @@
 // ->provide mouse over effects
 -(void)initTrackingAreas;
 
+//action for 'refresh' button
+// ->query OS to refresh/reload all tasks
+-(IBAction)refreshTasks:(id)sender;
 
 
 //callback when user has updated prefs

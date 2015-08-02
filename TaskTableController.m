@@ -45,7 +45,7 @@
     if(YES != self.didInit)
     {
         //init selected row
-        self.selectedRow = -1;
+        self.selectedRow = 0;
         
         //alloc array for filtered items
         filteredItems = [NSMutableArray array];
@@ -61,24 +61,8 @@
         self.didInit = YES;
     }
     
-
+    return;
 }
-
-
-/*
-//invoked automatically while nib is loaded
-// ->note: outlets are nil here...
--(id)init
-{
-    self = [super init];
-    if(nil != self)
-    {
-        self.selectedRow = -1;
-    }
-    
-    return self;
-}
-*/
 
 //table delegate
 // ->return number of rows, which is just number of items in the currently selected plugin
@@ -464,7 +448,18 @@ bail:
     if(nil != selectedTask)
     {
         //get task's index
-        taskIndex = [tasks indexOfKey:selectedTask.pid];
+        // ->flat view, can do a straight lookup
+        if(YES != [self.itemView isKindOfClass:[NSOutlineView class]])
+        {
+            //get index
+            taskIndex = [tasks indexOfKey:selectedTask.pid];
+        }
+        //get task's index
+        // ->outline view, use 'rowForItem' method
+        else
+        {
+            taskIndex = [(NSOutlineView*)self.itemView rowForItem:selectedTask];
+        }
         
         //(re)select task's row
         // ->but only if task still exists (e.g. didn't exit)
@@ -907,7 +902,7 @@ bail:
         goto bail;
     }
     
-    //get row that's about to be selected
+    //get view that's about to be selected
     selectedView = [self.itemView viewAtColumn:0 row:newlySelectedRow makeIfNecessary:YES];
        
     //extract task
@@ -923,8 +918,8 @@ bail:
         //draw
         [selectedView setNeedsDisplay:YES];
         
-        //make hide it after 1/4th second
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        //make hide it after .33 second
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.33 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             
             //reset color
             ((kkRowCell*)selectedView).color = nil;
@@ -974,7 +969,7 @@ bail:
     }
     
     //ignore if row selection and task didn't change
-    if( ([self.itemView selectedRow] == self.selectedRow) &&
+    if( (newlySelectedRow == self.selectedRow) &&
         (((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask == task) )
     {
         //ignore

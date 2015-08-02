@@ -314,7 +314,11 @@ bail:
     //file info dictionary
     NSMutableDictionary* fileInfo = nil;
     
-    //files
+    //just file paths
+    // ->helps detect/ignore dups
+    NSMutableArray* filePaths = nil;
+    
+    //unique files
     NSMutableArray* files = nil;
     
     //init task
@@ -323,7 +327,10 @@ bail:
     //init pipe
     pipe = [NSPipe pipe];
     
-    //init array for files
+    //init array for file paths
+    filePaths = [NSMutableArray array];
+    
+    //init array for unqiue files
     files = [NSMutableArray array];
     
     //set task's stdout to pipe
@@ -396,6 +403,13 @@ bail:
             continue;
         }
         
+        //also avoid duplicates
+        if(YES == [filePaths containsObject:filePath])
+        {
+            //skip
+            continue;
+        }
+        
         //alloc info dictionary
         fileInfo = [NSMutableDictionary dictionary];
         
@@ -404,6 +418,10 @@ bail:
         
         //save
         [files addObject:fileInfo];
+        
+        //add to list of paths
+        // ->prevents dups
+        [filePaths addObject:filePath];
     }
     
 //bail

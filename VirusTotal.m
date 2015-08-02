@@ -154,7 +154,7 @@
     for(Binary* item in vtItems)
     {
         //skip items with blank hashes
-        // ->TODO not sure why this would happen
+        // ->not sure why this would happen...
         if(nil == item.hashes[KEY_HASH_SHA1])
         {
             //skip

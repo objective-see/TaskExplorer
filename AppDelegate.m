@@ -421,7 +421,6 @@ bail:
                 //get row
                 row = [self.taskTableController.filteredItems indexOfObject:item];
             }
-            
         }
         //reload item
         // ->tree view, so no need to worry about filtering
@@ -1300,6 +1299,14 @@ bail:
     //remove all filtered items
     [self.bottomViewController.filteredItems removeAllObjects];
     
+    //for currently selected tasks
+    // ->check if its still alive
+    if(nil != self.currentTask)
+    {
+        //helper method that takes care of all check/handling dead tasks :)
+        [self.taskTableController handleRowSelection];
+    }
+    
     //when no current task
     // ->set to first task in sorted tasks
     if(nil == self.currentTask)
@@ -1578,9 +1585,6 @@ bail:
     //unselect current task
     self.currentTask = nil;
     
-    //select top row
-    [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-    
     //TODO: don't reset filtered items?
     // ...will require some smart filtering :/
     
@@ -1592,10 +1596,16 @@ bail:
     
     //reset filter box
     self.filterTasksBox.stringValue = @"";
-     
+    
+    //reset segment (bottom pane) back to dylibs
+    self.bottomPaneBtn.selectedSegment = DYLIBS_VIEW;
+    
     //scroll to top
     [self.taskTableController scrollToTop];
-
+    
+    //select top row
+    [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    
     //get tasks
     // ->background thread will enum tasks, update table, etc
     [self exploreTasks];
