@@ -85,10 +85,15 @@
         //process
         //->for now, just hash, etc
         [binary generateDetailedInfo];
-         
-        //add item for VT processing
-        [vtObject addItem:binary];
         
+        //when connected
+        // ->add item for VT processing
+        if(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected)
+        {
+            //add
+            [vtObject addItem:binary];
+        }
+            
         //unlock
         [self.queueCondition unlock];
             

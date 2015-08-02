@@ -28,6 +28,7 @@
 
 @synthesize filterObj;
 @synthesize vtThreads;
+@synthesize isConnected;
 @synthesize virusTotalObj;
 @synthesize taskTableController;
 @synthesize aboutWindowController;
@@ -152,7 +153,6 @@
     //init XPC
     if(YES != [self initXPC])
     {
-
         //bail
         goto bail;
     }
@@ -770,32 +770,6 @@ bail:
     
     return;
 }
-
-
-/*
-//kickoff a thread to query VT
--(void)queryVT:(PluginBase*)plugin
-{
-    //virus total thread
-    NSThread* virusTotalThread = nil;
-    
-    //alloc thread
-    // ->will query virus total to get info about all detected items
-    virusTotalThread = [[NSThread alloc] initWithTarget:virusTotalObj selector:@selector(getInfo:) object:plugin];
-    
-    //start thread
-    [virusTotalThread start];
-    
-    //sync
-    @synchronized(self.vtThreads)
-    {
-        //save it into array
-        [self.vtThreads addObject:virusTotalThread];
-    }
-    
-    return;
-}
-*/
 
 //automatically invoked when user clicks logo
 // ->load objective-see's html page

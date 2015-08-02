@@ -49,6 +49,7 @@
 		CD7B9FA71ACCAE5E00DF3C71 /* startScanOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD7B9FA51ACCAE5E00DF3C71 /* startScanOver.png */; };
 		CD7B9FA81ACCAE5E00DF3C71 /* stopScanOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD7B9FA61ACCAE5E00DF3C71 /* stopScanOver.png */; };
 		CD7B9FAB1AD08FA100DF3C71 /* KKRow.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7B9FAA1AD08FA100DF3C71 /* KKRow.m */; };
+		CD7FBF251B6EDAC000578C5D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7FBF241B6EDAC000578C5D /* SystemConfiguration.framework */; };
 		CD83887F1AACCEDF000EB098 /* VirusTotal.m in Sources */ = {isa = PBXBuildFile; fileRef = CD83887E1AACCEDF000EB098 /* VirusTotal.m */; };
 		CDA5F6B41B16D805003CE340 /* remoteTaskService.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA5F6B31B16D805003CE340 /* remoteTaskService.m */; };
 		CDA5F6B61B16D805003CE340 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA5F6B51B16D805003CE340 /* main.m */; };
@@ -199,6 +200,7 @@
 		CD7B9FA61ACCAE5E00DF3C71 /* stopScanOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = stopScanOver.png; path = images/stopScanOver.png; sourceTree = SOURCE_ROOT; };
 		CD7B9FA91AD08FA100DF3C71 /* KKRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KKRow.h; sourceTree = "<group>"; };
 		CD7B9FAA1AD08FA100DF3C71 /* KKRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KKRow.m; sourceTree = "<group>"; };
+		CD7FBF241B6EDAC000578C5D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CD83887D1AACCEDF000EB098 /* VirusTotal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirusTotal.h; sourceTree = "<group>"; };
 		CD83887E1AACCEDF000EB098 /* VirusTotal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VirusTotal.m; sourceTree = "<group>"; };
 		CDA5F6AD1B16D805003CE340 /* remoteTaskService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = remoteTaskService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -290,6 +292,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD7FBF251B6EDAC000578C5D /* SystemConfiguration.framework in Frameworks */,
 				CDF08CEA1AC8D97B009B3423 /* Quartz.framework in Frameworks */,
 				CD6095731A87067D00E091CD /* Security.framework in Frameworks */,
 				1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */,
@@ -347,6 +350,7 @@
 		1D21BC4D172AF43D009D1CFD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CD7FBF241B6EDAC000578C5D /* SystemConfiguration.framework */,
 				CDF08CE91AC8D97B009B3423 /* Quartz.framework */,
 				CD6095721A87067D00E091CD /* Security.framework */,
 				1D21BC4E172AF43D009D1CFD /* Cocoa.framework */,

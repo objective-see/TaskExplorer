@@ -17,6 +17,7 @@
 #import <Security/Security.h>
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 
 //check if OS is supported
 // ->Lion and newer
@@ -694,10 +695,80 @@ BOOL isAlive(pid_t targetPID)
     if( (0 != kill(targetPID, 0)) &&
         (ESRCH == errno) )
     {
+        //alive
         isAlive = NO;
-
     }
     
     return isAlive;
+}
+
+//check if computer has network connection
+BOOL isNetworkConnected()
+{
+    //flag
+    BOOL isConnected = NO;
+    
+    //sock addr stuct
+    struct sockaddr zeroAddress = {0};
+    
+    //reachability ref
+    SCNetworkReachabilityRef reachabilityRef = NULL;
+    
+    //reachability flags
+    SCNetworkReachabilityFlags flags = 0;
+    
+    //reachable flag
+    BOOL isReachable = NO;
+    
+    //connection required flag
+    BOOL connectionRequired = NO;
+    
+    //ensure its cleared out
+    bzero(&zeroAddress, sizeof(zeroAddress));
+    
+    //set size
+    zeroAddress.sa_len = sizeof(zeroAddress);
+    
+    //set family
+    zeroAddress.sa_family = AF_INET;
+    
+    //create reachability ref
+    reachabilityRef = SCNetworkReachabilityCreateWithAddress(NULL, (const struct sockaddr*)&zeroAddress);
+    
+    //sanity check
+    if(NULL == reachabilityRef)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get flags
+    if(TRUE != SCNetworkReachabilityGetFlags(reachabilityRef, &flags))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //set reachable flag
+    isReachable = ((flags & kSCNetworkFlagsReachable) != 0);
+    
+    //set connection required flag
+    connectionRequired = ((flags & kSCNetworkFlagsConnectionRequired) != 0);
+    
+    //finally
+    // ->determine if network is available
+    isConnected = (isReachable && !connectionRequired) ? YES : NO;
+    
+//bail
+bail:
+    
+    //cleanup
+    if(NULL != reachabilityRef)
+    {
+        //release
+        CFRelease(reachabilityRef);
+    }
+    
+    return isConnected;
 }
 

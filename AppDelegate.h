@@ -31,13 +31,12 @@
 
 }
 
-//Filter obj
-//@property (nonatomic, retain) Filter* filter;
+//connection flag
+@property BOOL isConnected;
 
 //'filter task' search box
 // ->top pane
 @property (weak) IBOutlet NSSearchField *filterTasksBox;
-
 
 //(current) bottom view controller
 @property(nonatomic, retain)TaskTableController *bottomViewController;
@@ -51,7 +50,6 @@
 
 //task table controller object
 @property (nonatomic, retain)TaskTableController *taskTableController;
-
 
 //current task view format
 // ->flat or tree
@@ -160,7 +158,6 @@
 //action for 'refresh' button
 // ->query OS to refresh/reload all tasks
 -(IBAction)refreshTasks:(id)sender;
-
 
 //callback when user has updated prefs
 // ->reload table, etc

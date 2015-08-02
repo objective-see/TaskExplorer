@@ -20,8 +20,6 @@
 #import <unistd.h>
 
 
-
-
 @implementation TaskEnumerator
 
 
@@ -30,7 +28,6 @@
 @synthesize dylibs;
 @synthesize binaryQueue;
 @synthesize executables;
-
 
 
 //init
@@ -61,6 +58,7 @@
 //enumerate all tasks
 // ->calls back into app delegate to update task (top) table when pau
 //   TODO: call every x # of seconds?
+//   TODO: existsing tasks w/ nil vtInfo, call [vtObject addItem:binary] ?
 -(void)enumerateTasks
 {
     //(new) task item
@@ -72,6 +70,9 @@
     //new tasks
     OrderedDictionary* newTasks = nil;
     
+    //set connected flag
+    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
+
     //get all tasks
     // ->pids and binary obj with just path/name
     newTasks = [self getAllTasks];

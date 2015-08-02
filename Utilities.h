@@ -68,4 +68,7 @@ NSString* path2Kernel();
 //determine if process is (still) alive
 BOOL isAlive(pid_t targetPID);
 
+//check if computer has network connection
+BOOL isNetworkConnected();
+
 #endif
