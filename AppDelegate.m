@@ -22,6 +22,7 @@
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: 'flagged' items button?
 //TODO: add 'am i on main thread' guard and test
+//TODO: filter dylibs, no first responder!
 
 @implementation AppDelegate
 
@@ -84,6 +85,9 @@
     
     //init filter obj
     filterObj = [[Filter alloc] init];
+    
+    //no need to have a first responder
+    [self.window makeFirstResponder:nil];
     
     //check that OS is supported
     if(YES != isSupportedOS())
