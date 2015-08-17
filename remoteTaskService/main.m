@@ -15,9 +15,13 @@
 
 @implementation ServiceDelegate
 
-- (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    // This method is where the NSXPCListener configures, accepts, and resumes a new incoming NSXPCConnection.
-    
+
+//TODO: check for 'signed by Obj-C'
+//automatically invoked
+//->allows NSXPCListener to configure/accept/resume a new incoming NSXPCConnection.
+-(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
+{
+        
     // Configure the connection.
     // First, set the interface that the exported object implements.
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];

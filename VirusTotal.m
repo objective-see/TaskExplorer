@@ -370,20 +370,11 @@
             //save result
             item.vtInfo = results;
             
-            //TODO: do something if it's flagged!
-            //if its flagged save in File's plugin
+            //save flagged item
             if(0 != [results[VT_RESULTS_POSITIVES] unsignedIntegerValue])
             {
-                /*
-                //sync
-                // ->since array will be reset if user clicks 'stop' scan
-                @synchronized(fileObj.plugin.flaggedItems)
-                {
-                    //save
-                    [fileObj.plugin.flaggedItems addObject:fileObj];
-                }
-                */
-
+                //save
+                [((AppDelegate*)[[NSApplication sharedApplication] delegate]) saveFlaggedBinary:item];
             }
             
             //call up into app delegate to smartly reload
@@ -722,13 +713,15 @@ bail:
         //save VT results into item
         queriedItem.vtInfo = result;
         
+        //save flagged item
+        if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
+        {
+            //save
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) saveFlaggedBinary:queriedItem];
+        }
+        
         //call up into app delegate to smartly reload
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:queriedItem];
-        
-        
-        //TODO: do something with detections!?
-        // ->blinking button, user's can click to see 'flagged items' popup
-        //if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
     }
     
     return;

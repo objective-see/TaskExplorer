@@ -15,6 +15,7 @@
 
 #import "AboutWindowController.h"
 #import "PrefsWindowController.h"
+#import "FlaggedItems.h"
 #import "ResultsWindowController.h"
 #import "RequestRootWindowController.h"
 
@@ -27,7 +28,6 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate>
 {
-    //NSViewController *bottomViewController;
 
 }
 
@@ -111,6 +111,9 @@
 //results window controller
 @property(nonatomic, retain)ResultsWindowController* resultsWindowController;
 
+//flagged items window controller
+@property(nonatomic, retain)FlaggedItems* flagItemsWindowController;
+
 //currently selected task
 @property(nonatomic, retain)Task* currentTask;
 
@@ -119,10 +122,18 @@
 
 //'no items' found label for bottom pane
 @property (weak) IBOutlet NSTextField *noItemsLabel;
+
+//search button
 @property (weak) IBOutlet NSButton *searchButton;
 
 //refresh button
 @property (weak) IBOutlet NSButton *refreshButton;
+
+//flagged items button
+@property (weak) IBOutlet NSButton *flaggedButton;
+
+//flagged items label
+@property (weak) IBOutlet NSTextField *flaggedLabel;
 
 //top constraint
 @property(nonatomic, retain)NSLayoutConstraint* topConstraint;
@@ -137,7 +148,10 @@
 @property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
 
 //remote XPC interface
-@property (nonatomic, retain) NSXPCConnection* xpcConnection;
+@property(nonatomic, retain) NSXPCConnection* xpcConnection;
+
+//flagged items
+@property(nonatomic, retain) NSMutableArray* flaggedItems;
 
 
 /* METHODS */
@@ -200,5 +214,12 @@
 
 //constrain subview to parent view
 -(void)constrainView:(NSView*)containerView subView:(NSView*)subView;
+
+//display (in separate popup) all flagged items
+-(IBAction)showFlaggedItems:(id)sender;
+
+//save a flagged binary
+// ->also set text flagged items button label to red
+-(void)saveFlaggedBinary:(Binary*)binary;
 
 @end

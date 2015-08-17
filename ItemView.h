@@ -19,6 +19,9 @@
 //create customize item view
 NSTableCellView* createItemView(NSTableView* tableView, id owner, id item);
 
+//create & customize flagged item view
+NSTableCellView* createFlaggedItemView(NSTableView* tableView, id owner, id item);
+
 //create & customize task view
 NSTableCellView* createTaskView(NSTableView* tableView, id owner, id item);
 

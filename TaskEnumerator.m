@@ -70,7 +70,8 @@
     //new tasks
     OrderedDictionary* newTasks = nil;
     
-    //set connected flag
+    //determine if network is connected
+    // ->sets 'isConnected' flag
     ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
 
     //get all tasks
@@ -138,6 +139,7 @@
         
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+        
     });
     
     //now generate signing info
@@ -166,6 +168,16 @@
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
 
     }//signing info for all new tasks
+    
+    //begin dylib enumeration
+    for(NSNumber* key in newTasks)
+    {
+        //get task
+        newTask = newTasks[key];
+        
+        //enumerate
+        [newTask enumerateDylibs:((AppDelegate*)[[NSApplication sharedApplication] delegate]).xpcConnection allDylibs:self.dylibs];
+    }
     
     return;
 }
@@ -360,7 +372,7 @@ bail:
 }
 
 //remove a task
-// ->contains extra logic to remove children, etc
+// ->contains extra logic to remove children, flagged items, etc
 -(void)removeTask:(Task*)deadTask
 {
     //parent
@@ -378,6 +390,18 @@ bail:
     
     //alloc array for children
     children = [NSMutableArray array];
+    
+    //ensure that flagged item list is accurate
+    // ->the dead task or its dylibs might have been flagged
+    [self updateFlaggedItems:deadTask];
+    
+    //(re)set label for flagged items to black
+    // when there are no flagged items
+    if(0 == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems.count)
+    {
+        //set to gray
+        ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedLabel.textColor = [NSColor lightGrayColor];
+    }
     
     //get launchd's task
     // ->its 'pid' is 0x1
@@ -415,6 +439,83 @@ bail:
     
     return;
 }
+//TODO: test w/ dylib!!
+//ensure that the list of flagged items is correctly updated
+// when a dead task or any of its dylibs were flagged...
+-(void)updateFlaggedItems:(Task*)deadTask
+{
+    //task
+    Task* task = nil;
+    
+    //number of task instances
+    NSUInteger taskInstances = 0;
+    
+    //tasks that host flagged dylib
+    NSMutableArray* taskHosts = nil;
+    
+    //remove any dylibs that are flagged and loaded (only!) in dead task
+    for(Binary* dylib in deadTask.dylibs)
+    {
+        //skip dylibs that aren't flagged
+        if(YES != [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:dylib])
+        {
+            //skip
+            continue;
+        }
+        
+        //get all tasks that host the flagged dylib
+        taskHosts = [self tasksForBinary:dylib];
+        
+        //skip dylibs that are hosted in more than one task
+        // or aren't hosted in dead task
+        if( (1 != taskHosts.count) ||
+           (taskHosts.firstObject != deadTask.binary) )
+        {
+            //skip
+            continue;
+        }
+        
+        //dylib is flagged and only hosted in dead task
+        // ->remove it from flaggedItems
+        @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+        {
+            //remove
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:dylib];
+        }
+    }
+    
+    //also remove task if its flagged and only instance
+    if(YES == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:deadTask.binary])
+    {
+        //get number of task instances
+        // ->might be more (flagged) instances that are still alive
+        for(NSNumber* taskPid in self.tasks)
+        {
+            //extract task
+            task = self.tasks[taskPid];
+            
+            //check for task has dylib
+            if(task.binary == deadTask.binary)
+            {
+                //inc
+                taskInstances++;
+            }
+        }
+        
+        //remove if only instance
+        if(1 == taskInstances)
+        {
+            //sync and remove
+            @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+            {
+                //remove
+                [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:deadTask.binary];
+            }
+        }
+    }
+    
+    return;
+}
 
 //given a task
 // ->get list of all child pids
@@ -439,6 +540,82 @@ bail:
     }
     
     return;
+}
+
+//get all task pids for a given binary
+-(NSMutableArray*)tasksForBinary:(Binary*)binary
+{
+    //array of tasks
+    NSMutableArray* matchingTasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //tasks
+    matchingTasks = [NSMutableArray array];
+    
+    //sync
+    @synchronized(self.tasks)
+    {
+        //reload each row w/ new VT info
+        for(NSNumber* taskPid in self.tasks)
+        {
+            //extract task
+            task = self.tasks[taskPid];
+            
+            //check for task has dylib
+            if(task.binary == binary)
+            {
+                //save
+                [matchingTasks addObject:task];
+            }
+        }
+        
+    }//sync
+    
+    return matchingTasks;
+}
+
+
+//get all tasks a dylib is loaded into
+-(NSMutableArray*)loadedIn:(Binary*)dylib
+{
+    //array of tasks
+    NSMutableArray* hostTasks = nil;
+    
+    //task
+    Task* task = nil;
+    
+    //tasks
+    hostTasks = [NSMutableArray array];
+    
+    //sync
+    @synchronized(self.tasks)
+    {
+        //reload each row w/ new VT info
+        for(NSNumber* taskPid in self.tasks)
+        {
+            //extract task
+            task = self.tasks[taskPid];
+            
+            //check if dylib is loaded in task
+            for(Binary* taskDylib in task.dylibs)
+            {
+                //check for task has dylib
+                if(taskDylib == dylib)
+                {
+                    //save
+                    [hostTasks addObject:task];
+                    
+                    //can bail, since match was found
+                    break;
+                }
+            }
+        }
+        
+    }//sync
+    
+    return hostTasks;
 }
 
 

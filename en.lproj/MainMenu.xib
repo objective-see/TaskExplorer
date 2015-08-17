@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <development version="6000" identifier="xcode"/>
@@ -155,7 +155,7 @@
                         </connections>
                     </segmentedControl>
                     <button ambiguous="YES" misplaced="YES" tag="10004" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
-                        <rect key="frame" x="1315" y="10" width="29" height="32"/>
+                        <rect key="frame" x="661" y="10" width="29" height="32"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="32" id="18R-rR-Udp"/>
                             <constraint firstAttribute="width" constant="29" id="JOy-gX-fMr"/>
@@ -196,15 +196,39 @@
                             <outlet property="delegate" destination="494" id="4ig-0K-Oup"/>
                         </connections>
                     </searchField>
+                    <button ambiguous="YES" misplaced="YES" tag="10005" translatesAutoresizingMaskIntoConstraints="NO" id="urJ-dW-Pfr">
+                        <rect key="frame" x="1311" y="19" width="32" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="RPW-VL-OaB"/>
+                            <constraint firstAttribute="height" constant="25" id="Sdn-9e-XFV"/>
+                        </constraints>
+                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="flagged" imagePosition="overlaps" alignment="center" alternateImage="flaggedBG" imageScaling="proportionallyDown" inset="2" id="uv2-BM-czI">
+                            <behavior key="behavior" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="showFlaggedItems:" target="494" id="hAA-gr-tHn"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qdr-Tq-Fw0">
+                        <rect key="frame" x="1297" y="2" width="46" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="flagged" id="BYb-4w-hk5">
+                            <font key="font" size="9" name="Menlo-Regular"/>
+                            <color key="textColor" white="0.52269995629999999" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="E4M-PF-VD0" secondAttribute="trailing" constant="-1" id="7em-dD-W3w"/>
                     <constraint firstItem="E4M-PF-VD0" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="-1" id="IGR-bI-Hsm"/>
                     <constraint firstAttribute="trailing" secondItem="TNF-7q-Loy" secondAttribute="trailing" constant="-1" id="Lso-h9-MIt"/>
-                    <constraint firstAttribute="trailing" secondItem="HoI-FQ-vTI" secondAttribute="trailing" constant="10" id="OMm-dV-23S"/>
+                    <constraint firstAttribute="trailing" secondItem="urJ-dW-Pfr" secondAttribute="trailing" constant="11" id="RHT-vM-bt3"/>
                     <constraint firstItem="TNF-7q-Loy" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="-1" id="bnH-c7-461"/>
                     <constraint firstItem="gtq-gn-VPL" firstAttribute="leading" secondItem="372" secondAttribute="centerX" constant="-100" id="iUK-4W-mmK"/>
                     <constraint firstAttribute="trailing" secondItem="bNA-gy-9Ta" secondAttribute="trailing" constant="6" id="k4n-CB-LFx"/>
+                    <constraint firstAttribute="trailing" secondItem="Qdr-Tq-Fw0" secondAttribute="trailing" constant="13" id="lkx-op-iZe"/>
+                    <constraint firstItem="HoI-FQ-vTI" firstAttribute="leading" secondItem="372" secondAttribute="centerX" id="usV-OB-sI5"/>
                 </constraints>
             </view>
             <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
@@ -283,6 +307,8 @@
                 <outlet property="bottomPaneSpinner" destination="LMT-Bu-FAk" id="a1H-Ag-GT8"/>
                 <outlet property="filterItemsBox" destination="bNA-gy-9Ta" id="hAw-Ja-am4"/>
                 <outlet property="filterTasksBox" destination="4Kr-b9-X6j" id="CB1-Rb-dew"/>
+                <outlet property="flaggedButton" destination="urJ-dW-Pfr" id="SvI-vh-Khd"/>
+                <outlet property="flaggedLabel" destination="Qdr-Tq-Fw0" id="0e7-E5-AlP"/>
                 <outlet property="logoButton" destination="HoI-FQ-vTI" id="bzc-wu-4Hv"/>
                 <outlet property="noItemsLabel" destination="kIC-ZZ-ldy" id="nOm-8E-tZA"/>
                 <outlet property="progressIndicator" destination="839" id="870"/>
@@ -308,6 +334,8 @@
         </textField>
     </objects>
     <resources>
+        <image name="flagged" width="256" height="256"/>
+        <image name="flaggedBG" width="256" height="256"/>
         <image name="logoApple" width="194" height="236"/>
         <image name="logoAppleBG" width="194" height="236"/>
         <image name="refreshIcon" width="256" height="256"/>

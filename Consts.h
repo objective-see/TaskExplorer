@@ -95,6 +95,9 @@
 //logo button
 #define LOGO_BUTTON_TAG 10004
 
+//flagged items button
+#define FLAGGED_BUTTON_TAG 10005
+
 //category table
 
 

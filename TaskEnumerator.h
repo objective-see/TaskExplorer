@@ -57,5 +57,15 @@
 // ->get list of all child pids
 -(void)getAllChildren:(Task*)parent children:(NSMutableArray*)children;
 
+//get all tasks a dylib is loaded into
+-(NSMutableArray*)loadedIn:(Binary*)dylib;
+
+//get all task pids for a given binary
+-(NSMutableArray*)tasksForBinary:(Binary*)binary;
+
+//ensure that the list of flagged items is correctly updated
+// when a dead task or any of its dylibs were flagged...
+-(void)updateFlaggedItems:(Task*)deadTask;
+
 
 @end

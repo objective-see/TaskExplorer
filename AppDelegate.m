@@ -24,6 +24,15 @@
 //TODO: add 'am i on main thread' guard and test
 //TODO: filter dylibs, no first responder!
 
+//TODO: autolayout vertically
+//TODO: filter VT results
+//TODO: # autocomplete
+//TODO: keyboard shortcuts
+//      see: https://mail.google.com/mail/u/0/#inbox/14eeb163d4dd2852
+//TODO: show 'from where' via quarantine attrz
+//TODO: show user (after pid): -> (pid, user)?
+//TODO: when filtering, and then refresh, doesn't go to row #0 :/
+
 @implementation AppDelegate
 
 
@@ -41,6 +50,7 @@
 @synthesize currentTask;
 @synthesize requestRootWindowController;
 @synthesize taskViewFormat;
+@synthesize flagItemsWindowController;
 
 @synthesize scannerThread;
 @synthesize progressIndicator;
@@ -50,10 +60,13 @@
 @synthesize viewSelector;
 @synthesize searchButton;
 @synthesize xpcConnection;
+@synthesize flaggedItems;
 
 
 //@synthesize taskScrollView;
 //TODO: check if VT can be reached! if not, error? or don't show '0 VT results detected' etc...
+
+//TODO: JavaW (iWorm) dylibs...
 
 //center window
 // ->also make front
@@ -77,14 +90,16 @@
 {
     //first thing...
     // ->install exception handlers!
-    //TODO: re-enable
-    //installExceptionHandlers();
+    installExceptionHandlers();
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
     
     //init filter obj
     filterObj = [[Filter alloc] init];
+    
+    //alloc flagged items
+    flaggedItems = [NSMutableArray array];
     
     //no need to have a first responder
     [self.window makeFirstResponder:nil];
@@ -752,6 +767,13 @@ bail:
     
     //add tracking area to logo button
     [self.logoButton addTrackingArea:trackingArea];
+
+    //init tracking area
+    // ->for flagged items button
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self.flaggedButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.flaggedButton.tag]}];
+    
+    //add tracking area to flaggd items button
+    [self.flaggedButton addTrackingArea:trackingArea];
     
     return;
 }
@@ -963,6 +985,13 @@ bail:
             //set
             imageName = @"logoApple";
         }
+        
+        //set original flagged items image
+        else if(FLAGGED_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"flagged";
+        }
     }
     //highlight button
     else
@@ -990,6 +1019,13 @@ bail:
         {
             //set
             imageName = @"logoAppleOver";
+        }
+        
+        //set mouse over flagged items image
+        else if(FLAGGED_BUTTON_TAG == tag)
+        {
+            //set
+            imageName = @"flaggedOver";
         }
     }
     
@@ -1337,6 +1373,9 @@ bail:
             //init placeholder text for dylibs
             filterPlaceholder =  @"Filter Dylibs";
             
+            //remove all task's dylibs
+            [self.currentTask.dylibs removeAllObjects];
+            
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
             [self.currentTask enumerateDylibs:self.xpcConnection allDylibs:self.taskEnumerator.dylibs];
@@ -1348,6 +1387,9 @@ bail:
             
             //init placeholder text for files
             filterPlaceholder = @"Filter Files";
+            
+            //remove all task's dylibs
+            [self.currentTask.files removeAllObjects];
             
             //(re)enumerate files via XPC
             // ->triggers table reload when done
@@ -1380,7 +1422,7 @@ bail:
         dispatch_sync(dispatch_get_main_queue(), ^{
             
             //set placeholder
-            [self.filterItemsBox setPlaceholderString:filterPlaceholder];
+            [[self.filterItemsBox cell] setPlaceholderString:filterPlaceholder];
         });
     }
     //in main thread already
@@ -1388,7 +1430,7 @@ bail:
     else
     {
         //set placeholder
-        [self.filterItemsBox setPlaceholderString:filterPlaceholder];
+        [[self.filterItemsBox cell] setPlaceholderString:filterPlaceholder];
     }
     
     
@@ -1645,6 +1687,77 @@ bail:
     
     //add trailing constraint
     [containerView addConstraint:self.trailingConstraint];
+    
+    return;
+}
+
+//TODO: handle reset on refresh?
+//save a flagged item
+// ->also set text flagged items button label to red
+-(void)saveFlaggedBinary:(Binary*)binary
+{
+    //sync to save
+    @synchronized(self.flaggedItems)
+    {
+        //save
+        [self.flaggedItems addObject:binary];
+    }
+    
+    //when count is 1
+    // ->means first flagged file so set text to red
+    if(1 == self.flaggedItems.count)
+    {
+        //set to red
+        self.flaggedLabel.textColor = [NSColor redColor];
+    }
+    
+    return;
+}
+
+//button handle for 'flagged items' button
+// ->display (in separate popup) all flagged items
+-(IBAction)showFlaggedItems:(id)sender
+{
+    //alert box
+    NSAlert* alert = nil;
+    
+    //handle case where there aren't any flagged items
+    // ->just show alert
+    if(0 == self.flaggedItems.count)
+    {
+        //alloc/init alert
+        alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"No items flagged by VirusTotal"] defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"horray! 😇"];
+        
+        //and show it
+        [alert runModal];
+    }
+    
+    //show flagged items
+    else
+    {
+        //alloc/init settings window
+        if(nil == self.flagItemsWindowController)
+        {
+            //alloc/init
+            flagItemsWindowController = [[FlaggedItems alloc] initWithWindowNibName:@"FlaggedItems"];
+        }
+                
+        //show it
+        [self.flagItemsWindowController showWindow:self];
+        
+        //invoke function in background that will make window modal
+        // ->waits until window is non-nil
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            //make modal
+            makeModal(self.prefsWindowController);
+            
+        });
+
+        
+    }
+    
+    //NSLog(@"would show flagged items");
     
     return;
 }

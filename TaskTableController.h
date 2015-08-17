@@ -41,7 +41,7 @@
 //info window
 @property(retain, nonatomic)InfoWindowController* infoWindowController;
 
-//preferences window controller
+//virus total window controller
 @property (nonatomic, retain)VTInfoWindowController* vtWindowController;
 
 //currently selected row
