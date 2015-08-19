@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
+		7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */; };
+		7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */; };
+		7DEC68971B844F4800F4C12E /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEC68961B844F4800F4C12E /* SearchResult.m */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
 		CD02194F1AD34D8B005148A2 /* AboutWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD02194D1AD34D8B005148A2 /* AboutWindow.xib */; };
@@ -150,6 +153,11 @@
 		1D21BC51172AF43D009D1CFD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1D21BC52172AF43D009D1CFD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		1D21BC53172AF43D009D1CFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SearchWindow.xib; path = UI/SearchWindow.xib; sourceTree = "<group>"; };
+		7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchWindowController.h; sourceTree = "<group>"; };
+		7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchWindowController.m; sourceTree = "<group>"; };
+		7DEC68951B844F4800F4C12E /* SearchResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResult.h; sourceTree = "<group>"; };
+		7DEC68961B844F4800F4C12E /* SearchResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResult.m; sourceTree = "<group>"; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
 		CD001B361AB903040089014A /* logoApple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoApple.png; path = images/logoApple.png; sourceTree = SOURCE_ROOT; };
 		CD02194D1AD34D8B005148A2 /* AboutWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AboutWindow.xib; path = UI/AboutWindow.xib; sourceTree = "<group>"; };
@@ -323,6 +331,10 @@
 		1D21BC42172AF43D009D1CFD = {
 			isa = PBXGroup;
 			children = (
+				7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */,
+				7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */,
+				7DEC68951B844F4800F4C12E /* SearchResult.h */,
+				7DEC68961B844F4800F4C12E /* SearchResult.m */,
 				CD74A0781B7F170B00A8AAD3 /* FlaggedItems.h */,
 				CD74A0791B7F170B00A8AAD3 /* FlaggedItems.m */,
 				CD4D54201B2CE6F200008030 /* NSMutableArray+QueueAdditions.h */,
@@ -551,6 +563,7 @@
 		CDA81E621AA020E8009790E2 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */,
 				CD74A07D1B81B5D400A8AAD3 /* FlaggedItems.xib */,
 				CD4D54271B2EAC7800008030 /* NetworkInfoWindow.xib */,
 				CD4D54231B2D082300008030 /* DylibInfoWindow.xib */,
@@ -630,8 +643,12 @@
 				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = "Lucas Derraugh";
 				TargetAttributes = {
+					1D21BC4A172AF43D009D1CFD = {
+						DevelopmentTeam = VBG97UB4TA;
+					};
 					CDA5F6AC1B16D805003CE340 = {
 						CreatedOnToolsVersion = 6.3.2;
+						DevelopmentTeam = VBG97UB4TA;
 					};
 				};
 			};
@@ -685,6 +702,7 @@
 				CDF08CD01AC4C6E8009B3423 /* settingsBG.png in Resources */,
 				CDEE77021B3FD55600763826 /* teText.png in Resources */,
 				CDEE76FC1B3FD44500763826 /* saveIcon.png in Resources */,
+				7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */,
 				CD0219591AD37748005148A2 /* unsigned2.png in Resources */,
 				CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */,
 				CDA81D5C1A95B4B4009790E2 /* MainMenu.xib in Resources */,
@@ -753,6 +771,7 @@
 				CD74A07B1B7F170B00A8AAD3 /* FlaggedItems.m in Sources */,
 				CDA5F6C41B16E20E003CE340 /* RequestRootWindowController.m in Sources */,
 				CDD2483B1AF5CC4D00232422 /* Task.m in Sources */,
+				7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */,
 				CD83887F1AACCEDF000EB098 /* VirusTotal.m in Sources */,
 				CDF08CDF1AC886F2009B3423 /* VTInfoWindowController.m in Sources */,
 				CD3F4CEB1AF6D948002A2647 /* OrderedDictionary.m in Sources */,
@@ -777,6 +796,7 @@
 				CDD248351AF5947300232422 /* TAAdaptiveSpaceItemView.m in Sources */,
 				CDBE49181B58DC9B0031FC22 /* NSApplicationKeyEvents.m in Sources */,
 				CDA81D531A95B492009790E2 /* Utilities.m in Sources */,
+				7DEC68971B844F4800F4C12E /* SearchResult.m in Sources */,
 				CD7B9FAB1AD08FA100DF3C71 /* KKRow.m in Sources */,
 				CD3F4CFD1AF71B58002A2647 /* ItemBase.m in Sources */,
 			);
@@ -884,11 +904,14 @@
 		1D21BC69172AF43D009D1CFD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
 				PRODUCT_NAME = TaskExplorer;
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -896,11 +919,14 @@
 		1D21BC6A172AF43D009D1CFD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
 				PRODUCT_NAME = TaskExplorer;
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -913,6 +939,7 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -941,6 +968,7 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_NS_ASSERTIONS = NO;

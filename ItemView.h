@@ -22,6 +22,9 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item);
 //create & customize flagged item view
 NSTableCellView* createFlaggedItemView(NSTableView* tableView, id owner, id item);
 
+//create & customize global dylib/file view
+NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item);
+
 //create & customize task view
 NSTableCellView* createTaskView(NSTableView* tableView, id owner, id item);
 

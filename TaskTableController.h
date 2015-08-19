@@ -38,7 +38,7 @@
 //category table view
 @property(weak) IBOutlet NSTableView *itemView;
 
-//info window
+//info window controller
 @property(retain, nonatomic)InfoWindowController* infoWindowController;
 
 //virus total window controller

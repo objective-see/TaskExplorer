@@ -116,7 +116,6 @@ NSString * const KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned"
 }
 
 
-
 //filter dylibs and files
 // ->name and path
 -(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results

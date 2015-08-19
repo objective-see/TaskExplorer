@@ -18,6 +18,7 @@
 #import "FlaggedItems.h"
 #import "ResultsWindowController.h"
 #import "RequestRootWindowController.h"
+#import "SearchWindowController.h"
 
 
 #import "Task.h"
@@ -107,6 +108,9 @@
 
 //about window controller
 @property(nonatomic, retain)AboutWindowController* aboutWindowController;
+
+//search window controller
+@property(nonatomic, retain)SearchWindowController* searchWindowController;
 
 //results window controller
 @property(nonatomic, retain)ResultsWindowController* resultsWindowController;

@@ -9,9 +9,11 @@
 #import "Consts.h"
 #import "ItemView.h"
 #import "VTButton.h"
-#import "AppDelegate.h"
 #import "kkRowCell.h"
+#import "AppDelegate.h"
+#import "SearchWindowController.h"
 #import "3rdParty/OrderedDictionary.h"
+
 
 //create customize item view
 NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
@@ -25,12 +27,22 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
         //bail
         goto bail;
     }
-    
-    //first handle logic for flagged items
-    if(YES == [owner isKindOfClass:[FlaggedItems class]])
+    //handle logic for flagged items
+    // ->but only dylibs, to get special global 'loaded in' views
+    if( (YES == [owner isKindOfClass:[FlaggedItems class]]) &&
+        (YES == [item isKindOfClass:[Binary class]]) )
     {
         //create & config view
-        itemCell = createFlaggedItemView(tableView, owner, item);
+        itemCell = createLoadedItemView(tableView, owner, item);
+    }
+    
+    //handle logic for search results
+    // ->dylibs and files have the special global 'loaded in' views
+    else if( (YES == [owner isKindOfClass:[SearchWindowController class]]) &&
+        ( (YES == [item isKindOfClass:[Binary class]]) || (YES == [item isKindOfClass:[File class]]) ) )
+    {
+        //create & config view
+        itemCell = createLoadedItemView(tableView, owner, item);
     }
     
     //logic to create task view
@@ -135,6 +147,143 @@ NSImage* getCodeSigningIcon(Binary* binary)
     return codeSignIcon;
 }
 
+//create & customize global dylib/file view
+NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
+{
+    //item cell
+    NSTableCellView* loadedItemCell = nil;
+    
+    //matching or host tasks
+    NSMutableArray* tasks = nil;
+    
+    //pid or 'loaded in' string
+    NSMutableString* loadedIn = nil;
+    
+    //task's name frame
+    CGRect nameFrame = {0};
+  
+    //get host tasks
+    // TODO: make this work for files too!
+    tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
+        
+    //start 'loaded in: ...' str
+    loadedIn = [NSMutableString stringWithFormat:@"(loaded in:"];
+        
+    //add all tasks
+    for(Task* task in tasks)
+    {
+        //append name
+        [loadedIn appendFormat:@" %@,", task.binary.name];
+    }
+        
+    //remove last ','
+    if(YES == [loadedIn hasSuffix:@","])
+    {
+        //remove
+        [loadedIn deleteCharactersInRange:NSMakeRange([loadedIn length]-1, 1)];
+    }
+    
+    //terminate list/output
+    [loadedIn appendString:@")"];
+    
+    //dylibs
+    // ->create cell
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //create
+        loadedItemCell = [tableView makeViewWithIdentifier:@"TaskCell" owner:owner];
+    }
+    //files
+    // ->create cell
+    else if(YES == [item isKindOfClass:[File class]])
+    {
+        //create
+        loadedItemCell = [tableView makeViewWithIdentifier:@"FileCell" owner:owner];
+    }
+    
+    //sanity check
+    if(nil == loadedItemCell)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //brand new cells need tracking areas
+    // ->determine if new, by checking default (.xib/IB) value
+    if( (YES == [loadedItemCell.textField.stringValue isEqualToString:@"Task Name"]) ||
+        (YES == [loadedItemCell.textField.stringValue isEqualToString:@"File Name"]) )
+    {
+        //only dylibs have VT button
+        if(YES == [item isKindOfClass:[Binary class]])
+        {
+            //add tracking area
+            // ->'vt' button
+            addTrackingArea(loadedItemCell, TABLE_ROW_VT_BUTTON, owner);
+        }
+        
+        //add tracking area
+        // ->'info' button
+        addTrackingArea(loadedItemCell, TABLE_ROW_INFO_BUTTON, owner);
+        
+        //add tracking area
+        // ->'show' button
+        addTrackingArea(loadedItemCell, TABLE_ROW_SHOW_BUTTON, owner);
+    }
+    
+    //set icon
+    //TODO: make sure files have icons!!
+    loadedItemCell.imageView.image = [item icon];
+    
+    //only dylibs have code signing icons
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //set code signing icon
+        ((NSImageView*)[loadedItemCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(item);
+    }
+
+    //default
+    // ->(re)set main textfield's color to black
+    loadedItemCell.textField.textColor = [NSColor blackColor];
+    
+    //set main text
+    // ->name
+    [loadedItemCell.textField setStringValue:[item name]];
+    
+    //get name frame
+    nameFrame = loadedItemCell.textField.frame;
+    
+    //adjust width to fit text
+    nameFrame.size.width = [loadedItemCell.textField.stringValue sizeWithAttributes: @{NSFontAttributeName: loadedItemCell.textField.font}].width + 5;
+    
+    //disable autolayout for name
+    loadedItemCell.textField.translatesAutoresizingMaskIntoConstraints = YES;
+    
+    //update name frame
+    // ->should now be exact size of text
+    loadedItemCell.textField.frame = nameFrame;
+    
+    //set pid
+    // ->immediately follows name
+    [((NSTextField*)[loadedItemCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:loadedIn];
+    
+    //set path
+    [[loadedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:[item path]];
+    
+    //only dylibs have VT button
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //config VT button
+        configVTButton(loadedItemCell, owner, item);
+    }
+    
+//bail
+bail:
+    
+    return loadedItemCell;
+}
+
+
+//TODO: for search, each task is unique, so same for flagged tasks? YES, get args etc :)
 //create & customize flagged item view
 NSTableCellView* createFlaggedItemView(NSTableView* tableView, id owner, Binary* binary)
 {

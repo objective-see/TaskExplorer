@@ -32,6 +32,11 @@
 //TODO: show 'from where' via quarantine attrz
 //TODO: show user (after pid): -> (pid, user)?
 //TODO: when filtering, and then refresh, doesn't go to row #0 :/
+//TODO: check if VT can be reached! if not, error? or don't show '0 VT results detected' etc...
+
+//TODO: JavaW (iWorm) dylibs...
+//TODO: remove task, remove from taskEnum's global list for executables, and dylibs, etc
+//TODO: also refresh!....
 
 @implementation AppDelegate
 
@@ -51,6 +56,7 @@
 @synthesize requestRootWindowController;
 @synthesize taskViewFormat;
 @synthesize flagItemsWindowController;
+@synthesize searchWindowController;
 
 @synthesize scannerThread;
 @synthesize progressIndicator;
@@ -62,11 +68,6 @@
 @synthesize xpcConnection;
 @synthesize flaggedItems;
 
-
-//@synthesize taskScrollView;
-//TODO: check if VT can be reached! if not, error? or don't show '0 VT results detected' etc...
-
-//TODO: JavaW (iWorm) dylibs...
 
 //center window
 // ->also make front
@@ -88,9 +89,10 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    //TODO: re-enable
     //first thing...
     // ->install exception handlers!
-    installExceptionHandlers();
+    //installExceptionHandlers();
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -326,8 +328,9 @@ bail:
     // ->waits until window is non-nil
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
+        //TODO: re-enable
         //make modal
-        makeModal(self.requestRootWindowController);
+        //makeModal(self.requestRootWindowController);
         
     });
     
@@ -1146,17 +1149,31 @@ bail:
 
 //automatically invoked when user clicks 'search' button
 // ->perform global search
-//TODO: implement (in next version)
-- (IBAction)search:(id)sender
+-(IBAction)search:(id)sender
 {
-    //'unimplemented' msg
-    NSAlert* errorPopup = nil;
+    //alloc/init flagged items window
+    if(nil == self.searchWindowController)
+    {
+        //alloc/init
+        searchWindowController = [[SearchWindowController alloc] initWithWindowNibName:@"SearchWindow"];
+    }
     
-    //init popup w/ msg
-    errorPopup = [NSAlert alertWithMessageText:@"sorry, 'global search' not yet implemented" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"...should be in next version :)"];
+    //init/prep it
+    [self.searchWindowController prepare];
     
-    //and show it
-    [errorPopup runModal];
+    //show it
+    [self.searchWindowController showWindow:self];
+    
+    /*
+    //invoke function in background that will make window modal
+    // ->waits until window is non-nil
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        //make modal
+        //makeModal(self.searchWindowController);
+        
+    });
+    */
 
     return;
 }
@@ -1735,7 +1752,7 @@ bail:
     //show flagged items
     else
     {
-        //alloc/init settings window
+        //alloc/init flagged items window
         if(nil == self.flagItemsWindowController)
         {
             //alloc/init
@@ -1745,20 +1762,18 @@ bail:
         //show it
         [self.flagItemsWindowController showWindow:self];
         
+        /*
         //invoke function in background that will make window modal
         // ->waits until window is non-nil
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             //make modal
-            makeModal(self.prefsWindowController);
+            makeModal(self.flagItemsWindowController);
             
         });
-
-        
+        */
     }
-    
-    //NSLog(@"would show flagged items");
-    
+
     return;
 }
 
