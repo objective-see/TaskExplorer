@@ -42,6 +42,7 @@
 @property(retain, nonatomic)InfoWindowController* infoWindowController;
 
 
+//TODO: remove!
 //tasks
 @property(nonatomic, retain)NSMutableDictionary* tasks;
 

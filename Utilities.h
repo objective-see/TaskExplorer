@@ -71,4 +71,7 @@ BOOL isAlive(pid_t targetPID);
 //check if computer has network connection
 BOOL isNetworkConnected();
 
+//set or unset button's highlight
+void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset);
+
 #endif

@@ -10,8 +10,7 @@
 #import "FlaggedItems.h"
 #import "ItemView.h"
 #import "KKRow.h"
-
-//TODO: mouse over for info/show in finder buttons!
+#import "Utilities.h"
 
 @interface FlaggedItems ()
 
@@ -20,8 +19,10 @@
 @implementation FlaggedItems
 
 @synthesize didInit;
+@synthesize flaggedItems;
 @synthesize flaggedItemTable;
 @synthesize vtWindowController;
+@synthesize infoWindowController;
 
 //automatically called when nib is loaded
 // ->center window
@@ -40,51 +41,67 @@
     return;
 }
 
-//automatically invoked when window is loaded
-// ->set to white
--(void)windowDidLoad
+//init/prepare
+// ->make sure everything is cleanly init'd before displaying
+-(void)prepare
 {
-    //super
-    [super windowDidLoad];
+    //array of flagged tasks
+    NSMutableArray* flaggedTasks = nil;
     
-    //table reload
+    //init array for flagged items
+    flaggedItems = [NSMutableArray array];
+    
+    //table reload w/ blank array
+    // ->make sure all is reset
     [self.flaggedItemTable reloadData];
-}
-
-//TODO: don't need
-//automatically invoked when window is closing
-// ->make ourselves unmodal
--(void)windowWillClose:(NSNotification *)notification
-{
-    //make un-modal
-    //[[NSApplication sharedApplication] stopModal];
+    
+    //populate flagged items array
+    for(Binary* flaggedItem in ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+    {
+        //when binary is task binary
+        // ->find/save all tasks instances
+        if(YES == flaggedItem.isTaskBinary)
+        {
+            //get all tasks instances
+            flaggedTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator tasksForBinary:flaggedItem];
+            
+            //save all tasks
+            [self.flaggedItems addObjectsFromArray:flaggedTasks];
+        }
+        //when binary is dylib
+        // ->just add, since will be processed as single item
+        else
+        {
+            //add
+            [self.flaggedItems addObject:flaggedItem];
+            
+        }
+    }
+    
+    //always reload
+    [self.flaggedItemTable reloadData];
     
     return;
 }
+
 
 //table delegate
 // ->return number of rows, which is just number of items in the currently selected plugin
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems.count;
+    return self.flaggedItems.count;
 }
 
 //table delegate method
 // ->return cell for row
 -(NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    //flagged items
-    NSMutableArray* flaggedItems = nil;
-    
     //row view
     NSView* rowView = nil;
     
-    //grab flagged items
-    flaggedItems = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems;
-    
     //sanity check
     // ->make sure there is table item for row
-    if(row >= flaggedItems.count)
+    if(row >= self.flaggedItems.count)
     {
         //bail
         goto bail;
@@ -92,7 +109,7 @@
     
     //create the view
     // ->inits row w/ all required info
-    rowView = createItemView(tableView, self, [flaggedItems objectAtIndex:row]);
+    rowView = createItemView(tableView, self, [self.flaggedItems objectAtIndex:row]);
     
 //bail
 bail:
@@ -127,6 +144,28 @@ bail:
     return rowView;
 }
 
+//automatically invoked when mouse entered
+// ->highlight button
+-(void)mouseEntered:(NSEvent*)theEvent
+{
+    //mouse entered
+    // ->highlight (visual) state
+    buttonAppearance(self.flaggedItemTable, theEvent, NO);
+    
+    return;
+}
+
+//automatically invoked when mouse exits
+// ->unhighlight/reset button
+-(void)mouseExited:(NSEvent*)theEvent
+{
+    //mouse exited
+    // ->so reset button to original (visual) state
+    buttonAppearance(self.flaggedItemTable, theEvent, YES);
+    
+    return;
+}
+
 //invoked when the user clicks 'virus total' icon
 // ->launch browser and browse to virus total's page
 -(void)showVTInfo:(id)sender
@@ -137,26 +176,20 @@ bail:
     //row
     NSInteger itemRow = 0;
     
-    //flagged items
-    NSMutableArray* flaggedItems = nil;
-    
-    //grab flagged items
-    flaggedItems = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems;
-    
     //grab sender's row
     itemRow = [self.flaggedItemTable rowForView:sender];
     
     //sanity check(s)
     // ->make sure row is decent
     if( (-1 == itemRow) ||
-        (itemRow >= flaggedItems.count) )
+        (itemRow >= self.flaggedItems.count) )
     {
         //bail
         goto bail;
     }
     
     //extract item for row
-    item = flaggedItems[itemRow];
+    item = self.flaggedItems[itemRow];
     
     //alloc/init info window
     vtWindowController = [[VTInfoWindowController alloc] initWithItem:item];
@@ -166,6 +199,106 @@ bail:
     
     
 //bail
+bail:
+    
+    return;
+}
+
+//automatically invoked when user clicks the 'info' icon
+// ->create/configure/display info window for task/dylib/file/etc
+-(IBAction)showInfo:(id)sender
+{
+    //item
+    // ->task, dylib, file, etc
+    id item =  nil;
+    
+    //row
+    NSInteger itemRow = 0;
+    
+    //grab sender's row
+    itemRow = [self.flaggedItemTable rowForView:sender];
+    
+    //sanity check(s)
+    // ->make sure row is decent
+    if( (-1 == itemRow) ||
+       (itemRow >= self.flaggedItems.count) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //grab item
+    item = self.flaggedItems[itemRow];
+    
+    //alloc/init info window
+    infoWindowController = [[InfoWindowController alloc] initWithItem:item];
+    
+    //show it
+    [self.infoWindowController.windowController showWindow:self];
+    
+//bail
+bail:
+    
+    return;
+}
+
+
+//automatically invoked when user clicks the 'show in finder' icon
+// ->open Finder to show item
+-(IBAction)showInFinder:(id)sender
+{
+    //item
+    // ->task, dylib, or file
+    id item = nil;
+    
+    //path to item
+    NSString* path = nil;
+    
+    //row
+    NSInteger itemRow = 0;
+    
+    //grab sender's row
+    itemRow = [self.flaggedItemTable rowForView:sender];
+    
+    //sanity check(s)
+    // ->make sure row is decent
+    if( (-1 == itemRow) ||
+        (itemRow >= self.flaggedItems.count) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //extract item for row
+    item = self.flaggedItems[itemRow];
+    
+    //tasks
+    // ->grab path from binary
+    if(YES == [item isKindOfClass:[Task class]])
+    {
+        //get path
+        path = ((Task*)item).binary.path;
+    }
+    //dylib
+    // ->use as is, to extract path
+    else if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //get path
+        path = [item path];
+    }
+    
+    //sanity check
+    if(nil == path)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //open Finder
+    // ->will reveal binary
+    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:nil];
+    
+    //bail
 bail:
     
     return;

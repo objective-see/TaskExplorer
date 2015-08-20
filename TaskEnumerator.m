@@ -70,9 +70,15 @@
     //new tasks
     OrderedDictionary* newTasks = nil;
     
+    //xpc connection
+    NSXPCConnection* xpcConnection = nil;
+    
     //determine if network is connected
     // ->sets 'isConnected' flag
     ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
+    
+    //get xpc connection
+    xpcConnection = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).xpcConnection;
 
     //get all tasks
     // ->pids and binary obj with just path/name
@@ -170,13 +176,25 @@
     }//signing info for all new tasks
     
     //begin dylib enumeration
+    // ->this is really just for search/filter views since they are re-gen'd per task on each bottom-pane click
     for(NSNumber* key in newTasks)
     {
         //get task
         newTask = newTasks[key];
         
         //enumerate
-        [newTask enumerateDylibs:((AppDelegate*)[[NSApplication sharedApplication] delegate]).xpcConnection allDylibs:self.dylibs];
+        [newTask enumerateDylibs:xpcConnection allDylibs:self.dylibs];
+    }
+    
+    //begin file enumeration
+    // ->for search view
+    for(NSNumber* key in newTasks)
+    {
+        //get task
+        newTask = newTasks[key];
+        
+        //enumerate
+        [newTask enumerateFiles:xpcConnection];
     }
     
     return;
@@ -464,12 +482,12 @@ bail:
         }
         
         //get all tasks that host the flagged dylib
-        taskHosts = [self tasksForBinary:dylib];
+        taskHosts = [self loadedIn:dylib];
         
         //skip dylibs that are hosted in more than one task
         // or aren't hosted in dead task
         if( (1 != taskHosts.count) ||
-           (taskHosts.firstObject != deadTask.binary) )
+            (taskHosts.firstObject != deadTask.binary) )
         {
             //skip
             continue;
@@ -592,7 +610,7 @@ bail:
     //sync
     @synchronized(self.tasks)
     {
-        //reload each row w/ new VT info
+        //iterate over all tasks
         for(NSNumber* taskPid in self.tasks)
         {
             //extract task

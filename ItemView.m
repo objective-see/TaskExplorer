@@ -14,7 +14,6 @@
 #import "SearchWindowController.h"
 #import "3rdParty/OrderedDictionary.h"
 
-
 //create customize item view
 NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
 {
@@ -148,6 +147,7 @@ NSImage* getCodeSigningIcon(Binary* binary)
 }
 
 //create & customize global dylib/file view
+// ->has 'loaded in...' string
 NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
 {
     //item cell
@@ -210,8 +210,7 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     
     //brand new cells need tracking areas
     // ->determine if new, by checking default (.xib/IB) value
-    if( (YES == [loadedItemCell.textField.stringValue isEqualToString:@"Task Name"]) ||
-        (YES == [loadedItemCell.textField.stringValue isEqualToString:@"File Name"]) )
+    if(YES == [loadedItemCell.textField.stringValue isEqualToString:@"Name"])
     {
         //only dylibs have VT button
         if(YES == [item isKindOfClass:[Binary class]])
@@ -282,147 +281,6 @@ bail:
     return loadedItemCell;
 }
 
-
-//TODO: for search, each task is unique, so same for flagged tasks? YES, get args etc :)
-//create & customize flagged item view
-NSTableCellView* createFlaggedItemView(NSTableView* tableView, id owner, Binary* binary)
-{
-    //item cell
-    NSTableCellView* flaggedItemCell = nil;
-    
-    //matching or host tasks
-    NSMutableArray* tasks = nil;
-    
-    //pid or 'loaded in' string
-    NSMutableString* pidString = nil;
-    
-    //task's name frame
-    CGRect nameFrame = {0};
-    
-    //for main (task) binaries
-    // ->just need task's pid
-    if(YES == binary.isTaskBinary)
-    {
-        //get all matching tasks
-        tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator tasksForBinary:binary];
-        
-        //start 'tasks: ...' str
-        pidString = [NSMutableString stringWithFormat:@"(tasks:"];
-        
-        //add all tasks
-        for(Task* task in tasks)
-        {
-            //append name
-            [pidString appendFormat:@" %@,", task.pid];
-        }
-        
-        //remove last ','
-        if(YES == [pidString hasSuffix:@","])
-        {
-            //remove
-            [pidString deleteCharactersInRange:NSMakeRange([pidString length]-1, 1)];
-        }
-        
-        //terminate list/output
-        [pidString appendString:@")"];
-    }
-    //for dylibs
-    // ->list all tasks the flagged dylib is loaded in
-    else
-    {
-        //get host tasks
-        tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:binary];
-        
-        //start 'loaded in: ...' str
-        pidString = [NSMutableString stringWithFormat:@"(loaded in:"];
-        
-        //add all tasks
-        for(Task* task in tasks)
-        {
-            //append name
-            [pidString appendFormat:@" %@,", task.binary.name];
-        }
-        
-        //remove last ','
-        if(YES == [pidString hasSuffix:@","])
-        {
-            //remove
-            [pidString deleteCharactersInRange:NSMakeRange([pidString length]-1, 1)];
-        }
-        
-        //terminate list/output
-        [pidString appendString:@")"];
-    }
-    
-    //create cell
-    flaggedItemCell = [tableView makeViewWithIdentifier:@"FlaggedItem" owner:owner];
-    if(nil == flaggedItemCell)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //brand new cells need tracking areas
-    // ->determine if new, by checking default (.xib/IB) value
-    if(YES == [flaggedItemCell.textField.stringValue isEqualToString:@"Flagged Item Name"])
-    {
-        //add tracking area
-        // ->'vt' button
-        addTrackingArea(flaggedItemCell, TABLE_ROW_VT_BUTTON, owner);
-        
-        //add tracking area
-        // ->'info' button
-        addTrackingArea(flaggedItemCell, TABLE_ROW_INFO_BUTTON, owner);
-        
-        //add tracking area
-        // ->'show' button
-        addTrackingArea(flaggedItemCell, TABLE_ROW_SHOW_BUTTON, owner);
-    }
-    
-    //set icon
-    flaggedItemCell.imageView.image = [binary icon];
-    
-    //set code signing icon
-    ((NSImageView*)[flaggedItemCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(binary);
-    
-    //default
-    // ->(re)set main textfield's color to black
-    flaggedItemCell.textField.textColor = [NSColor blackColor];
-    
-    //set main text
-    // ->name
-    [flaggedItemCell.textField setStringValue:binary.name];
-    
-    //get name frame
-    nameFrame = flaggedItemCell.textField.frame;
-    
-    //adjust width to fit text
-    nameFrame.size.width = [flaggedItemCell.textField.stringValue sizeWithAttributes: @{NSFontAttributeName: flaggedItemCell.textField.font}].width + 5;
-    
-    //disable autolayout for name
-    flaggedItemCell.textField.translatesAutoresizingMaskIntoConstraints = YES;
-    
-    //update name frame
-    // ->should now be exact size of text
-    flaggedItemCell.textField.frame = nameFrame;
-    
-    //set pid
-    // ->immediately follows name
-    [((NSTextField*)[flaggedItemCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:pidString];
-
-    //set path
-    [[flaggedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:binary.path];
-    
-    //config VT button
-    configVTButton(flaggedItemCell, owner, binary);
-    
-//bail
-bail:
-    
-    return flaggedItemCell;
-}
-
-
 //create & customize Task view
 NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
 {
@@ -449,7 +307,8 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     
     //brand new cells need tracking areas
     // ->determine if new, by checking default (.xib/IB) value
-    if(YES == [taskCell.textField.stringValue isEqualToString:@"Task Name"])
+    if( (YES == [taskCell.textField.stringValue isEqualToString:@"Task Name"]) ||
+        (YES == [taskCell.textField.stringValue isEqualToString:@"Name"]) )
     {
         //add tracking area
         // ->'vt' button

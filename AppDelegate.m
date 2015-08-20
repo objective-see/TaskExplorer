@@ -1758,6 +1758,9 @@ bail:
             //alloc/init
             flagItemsWindowController = [[FlaggedItems alloc] initWithWindowNibName:@"FlaggedItems"];
         }
+        
+        //init/prep it
+        [self.flagItemsWindowController prepare];
                 
         //show it
         [self.flagItemsWindowController showWindow:self];

@@ -772,3 +772,102 @@ bail:
     return isConnected;
 }
 
+//set or unset button's highlight
+void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset)
+{
+    //mouse point
+    NSPoint mousePoint = {0};
+    
+    //row index
+    NSUInteger rowIndex = -1;
+    
+    //current row
+    NSTableCellView* currentRow = nil;
+    
+    //tag
+    NSUInteger tag = 0;
+    
+    //button
+    NSButton* button = nil;
+    
+    //button's label
+    NSTextField* label = nil;
+    
+    //image name
+    NSString* imageName =  nil;
+    
+    //extract tag
+    tag = [((NSDictionary*)event.userData)[@"tag"] unsignedIntegerValue];
+    
+    //restore button back to default (visual) state
+    if(YES == shouldReset)
+    {
+        //set image name
+        // ->'info'
+        if(TABLE_ROW_INFO_BUTTON == tag)
+        {
+            //set
+            imageName = @"info";
+        }
+        //set image name
+        // ->'info'
+        else if(TABLE_ROW_SHOW_BUTTON == tag)
+        {
+            //set
+            imageName = @"show";
+        }
+    }
+    //highlight button
+    else
+    {
+        //set image name
+        // ->'info'
+        if(TABLE_ROW_INFO_BUTTON == tag)
+        {
+            //set
+            imageName = @"infoOver";
+        }
+        //set image name
+        // ->'info'
+        else if(TABLE_ROW_SHOW_BUTTON == tag)
+        {
+            //set
+            imageName = @"showOver";
+        }
+    }
+    
+    //grab mouse point
+    mousePoint = [table convertPoint:[event locationInWindow] fromView:nil];
+    
+    //compute row indow
+    rowIndex = [table rowAtPoint:mousePoint];
+    
+    //sanity check
+    if(-1 == rowIndex)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get row that's about to be selected
+    currentRow = [table viewAtColumn:0 row:rowIndex makeIfNecessary:YES];
+    
+    //get button
+    // ->tag id of button, passed in userData var
+    button = [currentRow viewWithTag:[((NSDictionary*)event.userData)[@"tag"] unsignedIntegerValue]];
+    label = [currentRow viewWithTag: 1 + [((NSDictionary*)event.userData)[@"tag"] unsignedIntegerValue]];
+    
+    //restore default button image
+    // ->for 'info' and 'show' buttons
+    if(nil != imageName)
+    {
+        //set image
+        [button setImage:[NSImage imageNamed:imageName]];
+    }
+    
+//bail
+bail:
+    
+    return;
+}
+

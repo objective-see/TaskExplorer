@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
@@ -17,7 +17,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="95" y="481" width="1304" height="322"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
             <value key="minSize" type="size" width="800" height="250"/>
             <view key="contentView" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="1304" height="322"/>
@@ -71,7 +71,7 @@
                                                         </imageView>
                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SI4-HT-3LO">
                                                             <rect key="frame" x="46" y="20" width="225" height="19"/>
-                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Flagged Item Name" id="t89-gZ-pCr">
+                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Name" id="t89-gZ-pCr">
                                                                 <font key="font" size="13" name="Menlo-Regular"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -87,6 +87,9 @@
                                                                 <behavior key="behavior" lightByContents="YES"/>
                                                                 <font key="font" metaFont="system"/>
                                                             </buttonCell>
+                                                            <connections>
+                                                                <action selector="showInFinder:" target="-2" id="M4Z-ZW-tpF"/>
+                                                            </connections>
                                                         </button>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="108" translatesAutoresizingMaskIntoConstraints="NO" id="Ska-cO-ibK">
                                                             <rect key="frame" x="1258" y="4" width="25" height="12"/>
@@ -141,6 +144,9 @@
                                                                 <behavior key="behavior" lightByContents="YES"/>
                                                                 <font key="font" metaFont="system"/>
                                                             </buttonCell>
+                                                            <connections>
+                                                                <action selector="showInfo:" target="-2" id="yVu-Qv-GRl"/>
+                                                            </connections>
                                                         </button>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="106" translatesAutoresizingMaskIntoConstraints="NO" id="JeV-w6-lMk">
                                                             <rect key="frame" x="1220" y="4" width="25" height="12"/>
@@ -155,9 +161,8 @@
                                                             </textFieldCell>
                                                         </textField>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="102" translatesAutoresizingMaskIntoConstraints="NO" id="HUg-RC-ApX">
-                                                            <rect key="frame" x="264" y="20" width="504" height="18"/>
+                                                            <rect key="frame" x="264" y="20" width="868" height="18"/>
                                                             <constraints>
-                                                                <constraint firstAttribute="width" constant="500" id="GZp-g5-nIv"/>
                                                                 <constraint firstAttribute="height" constant="18" id="p2j-Rg-UCM"/>
                                                             </constraints>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="pid" id="g8r-Fj-UsA">
@@ -170,6 +175,7 @@
                                                     <constraints>
                                                         <constraint firstItem="Ska-cO-ibK" firstAttribute="leading" secondItem="JeV-w6-lMk" secondAttribute="trailing" constant="17" id="CYN-Mk-OYX"/>
                                                         <constraint firstItem="4pP-3r-LmH" firstAttribute="leading" secondItem="LL3-Mq-2hG" secondAttribute="leading" constant="4" id="Lwa-4l-9kr"/>
+                                                        <constraint firstAttribute="trailing" secondItem="HUg-RC-ApX" secondAttribute="trailing" constant="171" id="Vgm-3I-yka"/>
                                                         <constraint firstItem="CXT-MY-otd" firstAttribute="leading" secondItem="lSO-MV-z6s" secondAttribute="trailing" constant="8" id="ZSp-vP-YLC"/>
                                                         <constraint firstItem="JeV-w6-lMk" firstAttribute="leading" secondItem="CXT-MY-otd" secondAttribute="trailing" constant="11" id="e7R-yR-yTc"/>
                                                         <constraint firstItem="4pP-3r-LmH" firstAttribute="top" secondItem="LL3-Mq-2hG" secondAttribute="top" constant="7" id="efk-9Z-3l9"/>

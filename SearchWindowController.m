@@ -15,7 +15,8 @@
 #import "ItemView.h"
 #import "KKRow.h"
 #import "Filter.h"
-#import "SearchResult.h"
+#import "SearchResult.h"]
+#import "Utilities.h"
 
 
 @implementation SearchWindowController
@@ -49,6 +50,8 @@
     return;
 }
 
+//TODO: center window each time?
+
 /*
 //automatically invoked when window is loaded
 // ->set to white
@@ -71,6 +74,7 @@
 }
 */
 
+//TODO: delete/remove
 //automatically invoked when window is closing
 // ->make ourselves unmodal
 -(void)windowWillClose:(NSNotification *)notification
@@ -82,7 +86,7 @@
 }
 
 //init/prepare
-// ->make sure everything is cleanly init'd
+// ->make sure everything is cleanly init'd before displaying
 -(void)prepare
 {
     //init filter obj
@@ -233,9 +237,32 @@ bail:
     return rowView;
 }
 
+
+//automatically invoked when mouse entered
+// ->highlight button
+-(void)mouseEntered:(NSEvent*)theEvent
+{
+    //mouse entered
+    // ->highlight (visual) state
+    buttonAppearance(self.searchTable, theEvent, NO);
+    
+    return;
+}
+
+//automatically invoked when mouse exits
+// ->unhighlight/reset button
+-(void)mouseExited:(NSEvent*)theEvent
+{
+    //mouse exited
+    // ->so reset button to original (visual) state
+    buttonAppearance(self.searchTable, theEvent, YES);
+    
+    return;
+}
+
 //automatically invoked when user presses 'Enter' in search box
 // ->search!
-- (IBAction)search:(id)sender
+-(IBAction)search:(id)sender
 {
     //search string
     NSString* searchString = nil;
@@ -252,11 +279,11 @@ bail:
     //matching dylibs
     NSMutableDictionary* matchingDylibs = nil;
     
+    //matching files
+    NSMutableDictionary* matchingFiles = nil;
+    
     //task
     Task* task = nil;
-    
-    //search result
-    //SearchResult* searchResult = nil;
     
     //alloc array for matching items
     matchingItems = [NSMutableArray array];
@@ -266,6 +293,9 @@ bail:
     
     //alloc dictionary for matching dylibs
     matchingDylibs = [NSMutableDictionary dictionary];
+    
+    //alloc dictionary for matching files
+    matchingFiles = [NSMutableDictionary dictionary];
     
     //reset search results
     [self.searchResults removeAllObjects];
@@ -288,24 +318,16 @@ bail:
         }
      }
      
-    //first; search for all matching tasks
+    //1st: search for all matching tasks
     [self.filterObj filterTasks:searchString items:allTasks results:matchingTasks];
     
-    //TODO: don't need for loop for this?
-    //convert/save into search result objects
-    for(Task* task in matchingTasks)
-    {
-        //init
-        //searchResult = [[SearchResult alloc] initWithItem:task];
-        
-        //add to table items
-        [self.searchResults addObject:task];
-    }
+    //add all tasks
+    [self.searchResults addObjectsFromArray:matchingTasks];
     
     //refresh table to display task matches
     [self.searchTable reloadData];
     
-    //second; search for all matching dylibs
+    //2nd: search for all matching dylibs
     //sync
     @synchronized(allTasks)
     {
@@ -342,6 +364,45 @@ bail:
         
     }//sync
         
+    //refresh table to display dylib
+    [self.searchTable reloadData];
+    
+    //3rd: search for all matching files
+    //sync
+    @synchronized(allTasks)
+    {
+        //walk all tasks
+        // ->scan each for file matches, only processing first match
+        for(NSNumber* taskPid in allTasks)
+        {
+            //extract task
+            task = allTasks[taskPid];
+            
+            //filter
+            [self.filterObj filterFiles:searchString items:task.files results:matchingItems];
+            
+            //process all matching dylibs
+            // ->but first check if processed due to matching in another task already
+            for(File* file in matchingItems)
+            {
+                //ignore if already seen/processed
+                if(nil != matchingFiles[file.path])
+                {
+                    //skip
+                    continue;
+                }
+                
+                //process
+                [self.searchResults addObject:file];
+                
+                //save
+                matchingFiles[file.path] = file;
+            }
+            
+        }//all tasks
+        
+    }//sync
+    
     //refresh table to display dylib
     [self.searchTable reloadData];
     
@@ -510,7 +571,7 @@ bail:
     //show it
     [self.infoWindowController.windowController showWindow:self];
     
-    //bail
+//bail
 bail:
     
     return;
