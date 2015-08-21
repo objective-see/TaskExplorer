@@ -89,7 +89,7 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    //TODO: re-enable
+    //TODO: re-enable for release!
     //first thing...
     // ->install exception handlers!
     //installExceptionHandlers();
@@ -782,6 +782,7 @@ bail:
 }
 
 
+//TODO: don't need, and scannerThread can be removed!! and progressIndicator too!
 //automatically invoked when window is un-minimized
 // since the progress indicator is stopped (bug?), restart it
 -(void)windowDidDeminiaturize:(NSNotification *)notification

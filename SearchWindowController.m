@@ -15,7 +15,6 @@
 #import "ItemView.h"
 #import "KKRow.h"
 #import "Filter.h"
-#import "SearchResult.h"]
 #import "Utilities.h"
 
 
@@ -33,6 +32,7 @@
 @synthesize vtWindowController;
 @synthesize infoWindowController;
 
+/*
 //automatically called when nib is loaded
 // ->center window
 -(void)awakeFromNib
@@ -40,15 +40,17 @@
     //single time init
     if(YES != self.didInit)
     {
-        //center
-        [self.window center];
-        
+        //TODO: Flaggged Item window, use same logic!
+        //init UI
+        [self initUI];
+
         //set flag
         self.didInit = YES;
     }
     
     return;
 }
+*/
 
 //TODO: center window each time?
 
@@ -95,12 +97,88 @@
     //init array for search results
     searchResults = [NSMutableArray array];
     
+    //first time outlets are nil
+    // ->thus 'initUI' method called in 'awakeFromNib'
+    if(nil != self.window)
+    {
+        //can init UI
+        [self initUI];
+    }
+    
+    return;
+}
+
+//init the UI
+// ->each time window is shown, reset, show spinner if needed, etc
+-(void)initUI
+{
+    //center
+    [self.window center];
+    
     //table reload
     // ->make sure all is reset
     [self.searchTable reloadData];
     
     //reset search string
     [self.searchBox setStringValue:@""];
+    
+    //show activity indicator while tasks are still being enumerated
+    if(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.isEnumerating)
+    {
+        //disable search box
+        self.searchBox.enabled = NO;
+        
+        //show activity indicator
+        [self.activityIndicator setHidden:NO];
+        
+        //show activity indicator label
+        self.activityIndicatorLabel.hidden = NO;
+        
+        //start spinner
+        [self.activityIndicator startAnimation:nil];
+        
+        //spin up thread to watch/wait until task enumeration is pau
+        [NSThread detachNewThreadSelector:@selector(waitTillPau) toTarget:self withObject:nil];
+    }
+    
+    //can search right now!
+    else
+    {
+        //make search box first responder
+        [self.window makeFirstResponder:self.searchBox];
+    }
+    
+
+    return;
+}
+
+//thread function
+// ->wait until task enumeration is done, then allow user to search
+-(void)waitTillPau
+{
+    //nap/check/etc
+    while(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.isEnumerating)
+    {
+        //nap
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //ughh, don't know exactly how long q-processing will take
+    // ->so just nap a little longer
+    [NSThread sleepForTimeInterval:15.0f];
+    
+    //yay all done
+    // ->hide activity indicator
+    self.activityIndicator.hidden = YES;
+    
+    //hide activity indicator label
+    self.activityIndicatorLabel.hidden = YES;
+    
+    //enable search box
+    self.searchBox.enabled = YES;
+    
+    //make search box first responder
+    [self.window makeFirstResponder:self.searchBox];
     
     return;
 }
@@ -299,6 +377,10 @@ bail:
     
     //reset search results
     [self.searchResults removeAllObjects];
+    
+    //reload table
+    // ->clears out everything
+    [self.searchTable reloadData];
     
     //grab search string
     searchString = [sender stringValue];

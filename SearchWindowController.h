@@ -12,6 +12,7 @@
 #import "VTInfoWindowController.h"
 
 
+
 @interface SearchWindowController : NSWindowController
 
 //automatically invoked when user presses 'Enter' in search box
@@ -31,6 +32,12 @@
 
 //table items
 @property(nonatomic, retain)NSMutableArray* searchResults;
+
+//activity indicator
+@property (weak) IBOutlet NSProgressIndicator *activityIndicator;
+
+//activity indicator label
+@property (weak) IBOutlet NSTextField *activityIndicatorLabel;
 
 //filter object
 @property(nonatomic, retain)Filter* filterObj;

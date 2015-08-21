@@ -7,6 +7,8 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SearchWindowController">
             <connections>
+                <outlet property="activityIndicator" destination="RXw-FP-B7l" id="Z0i-nT-27e"/>
+                <outlet property="activityIndicatorLabel" destination="Q88-hM-E3W" id="QgQ-R6-PSJ"/>
                 <outlet property="searchBox" destination="BB9-Xc-q8T" id="8cj-MF-5Nv"/>
                 <outlet property="searchTable" destination="w0h-ih-Ej7" id="d9e-Dk-k2K"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
@@ -204,7 +206,7 @@
                                                             </constraints>
                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="6gv-k4-mdi"/>
                                                         </imageView>
-                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ugh-bk-muU">
+                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ugh-bk-muU">
                                                             <rect key="frame" x="31" y="20" width="225" height="19"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Name" id="fgN-p7-FWL">
                                                                 <font key="font" size="13" name="Menlo-Regular"/>
@@ -286,6 +288,7 @@
                                                     </subviews>
                                                     <constraints>
                                                         <constraint firstItem="IIS-fl-0Bl" firstAttribute="top" secondItem="62p-Yk-Jl3" secondAttribute="top" constant="7" id="8c5-Z7-Olg"/>
+                                                        <constraint firstItem="fnp-rh-Inz" firstAttribute="leading" secondItem="ugh-bk-muU" secondAttribute="trailing" constant="8" id="Bp4-Tu-NaQ"/>
                                                         <constraint firstAttribute="trailing" secondItem="Xsx-qZ-Zpb" secondAttribute="trailing" constant="20" id="Nyw-Bs-k6x"/>
                                                         <constraint firstItem="vr7-eK-3Bt" firstAttribute="leading" secondItem="UgY-KO-I4K" secondAttribute="trailing" constant="22" id="PkR-9T-0we"/>
                                                         <constraint firstAttribute="trailing" secondItem="fnp-rh-Inz" secondAttribute="trailing" constant="171" id="V3B-Vz-Pzp"/>
@@ -398,12 +401,27 @@
                             <outlet property="delegate" destination="-2" id="X2H-Xx-qgK"/>
                         </connections>
                     </textField>
+                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="RXw-FP-B7l">
+                        <rect key="frame" x="636" y="196" width="32" height="32"/>
+                    </progressIndicator>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q88-hM-E3W" userLabel="loading data">
+                        <rect key="frame" x="517" y="178" width="271" height="19"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" title="completing task/dylib/file enumeration - please wait..." id="ZXa-lS-7Ph">
+                            <font key="font" size="13" name="Menlo-Regular"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <constraints>
+                    <constraint firstAttribute="centerY" secondItem="RXw-FP-B7l" secondAttribute="centerY" id="1SP-Qz-QYP"/>
                     <constraint firstItem="8GA-gp-lIa" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="70" id="IAH-UM-GVX"/>
+                    <constraint firstAttribute="centerY" secondItem="Q88-hM-E3W" secondAttribute="centerY" constant="-25" id="MUC-Ia-Hfk"/>
+                    <constraint firstItem="RXw-FP-B7l" firstAttribute="centerX" secondItem="8GA-gp-lIa" secondAttribute="centerX" id="P0U-b3-RUp"/>
                     <constraint firstAttribute="bottom" secondItem="8GA-gp-lIa" secondAttribute="bottom" constant="-1" id="RJ1-AT-aVI"/>
                     <constraint firstAttribute="trailing" secondItem="BB9-Xc-q8T" secondAttribute="trailing" constant="20" id="aKm-xj-RF5"/>
                     <constraint firstItem="8GA-gp-lIa" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="-1" id="bVx-kV-QU1"/>
+                    <constraint firstAttribute="centerX" secondItem="Q88-hM-E3W" secondAttribute="centerX" id="dxs-NA-iEU"/>
                     <constraint firstAttribute="trailing" secondItem="8GA-gp-lIa" secondAttribute="trailing" constant="-1" id="hYI-5Z-VSU"/>
                     <constraint firstItem="BB9-Xc-q8T" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" id="sZv-PY-ckN"/>
                 </constraints>

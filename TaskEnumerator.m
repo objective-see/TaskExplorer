@@ -28,6 +28,7 @@
 @synthesize dylibs;
 @synthesize binaryQueue;
 @synthesize executables;
+@synthesize isEnumerating;
 
 
 //init
@@ -72,6 +73,9 @@
     
     //xpc connection
     NSXPCConnection* xpcConnection = nil;
+    
+    //set flag
+    self.isEnumerating = YES;
     
     //determine if network is connected
     // ->sets 'isConnected' flag
@@ -196,6 +200,11 @@
         //enumerate
         [newTask enumerateFiles:xpcConnection];
     }
+    
+    //TODO: add network connection filtering
+    
+    //all done!
+    self.isEnumerating = NO;
     
     return;
 }
@@ -595,8 +604,8 @@ bail:
 }
 
 
-//get all tasks a dylib is loaded into
--(NSMutableArray*)loadedIn:(Binary*)dylib
+//get all tasks a dylib/file is loaded into
+-(NSMutableArray*)loadedIn:(id)item
 {
     //array of tasks
     NSMutableArray* hostTasks = nil;
@@ -604,8 +613,36 @@ bail:
     //task
     Task* task = nil;
     
+    //dylib flag
+    BOOL isDylib = NO;
+    
+    //file flag
+    BOOL isFile = NO;
+    
     //tasks
     hostTasks = [NSMutableArray array];
+    
+    //check if item is dylib
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //dylib
+        isDylib = YES;
+    }
+    
+    //check if item is file
+    else if(YES == [item isKindOfClass:[File class]])
+    {
+        //file
+        isFile = YES;
+    }
+    
+    //sanity check
+    if( (YES != isDylib) &&
+        (YES != isFile) )
+    {
+        //bail
+        goto bail;
+    }
     
     //sync
     @synchronized(self.tasks)
@@ -616,22 +653,49 @@ bail:
             //extract task
             task = self.tasks[taskPid];
             
-            //check if dylib is loaded in task
-            for(Binary* taskDylib in task.dylibs)
+            //dylib check
+            if(YES == isDylib)
             {
-                //check for task has dylib
-                if(taskDylib == dylib)
+                //check if dylib is loaded in task
+                for(Binary* taskDylib in task.dylibs)
                 {
-                    //save
-                    [hostTasks addObject:task];
-                    
-                    //can bail, since match was found
-                    break;
+                    //check for task has dylib
+                    if(taskDylib == (Binary*)item)
+                    {
+                        //save
+                        [hostTasks addObject:task];
+                        
+                        //can bail, since match was found
+                        break;
+                    }
                 }
-            }
-        }
+            }//dylib check
+            
+            //file check
+            else
+            {
+                //check if file is loaded in task
+                for(File* taskFile in task.files)
+                {
+                    //check for task has dylib
+                    if(taskFile == (File*)item)
+                    {
+                        //save
+                        [hostTasks addObject:task];
+                        
+                        //can bail, since match was found
+                        break;
+                    }
+                }
+                
+            }//file check
+        
+        }//all tasks
         
     }//sync
+    
+//bail
+bail:
     
     return hostTasks;
 }

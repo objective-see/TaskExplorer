@@ -10,7 +10,6 @@
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
 		7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */; };
 		7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */; };
-		7DEC68971B844F4800F4C12E /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEC68961B844F4800F4C12E /* SearchResult.m */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
 		CD02194F1AD34D8B005148A2 /* AboutWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD02194D1AD34D8B005148A2 /* AboutWindow.xib */; };
@@ -156,8 +155,6 @@
 		7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SearchWindow.xib; path = UI/SearchWindow.xib; sourceTree = "<group>"; };
 		7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchWindowController.h; sourceTree = "<group>"; };
 		7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchWindowController.m; sourceTree = "<group>"; };
-		7DEC68951B844F4800F4C12E /* SearchResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResult.h; sourceTree = "<group>"; };
-		7DEC68961B844F4800F4C12E /* SearchResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResult.m; sourceTree = "<group>"; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
 		CD001B361AB903040089014A /* logoApple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoApple.png; path = images/logoApple.png; sourceTree = SOURCE_ROOT; };
 		CD02194D1AD34D8B005148A2 /* AboutWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AboutWindow.xib; path = UI/AboutWindow.xib; sourceTree = "<group>"; };
@@ -333,8 +330,6 @@
 			children = (
 				7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */,
 				7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */,
-				7DEC68951B844F4800F4C12E /* SearchResult.h */,
-				7DEC68961B844F4800F4C12E /* SearchResult.m */,
 				CD74A0781B7F170B00A8AAD3 /* FlaggedItems.h */,
 				CD74A0791B7F170B00A8AAD3 /* FlaggedItems.m */,
 				CD4D54201B2CE6F200008030 /* NSMutableArray+QueueAdditions.h */,
@@ -796,7 +791,6 @@
 				CDD248351AF5947300232422 /* TAAdaptiveSpaceItemView.m in Sources */,
 				CDBE49181B58DC9B0031FC22 /* NSApplicationKeyEvents.m in Sources */,
 				CDA81D531A95B492009790E2 /* Utilities.m in Sources */,
-				7DEC68971B844F4800F4C12E /* SearchResult.m in Sources */,
 				CD7B9FAB1AD08FA100DF3C71 /* KKRow.m in Sources */,
 				CD3F4CFD1AF71B58002A2647 /* ItemBase.m in Sources */,
 			);

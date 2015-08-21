@@ -230,7 +230,6 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     }
     
     //set icon
-    //TODO: make sure files have icons!!
     loadedItemCell.imageView.image = [item icon];
     
     //only dylibs have code signing icons

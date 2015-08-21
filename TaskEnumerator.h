@@ -35,6 +35,9 @@
 // ->contains binaries that should be processed
 @property (nonatomic, retain) Queue* binaryQueue;
 
+//flag indicating tasks (and thus files/dylibs/etc) are being queried
+@property BOOL isEnumerating;
+
 
 /* METHODS */
 
@@ -57,8 +60,8 @@
 // ->get list of all child pids
 -(void)getAllChildren:(Task*)parent children:(NSMutableArray*)children;
 
-//get all tasks a dylib is loaded into
--(NSMutableArray*)loadedIn:(Binary*)dylib;
+//get all tasks a dylib/file is loaded into
+-(NSMutableArray*)loadedIn:(id)item;
 
 //get all task pids for a given binary
 -(NSMutableArray*)tasksForBinary:(Binary*)binary;
