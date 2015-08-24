@@ -9,6 +9,7 @@
             <connections>
                 <outlet property="activityIndicator" destination="RXw-FP-B7l" id="Z0i-nT-27e"/>
                 <outlet property="activityIndicatorLabel" destination="Q88-hM-E3W" id="QgQ-R6-PSJ"/>
+                <outlet property="overlayView" destination="YtR-V5-2Zi" id="8Mb-j4-vuh"/>
                 <outlet property="searchBox" destination="BB9-Xc-q8T" id="8cj-MF-5Nv"/>
                 <outlet property="searchTable" destination="w0h-ih-Ej7" id="d9e-Dk-k2K"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
@@ -241,7 +242,7 @@
                                                             </textFieldCell>
                                                         </textField>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="101" translatesAutoresizingMaskIntoConstraints="NO" id="4c4-WA-4rL">
-                                                            <rect key="frame" x="31" y="2" width="1118" height="21"/>
+                                                            <rect key="frame" x="31" y="2" width="1185" height="21"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="file" id="1An-1Z-a3L">
                                                                 <font key="font" size="11" name="Menlo-Regular"/>
                                                                 <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -292,6 +293,7 @@
                                                         <constraint firstAttribute="trailing" secondItem="Xsx-qZ-Zpb" secondAttribute="trailing" constant="20" id="Nyw-Bs-k6x"/>
                                                         <constraint firstItem="vr7-eK-3Bt" firstAttribute="leading" secondItem="UgY-KO-I4K" secondAttribute="trailing" constant="22" id="PkR-9T-0we"/>
                                                         <constraint firstAttribute="trailing" secondItem="fnp-rh-Inz" secondAttribute="trailing" constant="171" id="V3B-Vz-Pzp"/>
+                                                        <constraint firstItem="5kn-qs-yNV" firstAttribute="leading" secondItem="4c4-WA-4rL" secondAttribute="trailing" constant="8" id="VCf-sQ-iGi"/>
                                                         <constraint firstItem="4c4-WA-4rL" firstAttribute="leading" secondItem="IIS-fl-0Bl" secondAttribute="trailing" constant="2" id="bEr-bp-efR"/>
                                                         <constraint firstItem="IIS-fl-0Bl" firstAttribute="leading" secondItem="62p-Yk-Jl3" secondAttribute="leading" constant="4" id="dM0-v7-57a"/>
                                                         <constraint firstItem="Xsx-qZ-Zpb" firstAttribute="leading" secondItem="5kn-qs-yNV" secondAttribute="trailing" constant="17" id="icg-9v-1Px"/>
@@ -401,13 +403,16 @@
                             <outlet property="delegate" destination="-2" id="X2H-Xx-qgK"/>
                         </connections>
                     </textField>
+                    <customView ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YtR-V5-2Zi">
+                        <rect key="frame" x="428" y="105" width="458" height="165"/>
+                    </customView>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="RXw-FP-B7l">
                         <rect key="frame" x="636" y="196" width="32" height="32"/>
                     </progressIndicator>
-                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q88-hM-E3W" userLabel="loading data">
-                        <rect key="frame" x="517" y="178" width="271" height="19"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" title="completing task/dylib/file enumeration - please wait..." id="ZXa-lS-7Ph">
-                            <font key="font" size="13" name="Menlo-Regular"/>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q88-hM-E3W" userLabel="loading data">
+                        <rect key="frame" x="456" y="159" width="408" height="38"/>
+                        <textFieldCell key="cell" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" title="completing (initial) task/dylib/file enumeration please wait" id="ZXa-lS-7Ph">
+                            <font key="font" size="13" name="Menlo-Bold"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -416,9 +421,11 @@
                 <constraints>
                     <constraint firstAttribute="centerY" secondItem="RXw-FP-B7l" secondAttribute="centerY" id="1SP-Qz-QYP"/>
                     <constraint firstItem="8GA-gp-lIa" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="70" id="IAH-UM-GVX"/>
-                    <constraint firstAttribute="centerY" secondItem="Q88-hM-E3W" secondAttribute="centerY" constant="-25" id="MUC-Ia-Hfk"/>
+                    <constraint firstItem="8GA-gp-lIa" firstAttribute="centerY" secondItem="YtR-V5-2Zi" secondAttribute="centerY" constant="15" id="Isw-Rb-q2f"/>
+                    <constraint firstAttribute="centerY" secondItem="Q88-hM-E3W" secondAttribute="centerY" constant="-50" id="MUC-Ia-Hfk"/>
                     <constraint firstItem="RXw-FP-B7l" firstAttribute="centerX" secondItem="8GA-gp-lIa" secondAttribute="centerX" id="P0U-b3-RUp"/>
                     <constraint firstAttribute="bottom" secondItem="8GA-gp-lIa" secondAttribute="bottom" constant="-1" id="RJ1-AT-aVI"/>
+                    <constraint firstItem="8GA-gp-lIa" firstAttribute="centerX" secondItem="YtR-V5-2Zi" secondAttribute="centerX" constant="-5" id="SVA-mY-KJ6"/>
                     <constraint firstAttribute="trailing" secondItem="BB9-Xc-q8T" secondAttribute="trailing" constant="20" id="aKm-xj-RF5"/>
                     <constraint firstItem="8GA-gp-lIa" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="-1" id="bVx-kV-QU1"/>
                     <constraint firstAttribute="centerX" secondItem="Q88-hM-E3W" secondAttribute="centerX" id="dxs-NA-iEU"/>

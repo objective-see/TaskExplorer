@@ -3,7 +3,7 @@
 //  remoteTaskService
 //
 //  Created by Patrick Wardle on 5/27/15.
-//  Copyright (c) 2015 Lucas Derraugh. All rights reserved.
+//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -15,8 +15,8 @@
 #import <syslog.h>
 
 //TODO: CHANGE B4 RELEASE!!
-#define SIGNING_AUTH @"Mac Developer: patrick wardle (5SKKU32KLJ)"//@"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
-
+//-> for testing: @"Mac Developer: patrick wardle (5SKKU32KLJ)"
+#define SIGNING_AUTH @"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
 
 //skeleton interface
 @interface ServiceDelegate : NSObject <NSXPCListenerDelegate>
@@ -84,7 +84,7 @@
     if(0 != SecStaticCodeCheckValidity(staticCode, kSecCSDefaultFlags, requirementRef))
     {
         //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCheckValidity() failed");
+        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCheckValidity() failed on %s", pathBuffer);
         
         //bail
         goto bail;

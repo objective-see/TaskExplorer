@@ -29,7 +29,7 @@
         if(YES != [[NSFileManager defaultManager] fileExistsAtPath:params[KEY_RESULT_PATH]])
         {
             //err msg
-            syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s not found", [params[KEY_RESULT_PATH] UTF8String]);
+            //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s not found", [params[KEY_RESULT_PATH] UTF8String]);
             
             //set self to nil
             self = nil;

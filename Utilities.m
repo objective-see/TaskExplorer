@@ -415,7 +415,7 @@ NSDictionary* hashFile(NSString* filePath)
     if(nil == (fileContents = [NSData dataWithContentsOfFile:filePath]))
     {
         //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: couldn't load %s to hash", [filePath UTF8String]);
+        //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: couldn't load %s to hash", [filePath UTF8String]);
         
         //bail
         goto bail;

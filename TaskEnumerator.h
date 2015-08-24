@@ -35,10 +35,6 @@
 // ->contains binaries that should be processed
 @property (nonatomic, retain) Queue* binaryQueue;
 
-//flag indicating tasks (and thus files/dylibs/etc) are being queried
-@property BOOL isEnumerating;
-
-
 /* METHODS */
 
 //enumerate all tasks

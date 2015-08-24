@@ -16,19 +16,13 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <menu title="AMainMenu" systemMenu="main" id="29">
             <items>
-                <menuItem title="KnockKnock" id="56">
-                    <menu key="submenu" title="KnockKnock" systemMenu="apple" id="57">
+                <menuItem title="TaskExplorer" id="56" userLabel="TaskExplorer">
+                    <menu key="submenu" title="TaskExplorer" systemMenu="apple" id="57">
                         <items>
                             <menuItem title="About" id="134">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="about:" target="494" id="1Av-a0-4RW"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Preferences" tag="1" hidden="YES" id="Cd7-Xq-jnw">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="showPreferences:" target="494" id="h1a-NR-0PY"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="149">
@@ -66,7 +60,7 @@
                         </textFieldCell>
                     </textField>
                     <button ambiguous="YES" misplaced="YES" tag="10003" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
-                        <rect key="frame" x="108" y="20" width="32" height="25"/>
+                        <rect key="frame" x="103" y="20" width="32" height="25"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="32" id="XGt-s5-weq"/>
                             <constraint firstAttribute="height" constant="25" id="wlR-bC-Msz"/>
@@ -80,29 +74,15 @@
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FRk-Fk-n4f">
-                        <rect key="frame" x="106" y="0.0" width="38" height="17"/>
+                        <rect key="frame" x="100" y="5" width="38" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="save" id="qeM-6t-Rz6">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" white="0.52269995629999999" alpha="1" colorSpace="calibratedWhite"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button ambiguous="YES" misplaced="YES" tag="10002" translatesAutoresizingMaskIntoConstraints="NO" id="UiZ-UI-inM">
-                        <rect key="frame" x="62" y="20" width="32" height="25"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="32" id="OtG-JF-PVX"/>
-                            <constraint firstAttribute="height" constant="25" id="Suo-pl-wcf"/>
-                        </constraints>
-                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="search" imagePosition="overlaps" alignment="center" alternateImage="searchBG" imageScaling="proportionallyDown" inset="2" id="d77-J8-SjG">
-                            <behavior key="behavior" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="search:" target="494" id="YU7-xU-gB7"/>
-                        </connections>
-                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MHi-Fa-fbk">
-                        <rect key="frame" x="59" y="0.0" width="38" height="17"/>
+                        <rect key="frame" x="56" y="5" width="38" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="search" id="tF8-E0-l1A">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" white="0.52269995629999999" alpha="1" colorSpace="calibratedWhite"/>
@@ -110,7 +90,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="msk-iH-gVd">
-                        <rect key="frame" x="8" y="0.0" width="46" height="17"/>
+                        <rect key="frame" x="8" y="5" width="46" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="refresh" id="C2m-Hn-7EE">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" white="0.52269995629999999" alpha="1" colorSpace="calibratedWhite"/>
@@ -169,7 +149,7 @@
                         </connections>
                     </button>
                     <button ambiguous="YES" misplaced="YES" tag="10001" translatesAutoresizingMaskIntoConstraints="NO" id="hum-Mj-cDd">
-                        <rect key="frame" x="20" y="20" width="32" height="25"/>
+                        <rect key="frame" x="15" y="20" width="32" height="25"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="32" id="ZaY-KC-vcE"/>
                             <constraint firstAttribute="height" constant="25" id="dEM-O0-dda"/>
@@ -211,13 +191,27 @@
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qdr-Tq-Fw0">
-                        <rect key="frame" x="1297" y="2" width="46" height="17"/>
+                        <rect key="frame" x="1297" y="5" width="46" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="flagged" id="BYb-4w-hk5">
                             <font key="font" size="9" name="Menlo-Regular"/>
                             <color key="textColor" white="0.52269995629999999" alpha="1" colorSpace="calibratedWhite"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button ambiguous="YES" misplaced="YES" tag="10002" translatesAutoresizingMaskIntoConstraints="NO" id="UiZ-UI-inM">
+                        <rect key="frame" x="59" y="20" width="32" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="OtG-JF-PVX"/>
+                            <constraint firstAttribute="height" constant="25" id="Suo-pl-wcf"/>
+                        </constraints>
+                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="search" imagePosition="overlaps" alignment="center" alternateImage="searchBG" imageScaling="proportionallyDown" inset="2" id="d77-J8-SjG">
+                            <behavior key="behavior" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="search:" target="494" id="YU7-xU-gB7"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="E4M-PF-VD0" secondAttribute="trailing" constant="-1" id="7em-dD-W3w"/>
@@ -313,8 +307,8 @@
                 <outlet property="noItemsLabel" destination="kIC-ZZ-ldy" id="nOm-8E-tZA"/>
                 <outlet property="progressIndicator" destination="839" id="870"/>
                 <outlet property="refreshButton" destination="hum-Mj-cDd" id="SBd-mB-EWI"/>
-                <outlet property="searchButton" destination="UiZ-UI-inM" id="neL-LX-ZHh"/>
-                <outlet property="showPreferencesButton" destination="gSG-Nq-plb" id="AQZ-wC-I5a"/>
+                <outlet property="saveButton" destination="gSG-Nq-plb" id="Bwu-rh-nko"/>
+                <outlet property="searchButton" destination="UiZ-UI-inM" id="szu-AU-TGX"/>
                 <outlet property="statusText" destination="745" id="871"/>
                 <outlet property="topPane" destination="TNF-7q-Loy" id="KZl-fO-P4O"/>
                 <outlet property="viewSelector" destination="nRz-eH-T6D" id="1YT-Nb-K3a"/>

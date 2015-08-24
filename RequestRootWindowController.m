@@ -154,8 +154,9 @@
     
     //2nd arg: permissions
     // ->4 at front is setuid
+    //TODO: CHANGE B4 RELEASE!!
     //TODO: make 4755 before deploy (for testing, 777 makes XCOde be able to del it during build!)
-    installArgs[1] = "4777";
+    installArgs[1] = "4755";
     
     //3rd arg: XPC service
     installArgs[2] = [xpcService UTF8String];

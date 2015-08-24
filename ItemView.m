@@ -3,7 +3,7 @@
 //  TaskExplorer
 //
 //  Created by Patrick Wardle on 5/23/15.
-//  Copyright (c) 2015 Lucas Derraugh. All rights reserved.
+//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
 #import "Consts.h"
@@ -38,7 +38,7 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
     //handle logic for search results
     // ->dylibs and files have the special global 'loaded in' views
     else if( (YES == [owner isKindOfClass:[SearchWindowController class]]) &&
-        ( (YES == [item isKindOfClass:[Binary class]]) || (YES == [item isKindOfClass:[File class]]) ) )
+           ( (YES == [item isKindOfClass:[Binary class]]) || (YES == [item isKindOfClass:[File class]]) ) )
     {
         //create & config view
         itemCell = createLoadedItemView(tableView, owner, item);
@@ -163,12 +163,25 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     CGRect nameFrame = {0};
   
     //get host tasks
-    // TODO: make this work for files too!
+    // ->works with dylibs or files
+    //TODO: make work w/ network connections
     tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
-        
-    //start 'loaded in: ...' str
-    loadedIn = [NSMutableString stringWithFormat:@"(loaded in:"];
-        
+    
+    //add dylib indicator
+    //-> '(dylib, loaded in: ... '
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@"(dylib, loaded in:"];
+    }
+    //add file indicator
+    //-> '(file, loaded in: ... '
+    else if(YES == [item isKindOfClass:[File class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@"(file, loaded in:"];
+    }
+    
     //add all tasks
     for(Task* task in tasks)
     {
@@ -289,6 +302,9 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     //task's name frame
     CGRect nameFrame = {0};
     
+    //string for pid
+    NSString* pidString = nil;
+    
     //sanity check
     if(nil == task.binary)
     {
@@ -349,9 +365,24 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     // ->should now be exact size of text
     taskCell.textField.frame = nameFrame;
     
+    //init pid string
+    // ->search mode, show 'task,' to differential between files, etc
+    if(YES ==[owner isKindOfClass:[SearchWindowController class]])
+    {
+        //init
+        pidString = [NSString stringWithFormat:@"(task: %@)", task.pid];
+    }
+    //otherwise
+    // ->just set pid
+    else
+    {
+        //init
+        pidString = [NSString stringWithFormat:@"(%@)", task.pid];
+    }
+    
     //set pid
     // ->immediately follows name
-    [((NSTextField*)[taskCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:[NSString stringWithFormat:@"(%@)", task.pid]];
+    [((NSTextField*)[taskCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:pidString];
     
     //set path
     [[taskCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:task.binary.path];

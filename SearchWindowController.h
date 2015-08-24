@@ -46,21 +46,15 @@
 @property (nonatomic, retain)VTInfoWindowController* vtWindowController;
 
 //info window controller
-@property(retain, nonatomic)InfoWindowController* infoWindowController;
+@property(nonatomic, retain)InfoWindowController* infoWindowController;
+
+//'pls wait' label
+@property(nonatomic, retain)NSString* plsWaitMessage;
+
+//overlay view
+@property (weak) IBOutlet NSView *overlayView;
 
 
-//TODO: remove!
-//tasks
-@property(nonatomic, retain)NSMutableDictionary* tasks;
-
-//dylibs
-@property(nonatomic, retain)NSMutableDictionary* dylibs;
-
-//files
-@property(nonatomic, retain)NSMutableDictionary* files;
-
-//connections
-@property(nonatomic, retain)NSMutableDictionary* connections;
 
 /* METHODS */
 

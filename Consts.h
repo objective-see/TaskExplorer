@@ -305,10 +305,14 @@
 //sort by name
 #define SORT_BY_NAME 0x1
 
-
 //delta for pid tag
 #define PID_TAG_DELTA 1000
 
+//search wait time (from app's launch)
+#define SEARCH_WAIT_TIME 30
+
+//pls wait (search) message
+#define PLS_WAIT_MESSAGE @"completing (intial) task/dylib/file enumeration please wait"
 
 
 

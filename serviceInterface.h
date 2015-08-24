@@ -3,7 +3,7 @@
 //  TaskExplorer
 //
 //  Created by Patrick Wardle on 5/27/15.
-//  Copyright (c) 2015 Lucas Derraugh. All rights reserved.
+//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
 #ifndef TaskExplorer_serviceInterface_h

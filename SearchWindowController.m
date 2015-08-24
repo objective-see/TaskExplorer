@@ -16,73 +16,35 @@
 #import "KKRow.h"
 #import "Filter.h"
 #import "Utilities.h"
+#import "Consts.h"
 
 
 @implementation SearchWindowController
 
-@synthesize tasks;
-@synthesize dylibs;
-@synthesize files;
-@synthesize connections;
 @synthesize didInit;
-@synthesize searchTable;
 @synthesize filterObj;
-@synthesize searchResults;
 @synthesize searchBox;
+@synthesize overlayView;
+@synthesize searchTable;
+@synthesize searchResults;
+@synthesize plsWaitMessage;
 @synthesize vtWindowController;
 @synthesize infoWindowController;
 
-/*
+
 //automatically called when nib is loaded
-// ->center window
+// ->first time (when outlets aren't nil), init UI
 -(void)awakeFromNib
 {
     //single time init
     if(YES != self.didInit)
     {
-        //TODO: Flaggged Item window, use same logic!
         //init UI
         [self initUI];
 
         //set flag
         self.didInit = YES;
     }
-    
-    return;
-}
-*/
-
-//TODO: center window each time?
-
-/*
-//automatically invoked when window is loaded
-// ->set to white
--(void)windowDidLoad
-{
-    //super
-    //[super windowDidLoad];
-
-    
-    //TODO: reset searchResults when user clears search box~!
-
-    
-    //init search data
-    // ->loads all current tasks, dylibs, files, network conns
-    //[self initSearchData];
-    
-    //TODO: disable search box till done generating search dicts?
-    
-    return;
-}
-*/
-
-//TODO: delete/remove
-//automatically invoked when window is closing
-// ->make ourselves unmodal
--(void)windowWillClose:(NSNotification *)notification
-{
-    //make un-modal
-    //[[NSApplication sharedApplication] stopModal];
     
     return;
 }
@@ -103,6 +65,38 @@
     {
         //can init UI
         [self initUI];
+        
+        //set flag
+        self.didInit = YES;
+    }
+
+    return;
+}
+
+//automatically invoked when window is un-minimized
+// since the progress indicator is stopped/hidden (bug?), restart it
+-(void)windowDidDeminiaturize:(NSNotification *)notification
+{
+    //current time
+    NSTimeInterval currentTime = 0.0f;
+    
+    //grab current time
+    currentTime = [NSDate timeIntervalSinceReferenceDate];
+    
+    //make sure search is still waiting...
+    // ->and then restart spinner
+    if((currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime) < SEARCH_WAIT_TIME)
+    {
+        //update UI on main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            //show
+            self.activityIndicator.hidden = NO;
+            
+            //start spinner
+            [self.activityIndicator startAnimation:nil];
+            
+        });
     }
     
     return;
@@ -112,6 +106,12 @@
 // ->each time window is shown, reset, show spinner if needed, etc
 -(void)initUI
 {
+    //current time
+    NSTimeInterval currentTime = 0.0f;
+    
+    //time left
+    NSTimeInterval timeRemaining = 0.0f;
+    
     //center
     [self.window center];
     
@@ -122,9 +122,40 @@
     //reset search string
     [self.searchBox setStringValue:@""];
     
-    //show activity indicator while tasks are still being enumerated
-    if(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.isEnumerating)
+    //grab current time
+    currentTime = [NSDate timeIntervalSinceReferenceDate];
+    
+    //check if search timeout has been hit
+    // ->when this occur, no need to show activity indicator, etc
+    if((currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime) > SEARCH_WAIT_TIME)
     {
+        //make search box first responder
+        [self.window makeFirstResponder:self.searchBox];
+    }
+    //show activity indicator while tasks are still being enumerated
+    else
+    {
+        //calc time remaining
+        timeRemaining = SEARCH_WAIT_TIME - (currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
+        
+        //pre-req
+        [self.overlayView setWantsLayer:YES];
+        
+        //rounded corners
+        self.overlayView.layer.cornerRadius = 20.0;
+        
+        //maks
+        self.overlayView.layer.masksToBounds = YES;
+        
+        //set overlay's view color to black
+        self.overlayView.layer.backgroundColor = [NSColor blackColor].CGColor;
+        
+        //make it semi-transparent
+        self.overlayView.alphaValue = 0.20;
+        
+        //show overlay
+        self.overlayView.hidden = NO;
+
         //disable search box
         self.searchBox.enabled = NO;
         
@@ -137,18 +168,13 @@
         //start spinner
         [self.activityIndicator startAnimation:nil];
         
+        //update w/ time
+        self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
+
         //spin up thread to watch/wait until task enumeration is pau
         [NSThread detachNewThreadSelector:@selector(waitTillPau) toTarget:self withObject:nil];
     }
     
-    //can search right now!
-    else
-    {
-        //make search box first responder
-        [self.window makeFirstResponder:self.searchBox];
-    }
-    
-
     return;
 }
 
@@ -156,104 +182,54 @@
 // ->wait until task enumeration is done, then allow user to search
 -(void)waitTillPau
 {
+    //time left
+    NSTimeInterval timeRemaining = 0.0f;
+    
+    //calc time remaining
+    timeRemaining = SEARCH_WAIT_TIME - ([NSDate timeIntervalSinceReferenceDate] - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
+    
     //nap/check/etc
-    while(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.isEnumerating)
+    while(timeRemaining > 0.0f)
     {
         //nap
         [NSThread sleepForTimeInterval:1.0f];
-    }
-    
-    //ughh, don't know exactly how long q-processing will take
-    // ->so just nap a little longer
-    [NSThread sleepForTimeInterval:15.0f];
-    
-    //yay all done
-    // ->hide activity indicator
-    self.activityIndicator.hidden = YES;
-    
-    //hide activity indicator label
-    self.activityIndicatorLabel.hidden = YES;
-    
-    //enable search box
-    self.searchBox.enabled = YES;
-    
-    //make search box first responder
-    [self.window makeFirstResponder:self.searchBox];
-    
-    return;
-}
-
-
-/*
-
-//init search data
-// ->load all tasks/dylibs/files/connections into dictionaries for easy/quick searching
--(void)initSearchData:(NSString*)searchString
-{
-    //alloc task dictionary
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
-    
-    //alloc dylibs dictionary
-    dylibs = [NSMutableDictionary dictionary];
-    
-    //alloc files dictionary
-    files = [NSMutableDictionary dictionary];
-    
-    //alloc connections dictionary
-    connections = [NSMutableDictionary dictionary];
-
-    
-    /*
-    //'#' indicates a keyword search
-    // ->check for keyword match, then filter by keyword
-    if(YES == [search.string hasPrefix:@"#"])
-    {
-        //ignore #search strings that don't match a keyword
-        if(YES != [filterObj isKeyword:search.string])
-        {
-            //ignore
-            goto bail;
-        }
-    }
-    
-    //filter
-    [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
-     */
-     
-    //process each
-    // ->add files, tasks, network connections
-/*
-    for(NSNumber* taskPid in tasks)
-    {
-        //extract task
-        task = tasks[taskPid];
         
-        //
+        //calc time remaining
+        timeRemaining = SEARCH_WAIT_TIME - ([NSDate timeIntervalSinceReferenceDate] - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
         
-    }
- */
- /*
-    
-    return;
-}
-*/
-/*
--(void)search:(NSString*)searchString
-{
-    //filter object
-    Filter* filterObj = nil;
-    
-    //task
-    Task* task = nil;
-    
-    //init filter obj
-    filterObj = [[Filter alloc] init];
- 
-    
-    return;
-}
-*/
+        //update UI on main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            //update w/ time
+            self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
+        
+        });
 
+    }
+    
+    //update UI on main thread
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        //hide overlay
+        self.overlayView.hidden = YES;
+
+        //yay all done
+        // ->hide activity indicator
+        self.activityIndicator.hidden = YES;
+        
+        //hide activity indicator label
+        self.activityIndicatorLabel.hidden = YES;
+        
+        //enable search box
+        self.searchBox.enabled = YES;
+        
+        //make search box first responder
+        [self.window makeFirstResponder:self.searchBox];
+        
+    });
+    
+    return;
+}
 
 //table delegate
 // ->return number of rows
@@ -399,9 +375,16 @@ bail:
             goto bail;
         }
      }
-     
+    
     //1st: search for all matching tasks
+    //sync
+    @synchronized(allTasks)
+    {
+        
+    //search for all matching tasks
     [self.filterObj filterTasks:searchString items:allTasks results:matchingTasks];
+    
+    }//sync
     
     //add all tasks
     [self.searchResults addObjectsFromArray:matchingTasks];

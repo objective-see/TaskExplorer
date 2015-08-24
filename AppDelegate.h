@@ -32,6 +32,9 @@
 
 }
 
+//start time
+@property NSTimeInterval startTime;
+
 //connection flag
 @property BOOL isConnected;
 
@@ -80,7 +83,7 @@
 @property (weak) IBOutlet NSButton *logoButton;
 
 
-@property (weak) IBOutlet NSButton *showPreferencesButton;
+//@property (weak) IBOutlet NSButton *showPreferencesButton;
 
 //spinner
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
@@ -127,11 +130,14 @@
 //'no items' found label for bottom pane
 @property (weak) IBOutlet NSTextField *noItemsLabel;
 
+//refresh button
+@property (weak) IBOutlet NSButton *refreshButton;
+
 //search button
 @property (weak) IBOutlet NSButton *searchButton;
 
-//refresh button
-@property (weak) IBOutlet NSButton *refreshButton;
+//save button
+@property (weak) IBOutlet NSButton *saveButton;
 
 //flagged items button
 @property (weak) IBOutlet NSButton *flaggedButton;
@@ -182,7 +188,7 @@
 //-(void)applyPreferences;
 
 //button handler for when settings icon (gear) is clicked
--(IBAction)showPreferences:(id)sender;
+//-(IBAction)showPreferences:(id)sender;
 
 //button handler for logo
 -(IBAction)logoButtonHandler:(id)sender;

@@ -378,6 +378,7 @@ bail:
             [self.itemView endUpdates];
         }
     }
+    
     /*
     //otherwise select first row
     else
@@ -409,6 +410,7 @@ bail:
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
     }
     */
+    
     
 //bail
 bail:

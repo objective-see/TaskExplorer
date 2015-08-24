@@ -61,8 +61,6 @@ void showAlert()
     return;
 }
 
-
-
 //exception handler
 // will be invoked for Obj-C exceptions
 void exceptionHandler(NSException *exception)

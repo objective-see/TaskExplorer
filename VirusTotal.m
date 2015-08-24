@@ -376,6 +376,22 @@
                 //save
                 [((AppDelegate*)[[NSApplication sharedApplication] delegate]) saveFlaggedBinary:item];
             }
+            //for non-flagged items
+            // ->remove from list, if they were previously flagged
+            else
+            {
+                //check if previously flagged
+                // ->then remove
+                if(YES == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:item])
+                {
+                    //sync to remove
+                    @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+                    {
+                        //remove
+                        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:item];
+                    }
+                }
+            }
             
             //call up into app delegate to smartly reload
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:item];

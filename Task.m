@@ -3,7 +3,7 @@
 //  TaskExplorer
 //
 //  Created by Patrick Wardle on 5/2/15.
-//  Copyright (c) 2015 Lucas Derraugh. All rights reserved.
+//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
 #import "Task.h"
@@ -317,16 +317,16 @@ bail:
     //alloc array for new dylibs
     newDylibs = [NSMutableArray array];
     
-    //sync
-    @synchronized(self.dylibs)
-    {
-        //reset existing dylibs
-        [self.dylibs removeAllObjects];
-    }
-    
     //invoke XPC service (running as r00t)
     // ->will enumerate dylibs, then invoke reply block to save into iVar
     [[xpcConnection remoteObjectProxy] enumerateDylibs:self.pid withReply:^(NSMutableArray* dylibPaths) {
+        
+        //sync
+        @synchronized(self.dylibs)
+        {
+        
+        //reset existing dylibs
+        [self.dylibs removeAllObjects];
         
         //add all dylibs
         for(NSString* dylibPath in dylibPaths)
@@ -381,30 +381,24 @@ bail:
                 }
             }
             
-            //sync
-            @synchronized(self.dylibs)
-            {
-                //add to task's dylibs
-                [self.dylibs addObject:dylib];
-            }
-            
+            //add to task's dylibs
+            [self.dylibs addObject:dylib];
+    
         } //all dylibs
         
-        //sync to sort
-        @synchronized(self.dylibs)
+        //sort by name
+        self.dylibs = [[self.dylibs sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
         {
-            //sort by name
-            self.dylibs = [[self.dylibs sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
-            {
-                //sort
-                return [[(Binary*)a name] compare:[(Binary*)b name] options:NSCaseInsensitiveSearch];
-                
-            }] mutableCopy];
-        }
+            //sort
+            return [[(Binary*)a name] compare:[(Binary*)b name] options:NSCaseInsensitiveSearch];
+            
+        }] mutableCopy];
         
         //reload bottom pane now
         // ->this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
+            
+        }//sync
         
         //complete dylib processing for new dylib
         // ->get signing info, hash, etc, & save into global list
@@ -445,16 +439,16 @@ bail:
     //alloc array for new files
     newFiles = [NSMutableArray array];
     
-    //sync
-    @synchronized(self.files)
-    {
-        //reset existing files
-        [self.files removeAllObjects];
-    }
-    
     //invoke XPC service (running as r00t)
     // ->will enumerate files, then invoke reply block so can save into iVar
     [[xpcConnection remoteObjectProxy] enumerateFiles:self.pid withReply:^(NSMutableArray* fileDescriptors) {
+        
+        //sync
+        @synchronized(self.files)
+        {
+        
+        //reset existing files
+        [self.files removeAllObjects];
         
         //create/add all files
         for(NSMutableDictionary* fileDescriptor in fileDescriptors)
@@ -489,20 +483,18 @@ bail:
             }
         }
         
-        //sync to sort
-        @synchronized(self.files)
+        //sort by name
+        self.files = [[self.files sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
         {
-            //sort by name
-            self.files = [[self.files sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
-            {
-                //sort
-                return [[(File*)a name] compare:[(File*)b name] options:NSCaseInsensitiveSearch];
-                
-            }] mutableCopy];
-        }
+            //sort
+            return [[(File*)a name] compare:[(File*)b name] options:NSCaseInsensitiveSearch];
+            
+        }] mutableCopy];
         
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:FILES_VIEW];
+            
+        }//sync
         
         //process all new files
         // ->calculate hash, etc & save into global list
@@ -529,15 +521,16 @@ bail:
     //File object
     __block Connection* connection = nil;
     
-    //remove any existing enum'd networking sockets/connections
-    [self.connections removeAllObjects];
-    
-    //dbg msg
-    //NSLog(@"invoking XPC to enumer networking");
-    
     //invoke XPC service (running as r00t)
     // ->will enumerate network sockets/connections, then invoke reply block so can save into iVar
     [[xpcConnection remoteObjectProxy] enumerateNetwork:self.pid withReply:^(NSMutableArray* networkItems) {
+    
+        //sync
+        @synchronized(self.connections)
+        {
+        
+        //remove any existing enum'd networking sockets/connections
+        [self.connections removeAllObjects];
         
         //
         //NSLog(@"found %d connections", networkItems.count);
@@ -558,6 +551,9 @@ bail:
     
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:NETWORKING_VIEW];
+            
+        }//sync
+        
     }];
     
     return;

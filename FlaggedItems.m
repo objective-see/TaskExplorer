@@ -25,14 +25,14 @@
 @synthesize infoWindowController;
 
 //automatically called when nib is loaded
-// ->center window
+// ->first time (when outlets aren't nil), init UI
 -(void)awakeFromNib
 {
     //single time init
     if(YES != self.didInit)
     {
-        //center
-        [self.window center];
+        //init UI
+        [self initUI];
         
         //set flag
         self.didInit = YES;
@@ -51,9 +51,17 @@
     //init array for flagged items
     flaggedItems = [NSMutableArray array];
     
-    //table reload w/ blank array
-    // ->make sure all is reset
-    [self.flaggedItemTable reloadData];
+    //first time outlets are nil
+    // ->thus 'initUI' method called in 'awakeFromNib'
+    if(nil != self.window)
+    {
+        //can init UI
+        // ->center window, etc
+        [self initUI];
+        
+        //set flag
+        self.didInit = YES;
+    }
     
     //populate flagged items array
     for(Binary* flaggedItem in ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
@@ -65,22 +73,44 @@
             //get all tasks instances
             flaggedTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator tasksForBinary:flaggedItem];
             
-            //save all tasks
-            [self.flaggedItems addObjectsFromArray:flaggedTasks];
+            //sync to save
+            @synchronized(self.flaggedItems)
+            {
+                //save all tasks
+                [self.flaggedItems addObjectsFromArray:flaggedTasks];
+            }
         }
         //when binary is dylib
         // ->just add, since will be processed as single item
         else
         {
-            //add
-            [self.flaggedItems addObject:flaggedItem];
-            
+            //sync to save
+            @synchronized(self.flaggedItems)
+            {
+                //add
+                [self.flaggedItems addObject:flaggedItem];
+            }
         }
     }
     
     //always reload
     [self.flaggedItemTable reloadData];
     
+    return;
+}
+
+
+//init the UI
+// ->each time window is shown, reset, show spinner if needed, etc
+-(void)initUI
+{
+    //center
+    [self.window center];
+    
+    //table reload
+    // ->make sure all is reset
+    [self.flaggedItemTable reloadData];
+
     return;
 }
 

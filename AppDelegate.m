@@ -16,13 +16,9 @@
 
 #import "Task.h"
 
-//TODO: path truncated in 'info' window (1password mini) - but weird when selected :/
-//  resize text manually? http://stackoverflow.com/questions/6519995/modifying-an-nstextfields-font-size-according-to-content-length
-
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
-//TODO: 'flagged' items button?
 //TODO: add 'am i on main thread' guard and test
-//TODO: filter dylibs, no first responder!
+
 
 //TODO: autolayout vertically
 //TODO: filter VT results
@@ -31,24 +27,24 @@
 //      see: https://mail.google.com/mail/u/0/#inbox/14eeb163d4dd2852
 //TODO: show 'from where' via quarantine attrz
 //TODO: show user (after pid): -> (pid, user)?
-//TODO: when filtering, and then refresh, doesn't go to row #0 :/
 //TODO: check if VT can be reached! if not, error? or don't show '0 VT results detected' etc...
 
 //TODO: JavaW (iWorm) dylibs...
+
 //TODO: remove task, remove from taskEnum's global list for executables, and dylibs, etc
 //TODO: also refresh!....
 
 @implementation AppDelegate
 
-
 @synthesize filterObj;
+@synthesize startTime;
 @synthesize vtThreads;
+@synthesize saveButton;
 @synthesize isConnected;
 @synthesize virusTotalObj;
 @synthesize taskTableController;
 @synthesize aboutWindowController;
 @synthesize prefsWindowController;
-@synthesize showPreferencesButton;
 @synthesize resultsWindowController;
 @synthesize bottomPane;
 @synthesize bottomViewController;
@@ -89,10 +85,9 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    //TODO: re-enable for release!
     //first thing...
     // ->install exception handlers!
-    //installExceptionHandlers();
+    installExceptionHandlers();
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -102,6 +97,12 @@
     
     //alloc flagged items
     flaggedItems = [NSMutableArray array];
+    
+    //set start time
+    self.startTime = [NSDate timeIntervalSinceReferenceDate];
+    
+    //center
+    [self.window center];
     
     //no need to have a first responder
     [self.window makeFirstResponder:nil];
@@ -328,9 +329,8 @@ bail:
     // ->waits until window is non-nil
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-        //TODO: re-enable
         //make modal
-        //makeModal(self.requestRootWindowController);
+        makeModal(self.requestRootWindowController);
         
     });
     
@@ -748,14 +748,6 @@ bail:
     
     //add tracking area to pref button
     [self.refreshButton addTrackingArea:trackingArea];
-
-    
-    //init tracking area
-    // ->for preference button
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self.showPreferencesButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.showPreferencesButton.tag]}];
-    
-    //add tracking area to pref button
-    [self.showPreferencesButton addTrackingArea:trackingArea];
     
     //init tracking area
     // ->for search button
@@ -763,6 +755,13 @@ bail:
     
     //add tracking area to search button
     [self.searchButton addTrackingArea:trackingArea];
+    
+    //init tracking area
+    // ->for save button
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self.saveButton bounds] options:(NSTrackingInVisibleRect|NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:@{@"tag":[NSNumber numberWithUnsignedInteger:self.saveButton.tag]}];
+    
+    //add tracking area to search button
+    [self.saveButton addTrackingArea:trackingArea];
     
     //init tracking area
     // ->for logo button
@@ -777,26 +776,6 @@ bail:
     
     //add tracking area to flaggd items button
     [self.flaggedButton addTrackingArea:trackingArea];
-    
-    return;
-}
-
-
-//TODO: don't need, and scannerThread can be removed!! and progressIndicator too!
-//automatically invoked when window is un-minimized
-// since the progress indicator is stopped (bug?), restart it
--(void)windowDidDeminiaturize:(NSNotification *)notification
-{
-    //make sure scan is going on
-    // ->and then restart spinner
-    if(YES == [self.scannerThread isExecuting])
-    {
-        //show
-        [self.progressIndicator setHidden:NO];
-        
-        //start spinner
-        [self.progressIndicator startAnimation:nil];
-    }
     
     return;
 }
@@ -1145,7 +1124,6 @@ bail:
 bail:
     
     return;
-    
 }
 
 //automatically invoked when user clicks 'search' button
@@ -1165,17 +1143,6 @@ bail:
     //show it
     [self.searchWindowController showWindow:self];
     
-    /*
-    //invoke function in background that will make window modal
-    // ->waits until window is non-nil
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        //make modal
-        //makeModal(self.searchWindowController);
-        
-    });
-    */
-
     return;
 }
 
@@ -1201,6 +1168,7 @@ bail:
     return;
 }
 
+/*
 
 //automatically invoked when user clicks gear icon
 // ->show preferences
@@ -1227,7 +1195,10 @@ bail:
 
     return;
 }
+ 
+*/
 
+/*
 //automatically invoked when menu is clicked
 // ->tell menu to disable 'Preferences' when scan is running
 -(BOOL)validateMenuItem:(NSMenuItem *)item
@@ -1238,19 +1209,20 @@ bail:
     //check if item is 'Preferences'
     if(PREF_MENU_ITEM_TAG == item.tag)
     {
-        /*
         //unset enabled flag if scan is running
         if(YES != [[self.scanButtonLabel stringValue] isEqualToString:START_SCAN])
         {
             //disable
             bEnabled = NO;
         }
-        */
+ 
     }
          
 
     return bEnabled;
 }
+*/
+
 
 //automatically invoked when user clicks on Flat/Tree view
 // ->invoke helper function to change view
@@ -1641,6 +1613,10 @@ bail:
     //scroll to top
     [self.taskTableController scrollToTop];
     
+    //reload
+    // ->ensure that top row/task is correctly selected
+    //[self.taskTableController.itemView reloadData];
+
     //select top row
     [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     
@@ -1714,6 +1690,14 @@ bail:
 // ->also set text flagged items button label to red
 -(void)saveFlaggedBinary:(Binary*)binary
 {
+    //first check if item is already flagged
+    if(YES == [self.flaggedItems containsObject:binary])
+    {
+        //no need to add
+        // ->so bail
+        goto bail;
+    }
+    
     //sync to save
     @synchronized(self.flaggedItems)
     {
@@ -1728,6 +1712,9 @@ bail:
         //set to red
         self.flaggedLabel.textColor = [NSColor redColor];
     }
+    
+//bail
+bail:
     
     return;
 }

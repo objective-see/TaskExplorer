@@ -273,26 +273,6 @@
                 // ->need this for (re)queries
                 scanID = result[VT_RESULTS_SCANID];
                 
-                //TODO: do something w/ prev flagged files!?
-                // ...i don't think we'll keep a list~
-                
-                /*
-                
-                //if file was flagged
-                // ->remove it from list of plugin's flagged
-                if(0 != [self.fileObj.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
-                {
-                    //sync
-                    // ->since array will be reset if user clicks 'stop' scan
-                    @synchronized(self.fileObj.plugin.flaggedItems)
-                    {
-                        //remove
-                        [self.fileObj.plugin.flaggedItems removeObject:self.fileObj];
-                    }
-                }
-                 
-                */
-                
                 //with a scan id can re-query VT
                 // ->will update VT button in UI once results are retrieved
                 if(nil != scanID)

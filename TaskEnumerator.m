@@ -22,14 +22,11 @@
 
 @implementation TaskEnumerator
 
-
 @synthesize files;
 @synthesize tasks;
 @synthesize dylibs;
 @synthesize binaryQueue;
 @synthesize executables;
-@synthesize isEnumerating;
-
 
 //init
 -(id)init
@@ -73,10 +70,7 @@
     
     //xpc connection
     NSXPCConnection* xpcConnection = nil;
-    
-    //set flag
-    self.isEnumerating = YES;
-    
+
     //determine if network is connected
     // ->sets 'isConnected' flag
     ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
@@ -202,9 +196,6 @@
     }
     
     //TODO: add network connection filtering
-    
-    //all done!
-    self.isEnumerating = NO;
     
     return;
 }
