@@ -1,6 +1,6 @@
 //
 //  VTInfoWindow.m
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 3/29/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  kkRowCell.h
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 4/6/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.

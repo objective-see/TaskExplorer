@@ -1,6 +1,6 @@
 //
 //  CategoryRow.h
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 4/4/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.

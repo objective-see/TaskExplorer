@@ -1,6 +1,6 @@
 //
 //  Extension.m
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/19/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
@@ -108,22 +108,19 @@
     }
     
     return;
-
 }
 
-/*
 
-//convert object to JSON string
+//convert Connection object to a JSON string
 -(NSString*)toJSON
 {
     //json string
     NSString *json = nil;
     
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"identifier\": \"%@\", \"details\": \"%@\", \"browser\": \"%@\"", self.name, self.path, self.identifier, self.details, self.browser];
+    json = [NSString stringWithFormat:@"\"connection\": \"%@\", \"local IP\": \"%@\", \"local port\": \"%d\", \"remote IP\": \"%@\", \"remote port\": \"%d\", \"type\": \"%@\", \"family\": \"%@\", \"protocol\": \"%@\", \"state\": \"%@\"", self.endpoints, self.localIPAddr, [self.localPort unsignedShortValue], self.remoteIPAddr, [self.remotePort unsignedShortValue], self.type, self.family, self.proto, self.state];
     
     return json;
 }
-*/
 
 @end

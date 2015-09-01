@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'KnockKnock' target in the 'KnockKnock' project
+// Prefix header for all source files of the 'TaskExplorer' target in the 'TaskExplorer' project
 //
 
 #ifdef __OBJC__

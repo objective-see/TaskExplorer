@@ -1,6 +1,6 @@
 //
 //  Filter.m
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/21/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
@@ -12,14 +12,48 @@
 #import "ItemBase.h"
 #import "Connection.h"
 
+//file filter keywords
+//NSString * const FILE_FILTERS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
+
+//binary filter keywords
+NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
+
 @implementation Filter
 
-//filter keywords
-NSString * const KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
+//@synthesize fileFilters;
+@synthesize binaryFilters;
+
+//init
+-(id)init
+{
+    //init super
+    self = [super init];
+    if(nil != self)
+    {
+        //alloc file filter keywords
+        //fileFilters = [NSMutableArray array];
+        
+        //alloc binary filter keywords
+        binaryFilters = [NSMutableArray array];
+
+        //init binary filters
+        for(NSUInteger i=0; i < sizeof(BINARY_KEYWORDS)/sizeof(BINARY_KEYWORDS[0]); i++)
+        {
+            //add
+            [self.binaryFilters addObject:BINARY_KEYWORDS[i]];
+        }
+    }
+    
+    return self;
+}
 
 //determine if search string is #keyword
 -(BOOL)isKeyword:(NSString*)searchString
 {
+    //for now just check in binary keywords
+    return [self.binaryFilters containsObject:searchString];
+    
+    /*
     //flag
     BOOL isKeyword = NO;
     
@@ -36,10 +70,11 @@ NSString * const KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned"
             //bail
             break;
         }
-    
     }
     
     return isKeyword;
+    */
+    
 }
 
 

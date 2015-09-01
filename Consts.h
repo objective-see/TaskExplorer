@@ -161,10 +161,10 @@
 #define KERNEL_YOSEMITE @"/System/Library/Kernels/kernel"
 
 //top pane
-
-//top
 #define PANE_TOP 0x0
 
+//bottom pane
+#define PANE_BOTTOM 0x1
 
 //for prefs
 //#define PREF_FIRST_RUN @"isFirstRun"
@@ -175,10 +175,6 @@
 //tree view
 #define TREE_VIEW 101
 
-//bottom pane
-
-//top
-#define PANE_BOTTOM 0x1
 
 //any view
 // ->not in UI
@@ -314,6 +310,19 @@
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (intial) task/dylib/file enumeration please wait"
 
+//hotkey 's'
+#define KEYCODE_S 0x1
 
+//hotkey 'f'
+#define KEYCODE_F 0x3
+
+//hotkey 'w'
+#define KEYCODE_W 0xD
+
+//hotkey 'r'
+#define KEYCODE_R 0xF
+
+//hotkey 'i'
+#define KEYCODE_I 0x22
 
 #endif

@@ -46,7 +46,6 @@
         
         //init binary processing queue
         binaryQueue = [[Queue alloc] init];
-
     }
     
     return self;
@@ -161,6 +160,10 @@
             continue;
         }
         
+        //nap
+        // ->helps with UI
+        [NSThread sleepForTimeInterval:0.01f];
+        
         //generate signing info
         [newTask.binary generatedSigningInfo];
         
@@ -182,6 +185,10 @@
         
         //enumerate
         [newTask enumerateDylibs:xpcConnection allDylibs:self.dylibs];
+        
+        //nap
+        // ->helps with UI
+        [NSThread sleepForTimeInterval:0.01f];
     }
     
     //begin file enumeration
@@ -193,6 +200,10 @@
         
         //enumerate
         [newTask enumerateFiles:xpcConnection];
+        
+        //nap
+        // ->helps with UI
+        [NSThread sleepForTimeInterval:0.01f];
     }
     
     //TODO: add network connection filtering
@@ -457,7 +468,7 @@ bail:
     
     return;
 }
-//TODO: test w/ dylib!!
+
 //ensure that the list of flagged items is correctly updated
 // when a dead task or any of its dylibs were flagged...
 -(void)updateFlaggedItems:(Task*)deadTask

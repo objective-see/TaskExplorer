@@ -10,6 +10,7 @@
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
 		7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */; };
 		7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */; };
+		7DAA78091B903BF1004840B9 /* CustomTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DAA78081B903BF1004840B9 /* CustomTextField.m */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
 		CD02194F1AD34D8B005148A2 /* AboutWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD02194D1AD34D8B005148A2 /* AboutWindow.xib */; };
@@ -155,6 +156,8 @@
 		7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SearchWindow.xib; path = UI/SearchWindow.xib; sourceTree = "<group>"; };
 		7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchWindowController.h; sourceTree = "<group>"; };
 		7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchWindowController.m; sourceTree = "<group>"; };
+		7DAA78071B903BF1004840B9 /* CustomTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomTextField.h; sourceTree = "<group>"; };
+		7DAA78081B903BF1004840B9 /* CustomTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomTextField.m; sourceTree = "<group>"; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
 		CD001B361AB903040089014A /* logoApple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoApple.png; path = images/logoApple.png; sourceTree = SOURCE_ROOT; };
 		CD02194D1AD34D8B005148A2 /* AboutWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AboutWindow.xib; path = UI/AboutWindow.xib; sourceTree = "<group>"; };
@@ -328,6 +331,8 @@
 		1D21BC42172AF43D009D1CFD = {
 			isa = PBXGroup;
 			children = (
+				7DAA78071B903BF1004840B9 /* CustomTextField.h */,
+				7DAA78081B903BF1004840B9 /* CustomTextField.m */,
 				7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */,
 				7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */,
 				CD74A0781B7F170B00A8AAD3 /* FlaggedItems.h */,
@@ -774,6 +779,7 @@
 				CD4D541F1B2CE6C400008030 /* Queue.m in Sources */,
 				CD6E54FF1B1162B5007953AB /* ItemView.m in Sources */,
 				CDA81DEE1A99B5F8009790E2 /* Filter.m in Sources */,
+				7DAA78091B903BF1004840B9 /* CustomTextField.m in Sources */,
 				CDA81D7B1A95D29B009790E2 /* TaskTableController.m in Sources */,
 				CDF08CCA1AC4C678009B3423 /* PrefsWindowController.m in Sources */,
 				CDA81DEA1A997BF1009790E2 /* InfoWindowController.m in Sources */,

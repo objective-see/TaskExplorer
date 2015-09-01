@@ -1,6 +1,6 @@
 //
 //  AppDelegate.m
-//  KnockKnock
+//  TaskExplorer
 //
 
 #import "Consts.h"
@@ -21,13 +21,18 @@
 
 
 //TODO: autolayout vertically
-//TODO: filter VT results
-//TODO: # autocomplete
-//TODO: keyboard shortcuts
+//TODO: filter VT results - HUH?
+//TODO: # autocomplete - DONE
+
+//TODO: keyboard shortcuts - DONE!
 //      see: https://mail.google.com/mail/u/0/#inbox/14eeb163d4dd2852
 //TODO: show 'from where' via quarantine attrz
 //TODO: show user (after pid): -> (pid, user)?
-//TODO: check if VT can be reached! if not, error? or don't show '0 VT results detected' etc...
+
+//TODO: syncronize filtered tasks - DONE!
+
+//TODO: add files/dylibs/connections to save - DONE!
+//TODO: sync while saving
 
 //TODO: JavaW (iWorm) dylibs...
 
@@ -36,34 +41,35 @@
 
 @implementation AppDelegate
 
+
+@synthesize topPane;
 @synthesize filterObj;
 @synthesize startTime;
 @synthesize vtThreads;
-@synthesize saveButton;
-@synthesize isConnected;
-@synthesize virusTotalObj;
-@synthesize taskTableController;
-@synthesize aboutWindowController;
-@synthesize prefsWindowController;
-@synthesize resultsWindowController;
 @synthesize bottomPane;
-@synthesize bottomViewController;
+@synthesize saveButton;
 @synthesize currentTask;
-@synthesize requestRootWindowController;
-@synthesize taskViewFormat;
-@synthesize flagItemsWindowController;
-@synthesize searchWindowController;
-
-@synthesize scannerThread;
-@synthesize progressIndicator;
-
-@synthesize topPane;
-@synthesize taskEnumerator;
-@synthesize viewSelector;
-@synthesize searchButton;
-@synthesize xpcConnection;
+@synthesize isConnected;
 @synthesize flaggedItems;
-
+@synthesize searchButton;
+@synthesize viewSelector;
+@synthesize scannerThread;
+@synthesize virusTotalObj;
+@synthesize xpcConnection;
+@synthesize taskEnumerator;
+@synthesize taskViewFormat;
+@synthesize commandHandling;
+@synthesize completePosting;
+@synthesize customItemsFilter;
+@synthesize customTasksFilter;
+@synthesize progressIndicator;
+@synthesize taskTableController;
+@synthesize bottomViewController;
+@synthesize aboutWindowController;
+@synthesize searchWindowController;
+@synthesize resultsWindowController;
+@synthesize flagItemsWindowController;
+@synthesize requestRootWindowController;
 
 //center window
 // ->also make front
@@ -87,7 +93,9 @@
 {
     //first thing...
     // ->install exception handlers!
-    installExceptionHandlers();
+    
+    //TODO: CHANGE B4 RELEASE!!
+    //installExceptionHandlers();
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -97,6 +105,18 @@
     
     //alloc flagged items
     flaggedItems = [NSMutableArray array];
+    
+    //alloc/init custom search field for tasks
+    customTasksFilter = [[CustomTextField alloc] init];
+    
+    //alloc/init custom search field for items
+    customItemsFilter = [[CustomTextField alloc] init];
+    
+    //set field editor for tasks
+    [self.customTasksFilter setFieldEditor:YES];
+    
+    //set field editor for items
+    [self.customItemsFilter setFieldEditor:YES];
     
     //set start time
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
@@ -116,6 +136,9 @@
         //exit
         exit(0);
     }
+    
+    //register for hotkey presses
+    [self registerKeypressHandler];
     
     //check if authenticated
     // ->display authentication request if needed
@@ -165,7 +188,144 @@
     // ->ensures our 'windowWillClose' method, which has logic to fully exit app
     self.window.delegate = self;
     
+    /*
+    //init list of keyword strings for our type completion dropdown list in NSSearchField
+    self.builtInKeywords = [NSMutableArray array];
+    
+    //iterate over all const keywords
+    // ->add to array
+    for(NSUInteger i=0; i<sizeof(KEYWORDS)/sizeof(KEYWORDS[0]); i++)
+    {
+        //add
+        [self.builtInKeywords addObject:KEYWORDS[i]];
+    }
+    */
+    
     return;
+}
+
+//register handler for hot keys
+-(void)registerKeypressHandler
+{
+    NSEvent * (^keypressHandler)(NSEvent *);
+    
+    keypressHandler = ^NSEvent * (NSEvent * theEvent){
+        
+        return [self handleKeypress:theEvent];
+        
+    };
+
+    //register for key-down events
+    [NSEvent addLocalMonitorForEventsMatchingMask:NSKeyDownMask handler:keypressHandler];
+    
+    return;
+}
+
+//invoked for any (and only) key-down events
+-(NSEvent*)handleKeypress:(NSEvent*)event
+{
+    //flag indicating event was handled
+    BOOL wasHandled = NO;
+    
+    //refresh (cmd+r)
+    //save (cmd+s)
+    //search (cmd+f)
+    //close window (cmd+w)
+    //info for selected task (cmd+i)
+    
+    //only care about 'cmd' + something
+    if(NSCommandKeyMask != (event.modifierFlags & NSCommandKeyMask))
+    {
+        //bail
+        goto bail;
+    }
+    
+    NSLog(@"key press: %x", [event keyCode]);
+    
+    //handle key-code
+    switch ([event keyCode])
+    {
+        //'r' (refresh)
+        case KEYCODE_R:
+            
+            //refresh
+            [self refreshTasks:nil];
+            
+            //set flag
+            wasHandled = YES;
+            
+            break;
+        
+        //'f' (find, search)
+        case KEYCODE_F:
+            
+            //find
+            [self search:nil];
+            
+            //set flag
+            wasHandled = YES;
+            
+            break;
+            
+            
+        //'s' (save)
+        case KEYCODE_S:
+            
+            //save
+            [self saveResults:nil];
+            
+            //set flag
+            wasHandled = YES;
+            
+            break;
+            
+        //'i' (info)
+        //case KEYCODE_I:
+            
+            //info
+            //TODO...this will take some work, search, flagged, item....
+            
+            //set flag
+            //wasHandled = YES;
+            
+            //break;
+        
+        //'w' (close window)
+        case KEYCODE_W:
+            
+            //close
+            // ->if not main window
+            if(self.window != [[NSApplication sharedApplication] keyWindow])
+            {
+                //close window
+                [[[NSApplication sharedApplication] keyWindow] close];
+                
+                //set flag
+                wasHandled = YES;
+            }
+            
+            break;
+            
+            
+        default:
+            break;
+    }
+
+//bail
+bail:
+    
+    //nil out event if it was handled
+    if(YES == wasHandled)
+    {
+        event = nil;
+    }
+    
+    // Return the event, a new event, or, to stop
+    // the event from being dispatched, nil
+    return event;
+
+
+
 }
 
 //complete a few inits
@@ -616,6 +776,7 @@ bail:
     return;
 }
 
+//finish bottom reload
 -(void)finalizeBottomReload
 {
     //stop progress indicator
@@ -1038,6 +1199,7 @@ bail:
 
 //invoked when user clicks 'save' icon
 // ->show popup that allows user to save results
+//TODO: make alert have local 'hyperlink' to file!
 -(IBAction)saveResults:(id)sender
 {
     //save panel
@@ -1079,7 +1241,7 @@ bail:
             //get tasks
             for(NSNumber* taskPid in self.taskEnumerator.tasks)
             {
-                //JSON
+                //append task JSON
                 [output appendFormat:@"{%@},", [self.taskEnumerator.tasks[taskPid] toJSON]];
             }
             
@@ -1126,7 +1288,7 @@ bail:
     return;
 }
 
-//automatically invoked when user clicks 'search' button
+//automatically invoked when user clicks 'search' button/ cmd+f hotkey
 // ->perform global search
 -(IBAction)search:(id)sender
 {
@@ -1262,8 +1424,14 @@ bail:
     //always reset filter text
     [self.filterTasksBox setStringValue:@""];
     
+    //sync
+    @synchronized(self.taskTableController.filteredItems)
+    {
+
     //remove all filtered tasks
     [self.taskTableController.filteredItems removeAllObjects];
+        
+    }//sync
     
     //reset current task
     self.currentTask = nil;
@@ -1450,6 +1618,20 @@ bail:
         //bail
         goto bail;
     }
+    
+    //prevent calling "complete" too often
+    if( (YES != self.completePosting) &&
+        (YES != self.commandHandling) )
+    {
+        //set flag
+        self.completePosting = YES;
+        
+        //invoke complete
+        [aNotification.userInfo[@"NSFieldEditor"] complete:nil];
+        
+        //unset flag
+        self.completePosting = NO;
+    }
 
     //top pane
     if(YES == [aNotification.object isEqualTo:self.filterTasksBox])
@@ -1465,45 +1647,29 @@ bail:
         else
         {
             //'#' indicates a keyword search
-            // ->check for keyword match, then filter by keyword
+            // ->this is handled by customized auto-complete logic, so ignore
             if(YES == [search.string hasPrefix:@"#"])
             {
-                //ignore #search strings that don't match a keyword
-                if(YES != [filterObj isKeyword:search.string])
-                {
-                    //ignore
-                    goto bail;
-                }
+                //ignore
+                goto bail;
             }
             
-            //filter
+            //sync
+            @synchronized(self.taskTableController.filteredItems)
+            {
+
+            //normal filter
             [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+            
+            }
                 
             //set flag
             self.taskTableController.isFiltered = YES;
         }
         
-        //always reload task (top) pane
-        // ->will trigger bottom load too
-        [self.taskTableController.itemView reloadData];
-        
-        //scroll to top
-        [self.taskTableController scrollToTop];
-        
-        //when nothing matches
-        // ->reset current task and bottom pane
-        if( (YES == self.taskTableController.isFiltered) &&
-            (0 == self.taskTableController.filteredItems.count) )
-        {
-            //remove bottom pane's items
-            [self.bottomViewController.tableItems removeAllObjects];
-            
-            //reset current task
-            self.currentTask = nil;
-            
-            //reload bottom pane
-            [self.bottomViewController.itemView reloadData];
-        }
+        //finalize filtering/search
+        // ->updates UI, etc
+        [self finalizeFiltration:PANE_TOP];
     }
     //bottom pane
     else if(YES == [aNotification.object isEqualTo:self.filterItemsBox])
@@ -1519,6 +1685,14 @@ bail:
         //filter items
         else
         {
+            //'#' indicates a keyword search
+            // ->this is handled by customized auto-complete logic, so ignore
+            if(YES == [search.string hasPrefix:@"#"])
+            {
+                //ignore
+                goto bail;
+            }
+            
             //get segment tag
             segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
             
@@ -1529,19 +1703,7 @@ bail:
                 //dylibs
                 case DYLIBS_VIEW:
                 {
-                    //'#' indicates a keyword search
-                    // ->check for keyword match, then filter by keyword
-                    if(YES == [search.string hasPrefix:@"#"])
-                    {
-                        //ignore #search strings that don't match a keyword
-                        if(YES != [filterObj isKeyword:search.string])
-                        {
-                            //ignore
-                            goto bail;
-                        }
-                    }
-                    
-                    //filter
+                    //normal filter
                     [self.filterObj filterFiles:search.string items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
                     
                     break;
@@ -1574,6 +1736,52 @@ bail:
             self.bottomViewController.isFiltered = YES;
         }
         
+        //finalize filtering/searching
+        // ->updates UI, etc
+        [self finalizeFiltration:PANE_BOTTOM];
+    }
+    
+//bail
+bail:
+    
+    return;
+}
+
+//code to complete filtering/search
+// ->reload table/scroll to top etc
+-(void)finalizeFiltration:(NSUInteger)pane
+{
+    //top pane (task)
+    if(PANE_TOP == pane)
+    {
+        //always reload task (top) pane
+        // ->will trigger bottom load too
+        [self.taskTableController.itemView reloadData];
+        
+        //scroll to top
+        [self.taskTableController scrollToTop];
+        
+        //when nothing matches
+        // ->reset current task and bottom pane
+        if( (YES == self.taskTableController.isFiltered) &&
+            (0 == self.taskTableController.filteredItems.count) )
+        {
+            //remove bottom pane's items
+            [self.bottomViewController.tableItems removeAllObjects];
+            
+            //reset current task
+            self.currentTask = nil;
+            
+            //stop progress indicator
+            [self.bottomPaneSpinner stopAnimation:nil];
+            
+            //reload bottom pane
+            [self.bottomViewController.itemView reloadData];
+        }
+    }
+    //bottom pane (dylibs, files, etc)
+    else
+    {
         //always reload item (bottom) pane
         [self.bottomViewController.itemView reloadData];
         
@@ -1581,14 +1789,10 @@ bail:
         [self.bottomViewController scrollToTop];
     }
     
-//bail
-bail:
-    
     return;
-    
 }
 
-//action for 'refresh' button
+//action for 'refresh' button / cmd+r hotkey
 // ->query OS to refresh/reload all tasks
 -(IBAction)refreshTasks:(id)sender
 {
@@ -1601,8 +1805,14 @@ bail:
     //unset filter flag
     self.taskTableController.isFiltered = NO;
     
+    //sync
+    @synchronized(self.taskTableController.filteredItems)
+    {
+    
     //remove all filtered items
     [self.taskTableController.filteredItems removeAllObjects];
+    
+    }
     
     //reset filter box
     self.filterTasksBox.stringValue = @"";
@@ -1767,6 +1977,191 @@ bail:
 
     return;
 }
+
+//delegate method, automatically called
+// ->generate list of matches to return for drop-down
+-(NSArray *)control:(NSControl *)control textView:(NSTextView *)textView completions:(NSArray *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
+{
+    //matches
+    NSMutableArray *matches = nil;
+    
+    //range options
+    NSUInteger rangeOptions = {0};
+    
+    //segment tag
+    NSUInteger segmentTag = 0;
+    
+    //init array for matches
+    matches = [[NSMutableArray alloc] init];
+    
+    //init range options
+    rangeOptions = NSAnchoredSearch | NSCaseInsensitiveSearch;
+    
+    //grab segment tag
+    segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+    
+    //for now, only filter binaries
+    // ->top pane: any (well, just tasks)
+    //   bottom pane: only dylibs
+    if( (textView != self.customTasksFilter) &&
+        (DYLIBS_VIEW != segmentTag) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //check all filters
+    for(NSString* filter in self.filterObj.binaryFilters)
+    {
+        //check if found
+        // ->add to match when found
+        if([filter rangeOfString:textView.string options:rangeOptions range:NSMakeRange(0, filter.length)].location != NSNotFound)
+        {
+            //add
+            [matches addObject:filter];
+        }
+    }
+    
+    //sort matches
+    [matches sortUsingComparator:^(NSString *a, NSString *b)
+    {
+        //sort
+        return [a localizedStandardCompare:b];
+    }];
+    
+//bail
+bail:
+    
+    return matches;
+}
+
+//delegate method, automatically invoked
+// ->handle invocations for text view
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+{
+    //flag
+    BOOL didPerformRequestedSelectorOnTextView = NO;
+    
+    //invocation
+    NSInvocation *textViewInvocationForSelector = nil;
+    
+    //check if text view can handle selector
+    if(YES != [textView respondsToSelector:commandSelector])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //set iVar flag
+    self.commandHandling = YES;
+    
+    //init invocation
+    textViewInvocationForSelector = [NSInvocation invocationWithMethodSignature:[textView methodSignatureForSelector:commandSelector]];
+    
+    //set target
+    [textViewInvocationForSelector setTarget:textView];
+    
+    //set selector
+    [textViewInvocationForSelector setSelector:commandSelector];
+    
+    //invoke selector
+    [textViewInvocationForSelector invoke];
+    
+    //unset iVar
+    self.commandHandling = NO;
+    
+    //indicate that selector was performed
+    didPerformRequestedSelectorOnTextView = YES;
+    
+    
+//bail
+bail:
+    
+    return didPerformRequestedSelectorOnTextView;
+}
+ 
+ 
+//callback for custom search fields
+// ->handle auto-complete filterings
+-(void)filterAutoComplete:(NSTextView*)textView
+{
+    //filter string
+    NSString* filterString = nil;
+    
+    //extract filter
+    filterString = textView.textStorage.string;
+    
+    //handle top pane (tasks)
+    if(textView == self.customTasksFilter)
+    {
+        //sync
+        @synchronized(self.taskTableController.filteredItems)
+        {
+            //filter
+            [self.filterObj filterTasks:filterString items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+        }
+        
+        //set flag
+        self.taskTableController.isFiltered = YES;
+        
+        //finalize filtering
+        [self finalizeFiltration:PANE_TOP];
+        
+    }
+    //handle bottom pane
+    // ->just dylibs
+    else if(textView == self.customItemsFilter)
+    {
+        //filter
+        [self.filterObj filterFiles:filterString items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
+        
+        //set flag
+        self.bottomViewController.isFiltered = YES;
+        
+        //finalize filtering
+        [self finalizeFiltration:PANE_BOTTOM];
+    }
+    
+//bail
+bail:
+    
+    return;
+}
+
+//automatically invoked
+// ->set all NSSearchFields to be instances of our custom NSTextView
+-(id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)client
+{
+    //field editor
+    id fieldEditor = nil;
+    
+    //ignore non-NSSearchField classes
+    if(YES != [client isKindOfClass:[NSSearchField class]])
+    {
+        //ingnore
+        goto bail;
+    }
+    
+    //set task's filter search field
+    if(client == self.filterTasksBox)
+    {
+        //assign for return
+        fieldEditor = self.customTasksFilter;
+    }
+    //set item's filter search field
+    else if(client == self.filterItemsBox)
+    {
+        //assign for return
+        fieldEditor = self.customItemsFilter;
+    }
+    
+    
+//bail
+bail:
+    
+    return fieldEditor;
+}
+
 
 
 @end

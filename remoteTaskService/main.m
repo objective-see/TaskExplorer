@@ -10,20 +10,44 @@
 #import "remoteTaskService.h"
 #import "serviceInterface.h"
 
+#import <syslog.h>
 #import <libproc.h>
 #import <sys/proc_info.h>
-#import <syslog.h>
+
+
+//interface for 'extension' to NSXPCConnection
+// ->allows us to access the 'private' auditToken iVar
+@interface ExtendedNSXPCConnection : NSXPCConnection
+{
+    //private iVar
+    audit_token_t auditToken;
+}
+//private iVar
+@property audit_token_t auditToken;
+
+@end
+
+//implementation for 'extension' to NSXPCConnection
+// ->allows us to access the 'private' auditToken iVar
+@implementation ExtendedNSXPCConnection
+
+//private iVar
+@synthesize auditToken;
+
+@end
+
+//function def
+OSStatus SecTaskValidateForRequirement(SecTaskRef task, CFStringRef requirement);
 
 //TODO: CHANGE B4 RELEASE!!
 //-> for testing: @"Mac Developer: patrick wardle (5SKKU32KLJ)"
-#define SIGNING_AUTH @"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
+#define SIGNING_AUTH @"Mac Developer: patrick wardle (5SKKU32KLJ)"//@"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
 
 //skeleton interface
 @interface ServiceDelegate : NSObject <NSXPCListenerDelegate>
 @end
 
 @implementation ServiceDelegate
-
 
 //automatically invoked
 //->allows NSXPCListener to configure/accept/resume a new incoming NSXPCConnection
@@ -33,59 +57,28 @@
     //flag
     BOOL shouldAccept = NO;
     
-    //status
-    int status = -1;
-    
-    //buffer for process path
-    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE] = {0};
-    
-    //code
-    SecStaticCodeRef staticCode = NULL;
-    
-    //signing reqs
-    SecRequirementRef requirementRef = NULL;
-    
+    //task ref
+    SecTaskRef taskRef = 0;
+
     //signing req string
     NSString *requirementString = nil;
     
     //init signing req string
-    // ->check for Ojective-See's dev cert
     requirementString = [NSString stringWithFormat:@"anchor trusted and certificate leaf [subject.CN] = \"%@\"", SIGNING_AUTH];
-    
-    //get path
-    status = proc_pidpath(newConnection.processIdentifier, pathBuffer, sizeof(pathBuffer));
-    
-    //sanity check
-    // ->this generally just fails if process has exited....
-    if( (status < 0) ||
-        (0 == strlen(pathBuffer)) )
+
+    //step 1: create task ref
+    // ->uses NSXPCConnection's (private) 'auditToken' iVar
+    taskRef = SecTaskCreateWithAuditToken(NULL, ((ExtendedNSXPCConnection*)newConnection).auditToken);
+    if(0 == taskRef)
     {
         //bail
         goto bail;
     }
     
-    //create static code
-    if(0 != SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:[NSString stringWithUTF8String:pathBuffer]]), kSecCSDefaultFlags, &staticCode))
+    //step 2: validate
+    // ->check that client is signed with Objective-See's dev cert
+    if(0 != SecTaskValidateForRequirement(taskRef, (__bridge CFStringRef)(requirementString)))
     {
-        //bail
-        goto bail;
-    }
-    
-    //create req string w/ 'anchor apple'
-    // (3rd party: 'anchor apple generic')
-    if(0 != SecRequirementCreateWithString((__bridge CFStringRef)requirementString, kSecCSDefaultFlags, &requirementRef))
-    {
-        //bail
-        goto bail;
-    }
-    
-    //check if file is signed by apple
-    // ->i.e. it conforms to req string
-    if(0 != SecStaticCodeCheckValidity(staticCode, kSecCSDefaultFlags, requirementRef))
-    {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCheckValidity() failed on %s", pathBuffer);
-        
         //bail
         goto bail;
     }
@@ -112,14 +105,19 @@ bail:
 
 int main(int argc, const char *argv[])
 {
-    // Create the delegate for the service.
+    //create the delegate for the service.
     ServiceDelegate *delegate = [ServiceDelegate new];
     
-    // Set up the one NSXPCListener for this service. It will handle all incoming connections.
+    //set up the one NSXPCListener for this service
+    // ->handles incoming connections
     NSXPCListener *listener = [NSXPCListener serviceListener];
+    
+    //set delegate
     listener.delegate = delegate;
     
-    // Resuming the serviceListener starts this service. This method does not return.
+    //resuming the listener starts this service
+    // ->method does not return
     [listener resume];
+    
     return 0;
 }

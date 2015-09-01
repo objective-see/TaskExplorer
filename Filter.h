@@ -1,6 +1,6 @@
 //
 //  Filter.h
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/21/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
@@ -35,9 +35,6 @@
 // ->determine if binary is flagged by VT
 -(BOOL)isFlagged:(Binary*)item;
 
-
-
-
 //filter tasks
 -(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
 
@@ -46,6 +43,14 @@
 
 //filter network connections
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
+
+/* PROPERTIES */
+
+//binary filter keywords
+@property(nonatomic, retain)NSMutableArray* binaryFilters;
+
+//file filter keywords
+@property(nonatomic, retain)NSMutableArray* fileFilters;
 
 
 @end

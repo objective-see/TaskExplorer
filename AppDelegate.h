@@ -1,6 +1,6 @@
 //
 //  AppDelegate.h
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle
 //  Copyright (c) 2015 Objective-See. All rights reserved.
@@ -19,6 +19,7 @@
 #import "ResultsWindowController.h"
 #import "RequestRootWindowController.h"
 #import "SearchWindowController.h"
+#import "CustomTextField.h"
 
 
 #import "Task.h"
@@ -163,6 +164,17 @@
 //flagged items
 @property(nonatomic, retain) NSMutableArray* flaggedItems;
 
+//array of autocomplete keywords
+//@property NSMutableArray *builtInKeywords;
+
+@property BOOL completePosting;
+@property BOOL commandHandling;
+
+//custom search field for tasks
+@property CustomTextField* customTasksFilter;
+
+//custom search field for items
+@property CustomTextField* customItemsFilter;
 
 /* METHODS */
 
@@ -173,7 +185,8 @@
 //init (setup) XPC connection
 -(BOOL)initXPC;
 
-- (IBAction)switchView:(id)sender;
+//switch between flat/tree view
+-(IBAction)switchView:(id)sender;
 
 //init tracking areas for buttons
 // ->provide mouse over effects
@@ -231,5 +244,13 @@
 //save a flagged binary
 // ->also set text flagged items button label to red
 -(void)saveFlaggedBinary:(Binary*)binary;
+
+//callback for custom search fields
+// ->handle auto-complete filterings
+-(void)filterAutoComplete:(NSTextView*)textField;
+
+//code to complete filtering/search
+// ->reload table/scroll to top etc
+-(void)finalizeFiltration:(NSUInteger)pane;
 
 @end

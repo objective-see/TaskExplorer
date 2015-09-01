@@ -497,7 +497,7 @@ bail:
         }//sync
         
         //process all new files
-        // ->calculate hash, etc & save into global list
+        // ->determine type, etc & save into global list
         for(File* newFile in newFiles)
         {
             //generate detailed info
@@ -559,15 +559,14 @@ bail:
     return;
 }
 
-
-- (NSComparisonResult)compare:(Task*)otherTask
+//compare
+// ->uses binary name
+-(NSComparisonResult)compare:(Task*)otherTask
 {
     return [self.binary.name compare:otherTask.binary.name options:NSCaseInsensitiveSearch];
 }
 
-
 //convert self to JSON string
-// TODO: add dylibs, files, networking
 -(NSString*)toJSON
 {
     //json string
@@ -588,6 +587,24 @@ bail:
     
     //VT detection ratio
     NSString* vtDetectionRatio = nil;
+    
+    //dylibs
+    NSMutableString* dylibsJSON = nil;
+    
+    //files
+    NSMutableString* filesJSON = nil;
+    
+    //network connections
+    NSMutableString* connectionsJSON = nil;
+    
+    //init string for dylibs
+    dylibsJSON = [NSMutableString string];
+    
+    //init string for files
+    filesJSON = [NSMutableString string];
+    
+    //init string for connections
+    connectionsJSON = [NSMutableString string];
     
     //init task's command line
     taskCommandLine = [self.arguments componentsJoinedByString:@" "];
@@ -658,8 +675,65 @@ bail:
     //init VT detection ratio
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.binary.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
+    //sync
+    //TODO: make sure this is sync'd elsewhere
+    @synchronized(self.dylibs)
+    {
+        //convert all dylibs and add
+        for(Binary* dylib in self.dylibs)
+        {
+            //convert/add
+            [dylibsJSON appendFormat:@"{%@},", [dylib toJSON]];
+        }
+    }
+    
+    //remove last ','
+    if(YES == [dylibsJSON hasSuffix:@","])
+    {
+        //remove
+        [dylibsJSON deleteCharactersInRange:NSMakeRange([dylibsJSON length]-1, 1)];
+    }
+    
+    //sync
+    //TODO: make sure this is sync'd elsewhere
+    @synchronized(self.files)
+    {
+        //convert all file and add
+        for(File* file in self.files)
+        {
+            //convert/add
+            [filesJSON appendFormat:@"{%@},", [file toJSON]];
+        }
+    }
+    
+    //remove last ','
+    if(YES == [filesJSON hasSuffix:@","])
+    {
+        //remove
+        [filesJSON deleteCharactersInRange:NSMakeRange([filesJSON length]-1, 1)];
+    }
+    
+    //sync
+    //TODO: make sure this is sync'd elsewhere
+    @synchronized(self.connections)
+    {
+        //convert all dylibs and add
+        for(Connection* connection in self.connections)
+        {
+            //convert/add
+            [connectionsJSON appendFormat:@"{%@},", [connection toJSON]];
+        }
+    }
+    
+    //remove last ','
+    if(YES == [connectionsJSON hasSuffix:@","])
+    {
+        //remove
+        [connectionsJSON deleteCharactersInRange:NSMakeRange([connectionsJSON length]-1, 1)];
+    }
+    
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\"", self.binary.name, self.binary.path, self.pid, fileHashes, fileSigs, vtDetectionRatio];
+    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", self.binary.name, self.binary.path, self.pid, fileHashes, fileSigs, vtDetectionRatio, dylibsJSON, filesJSON, connectionsJSON];
     
     return json;
 }

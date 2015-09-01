@@ -1,6 +1,6 @@
 //
 //  File.m
-//  KnockKnock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/19/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
@@ -93,8 +93,6 @@ bail:
     
 //bail
 bail:
-    ;
-    
     
     return;
 }
@@ -117,92 +115,55 @@ bail:
     //json string
     NSString *json = nil;
     
-    //json data
-    // ->for intermediate conversions
-    //NSData *jsonData = nil;
+    //attributes
+    NSMutableString* attributesJSON = nil;
     
-    //hashes
-    //NSString* fileHashes = nil;
+    //init 
+    attributesJSON = [NSMutableString string];
     
-    //signing info
-    //NSString* fileSigs = nil;
-    
-    //init file hash to default string
-    // ->used when hashes are nil, or serialization fails
-    //fileHashes = @"\"unknown\"";
-    
-    //init file signature to default string
-    // ->used when signatures are nil, or serialization fails
-    //fileSigs = @"\"unknown\"";
-    
-    /*
-    //convert hashes to JSON
-    if(nil != self.hashes)
+    //when attributes are nil
+    // ->init default string
+    if(nil == self.attributes)
     {
-        //convert hash dictionary
-        // ->wrap since we are serializing JSON
-        @try
-        {
-            //convert
-            jsonData = [NSJSONSerialization dataWithJSONObject:self.hashes options:kNilOptions error:NULL];
-            if(nil != jsonData)
-            {
-                //convert data to string
-                fileHashes = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            }
-        }
-        //ignore exceptions
-        // ->file hashes will just be 'unknown'
-        @catch(NSException *exception)
-        {
-            ;
-        }
+        //init
+        [attributesJSON appendString:@"\"unknown\""];
     }
     
-    //convert signing dictionary to JSON
-    if(nil != self.signingInfo)
-    {
-        //convert signing dictionary
-        // ->wrap since we are serializing JSON
-        @try
-        {
-            //convert
-            jsonData = [NSJSONSerialization dataWithJSONObject:self.signingInfo options:kNilOptions error:NULL];
-            if(nil != jsonData)
-            {
-                //convert data to string
-                fileSigs = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            }
-        }
-        //ignore exceptions
-        // ->file sigs will just be 'unknown'
-        @catch(NSException *exception)
-        {
-            ;
-        }
-    }
-    
-    //provide a default string if the file doesn't have a plist
-    if(nil == self.plist)
-    {
-        //set
-        filePlist = @"n/a";
-    }
-    //use plist as is
+    //file has attributes
+    // ->add each
     else
     {
-        //set
-        filePlist = self.plist;
+        //start
+        [attributesJSON appendString:@"{"];
+        
+        //add each attributes
+        for(NSString* attribute in self.attributes)
+        {
+            //skip NSFileExtendedAttributes
+            // ->binary format
+            if(YES == [attribute isEqualToString:@"NSFileExtendedAttributes"])
+            {
+                //skip
+                continue;
+            }
+            
+            //add
+            [attributesJSON appendFormat:@"\"%@\":\"%@\",", attribute, self.attributes[attribute]];
+        }
+        
+        //remove last ','
+        if(YES == [attributesJSON hasSuffix:@","])
+        {
+            //remove
+            [attributesJSON deleteCharactersInRange:NSMakeRange([attributesJSON length]-1, 1)];
+        }
+        
+        //end
+        [attributesJSON appendString:@"}"];
     }
     
-    //init VT detection ratio
-    //vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
-    
-    
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"plist\": \"%@\", \"hashes\": %@, \"signature(s)\": %@", self.name, self.path, filePlist, fileHashes, fileSigs];
-     
-    */
+    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"type\": \"%@\", \"attributes\": %@", self.name, self.path, self.type, attributesJSON];
     
     return json;
 }
