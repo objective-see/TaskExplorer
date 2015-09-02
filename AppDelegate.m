@@ -109,8 +109,14 @@
     //alloc/init custom search field for tasks
     customTasksFilter = [[CustomTextField alloc] init];
     
+    //set owner
+    self.customTasksFilter.owner = self;
+    
     //alloc/init custom search field for items
     customItemsFilter = [[CustomTextField alloc] init];
+    
+    //set owner
+    self.customItemsFilter.owner = self;
     
     //set field editor for tasks
     [self.customTasksFilter setFieldEditor:YES];
@@ -879,7 +885,6 @@ bail:
     
     return;
 }
-
 
 //display alert about OS not being supported
 -(void)showUnsupportedAlert

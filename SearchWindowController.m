@@ -28,6 +28,9 @@
 @synthesize searchTable;
 @synthesize searchResults;
 @synthesize plsWaitMessage;
+@synthesize commandHandling;
+@synthesize completePosting;
+@synthesize customSearchField;
 @synthesize vtWindowController;
 @synthesize infoWindowController;
 
@@ -59,6 +62,12 @@
     //init array for search results
     searchResults = [NSMutableArray array];
     
+    //alloc/init custom search field for items
+    customSearchField = [[CustomTextField alloc] init];
+    
+    //set owner
+    self.customSearchField.owner = self;
+
     //first time outlets are nil
     // ->thus 'initUI' method called in 'awakeFromNib'
     if(nil != self.window)
@@ -204,7 +213,6 @@
             self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
         
         });
-
     }
     
     //update UI on main thread
@@ -229,6 +237,164 @@
     });
     
     return;
+}
+
+//automatically invoked when user enters text in filter search boxes
+// ->filter tasks and/or items
+-(void)controlTextDidChange:(NSNotification *)aNotification
+{
+    //prevent calling "complete" too often
+    if( (YES != self.completePosting) &&
+        (YES != self.commandHandling) )
+    {
+        //set flag
+        self.completePosting = YES;
+        
+        //invoke complete
+        [aNotification.userInfo[@"NSFieldEditor"] complete:nil];
+        
+        //unset flag
+        self.completePosting = NO;
+    }
+
+    return;
+}
+
+//delegate method, automatically called
+// ->generate list of matches to return for drop-down
+-(NSArray *)control:(NSControl *)control textView:(NSTextView *)textView completions:(NSArray *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
+{
+    //matches
+    NSMutableArray *matches = nil;
+    
+    //range options
+    NSUInteger rangeOptions = {0};
+    
+    //init array for matches
+    matches = [[NSMutableArray alloc] init];
+    
+    //init range options
+    rangeOptions = NSAnchoredSearch | NSCaseInsensitiveSearch;
+    
+    //check all filters
+    // note: really check Binary ones, but this should include all!
+    for(NSString* filter in self.filterObj.binaryFilters)
+    {
+        //check if found
+        // ->add to match when found
+        if([filter rangeOfString:textView.string options:rangeOptions range:NSMakeRange(0, filter.length)].location != NSNotFound)
+        {
+            //add
+            [matches addObject:filter];
+        }
+    }
+    
+    //sort matches
+    [matches sortUsingComparator:^(NSString *a, NSString *b)
+     {
+         //sort
+         return [a localizedStandardCompare:b];
+     }];
+    
+//bail
+bail:
+    
+    return matches;
+}
+
+//delegate method, automatically invoked
+// ->handle invocations for text view
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+{
+    //flag
+    BOOL didPerformRequestedSelectorOnTextView = NO;
+    
+    //invocation
+    NSInvocation *textViewInvocationForSelector = nil;
+    
+    //check if text view can handle selector
+    if(YES != [textView respondsToSelector:commandSelector])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //first handle 'enter'
+    // ->trigger a search
+    if(commandSelector == @selector(insertNewline:))
+    {
+        //search
+        [self search];
+    }
+    //handle all others
+    else
+    {
+        //set iVar flag
+        self.commandHandling = YES;
+        
+        //init invocation
+        textViewInvocationForSelector = [NSInvocation invocationWithMethodSignature:[textView methodSignatureForSelector:commandSelector]];
+        
+        //set target
+        [textViewInvocationForSelector setTarget:textView];
+        
+        //set selector
+        [textViewInvocationForSelector setSelector:commandSelector];
+        
+        //invoke selector
+        [textViewInvocationForSelector invoke];
+        
+        //unset iVar
+        self.commandHandling = NO;
+    }
+    
+    //indicate that selector was performed
+    didPerformRequestedSelectorOnTextView = YES;
+    
+//bail
+bail:
+    
+    return didPerformRequestedSelectorOnTextView;
+}
+
+
+//callback for custom search fields
+// ->handle auto-complete filterings
+-(void)filterAutoComplete:(NSTextView*)textView
+{
+    //just call search method
+    // ->has logic to handle searching
+    [self search];
+
+    return;
+}
+
+//automatically invoked
+// ->set all NSSearchFields to be instances of our custom NSTextView
+-(id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)client
+{
+    //field editor
+    id fieldEditor = nil;
+    
+    //ignore non-NSSearchField classes
+    if(YES != [client isKindOfClass:[NSTextField class]])
+    {
+        //ingnore
+        goto bail;
+    }
+    
+    //set task's filter search field
+    if(client == self.searchBox)
+    {
+        //assign for return
+        fieldEditor = self.customSearchField;
+    }
+    
+    
+//bail
+bail:
+    
+    return fieldEditor;
 }
 
 //table delegate
@@ -314,9 +480,10 @@ bail:
     return;
 }
 
-//automatically invoked when user presses 'Enter' in search box
-// ->search!
--(IBAction)search:(id)sender
+//search
+//TODO: SYNC DYLIBS etc
+//TODO: search network conns
+-(void)search
 {
     //search string
     NSString* searchString = nil;
@@ -359,7 +526,7 @@ bail:
     [self.searchTable reloadData];
     
     //grab search string
-    searchString = [sender stringValue];
+    searchString = [self.searchBox stringValue];
     
     //grab all tasks
     allTasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
@@ -374,8 +541,8 @@ bail:
             //ignore
             goto bail;
         }
-     }
-    
+    }
+
     //1st: search for all matching tasks
     //sync
     @synchronized(allTasks)
@@ -397,6 +564,7 @@ bail:
     @synchronized(allTasks)
     {
         
+    //TODO: B4 RELEASE! SYNC DYLIBS ARRAY!!!
     //walk all tasks
     // ->scan each for dylib matches, only processing first match
     for(NSNumber* taskPid in allTasks)
@@ -470,6 +638,8 @@ bail:
     
     //refresh table to display dylib
     [self.searchTable reloadData];
+    
+    //TODO: search network conns
     
 //bail
 bail:

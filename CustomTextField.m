@@ -11,6 +11,7 @@
 
 @implementation CustomTextField
 
+@synthesize owner;
 
 //subclass override
 // ->see: http://stackoverflow.com/questions/5163646/how-to-make-nssearchfield-send-action-upon-autocompletion/5360535#5360535
@@ -41,8 +42,9 @@
     // ->call up into app delegate to process (filter)
     if(movement == NSReturnTextMovement)
     {
-        //call up//filterAutoComplete
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) filterAutoComplete:self];
+        //call up into owner to process
+        [owner filterAutoComplete:self];
+        //[((AppDelegate*)[[NSApplication sharedApplication] delegate]) filterAutoComplete:self];
     }
     
 //bail

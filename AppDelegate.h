@@ -159,22 +159,22 @@
 @property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
 
 //remote XPC interface
-@property(nonatomic, retain) NSXPCConnection* xpcConnection;
+@property(nonatomic, retain)NSXPCConnection* xpcConnection;
 
 //flagged items
-@property(nonatomic, retain) NSMutableArray* flaggedItems;
+@property(nonatomic, retain)NSMutableArray* flaggedItems;
 
-//array of autocomplete keywords
-//@property NSMutableArray *builtInKeywords;
-
+//flag for filter field (autocomplete)
 @property BOOL completePosting;
+
+//flag for filter field (autocomplete)
 @property BOOL commandHandling;
 
 //custom search field for tasks
-@property CustomTextField* customTasksFilter;
+@property(nonatomic, retain)CustomTextField* customTasksFilter;
 
 //custom search field for items
-@property CustomTextField* customItemsFilter;
+@property(nonatomic, retain)CustomTextField* customItemsFilter;
 
 /* METHODS */
 

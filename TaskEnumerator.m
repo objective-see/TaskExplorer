@@ -206,7 +206,20 @@
         [NSThread sleepForTimeInterval:0.01f];
     }
     
-    //TODO: add network connection filtering
+    //begin network enumeration
+    // ->for search view
+    for(NSNumber* key in newTasks)
+    {
+        //get task
+        newTask = newTasks[key];
+        
+        //enumerate
+        [newTask enumerateNetworking:xpcConnection];
+        
+        //nap
+        // ->helps with UI
+        [NSThread sleepForTimeInterval:0.01f];
+    }
     
     return;
 }

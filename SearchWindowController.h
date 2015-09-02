@@ -8,16 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "CustomTextField.h"
 #import "InfoWindowController.h"
 #import "VTInfoWindowController.h"
 
 
-
-@interface SearchWindowController : NSWindowController
-
-//automatically invoked when user presses 'Enter' in search box
-// ->search!
--(IBAction)search:(id)sender;
+@interface SearchWindowController : NSWindowController <NSWindowDelegate>
 
 //PROPERTIES
 
@@ -54,6 +50,14 @@
 //overlay view
 @property (weak) IBOutlet NSView *overlayView;
 
+//flag for filter field (autocomplete)
+@property BOOL completePosting;
+
+//flag for filter field (autocomplete)
+@property BOOL commandHandling;
+
+//custom search field
+@property (nonatomic, retain)CustomTextField* customSearchField;
 
 
 /* METHODS */
@@ -61,6 +65,9 @@
 //init/prepare
 // ->make sure everything is cleanly init'd
 -(void)prepare;
+
+//search
+-(void)search;
 
 
 @end

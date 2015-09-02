@@ -16,4 +16,7 @@
     
 }
 
+//'owner'
+@property (nonatomic, retain)id owner;
+
 @end

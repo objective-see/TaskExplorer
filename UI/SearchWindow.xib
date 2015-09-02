@@ -21,7 +21,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="95" y="481" width="1304" height="425"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="800" height="250"/>
             <view key="contentView" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="3" width="1304" height="425"/>
@@ -393,13 +393,12 @@
                     </scrollView>
                     <textField verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BB9-Xc-q8T">
                         <rect key="frame" x="20" y="372" width="1264" height="42"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" placeholderString="type search term, then press enter" drawsBackground="YES" id="L1f-RR-fvk">
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" placeholderString="type search term, then press enter" drawsBackground="YES" usesSingleLineMode="YES" id="L1f-RR-fvk">
                             <font key="font" metaFont="system" size="30"/>
                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <action selector="search:" target="-2" id="HSs-Yg-DG8"/>
                             <outlet property="delegate" destination="-2" id="X2H-Xx-qgK"/>
                         </connections>
                     </textField>
