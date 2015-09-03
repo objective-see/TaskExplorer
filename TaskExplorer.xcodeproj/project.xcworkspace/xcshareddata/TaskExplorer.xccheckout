@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>FE4103FE-6F26-4639-8C9F-D8D32C76D6A9</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>TaskExplorer</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>61F07AFB33748EF0C810BEEF6126283DAC63A899</key>
 		<string>https://bitbucket.org/objective-see/taskexplorer.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>TaskExplorer.xcodeproj/project.xcworkspace</string>
+	<string>TaskExplorer.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>61F07AFB33748EF0C810BEEF6126283DAC63A899</key>

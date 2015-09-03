@@ -39,6 +39,10 @@
 //TODO: remove task, remove from taskEnum's global list for executables, and dylibs, etc
 //TODO: also refresh!....
 
+//TODO: search include network (and improved filtering to include state/proto/type) - DONE!
+
+//TODO: check all searches that use NSNotFound also check for nil (other != NSNotFound will be true for nil!!)
+
 @implementation AppDelegate
 
 
@@ -227,17 +231,11 @@
     return;
 }
 
-//invoked for any (and only) key-down events
+//invoked for any (but only) key-down events
 -(NSEvent*)handleKeypress:(NSEvent*)event
 {
     //flag indicating event was handled
     BOOL wasHandled = NO;
-    
-    //refresh (cmd+r)
-    //save (cmd+s)
-    //search (cmd+f)
-    //close window (cmd+w)
-    //info for selected task (cmd+i)
     
     //only care about 'cmd' + something
     if(NSCommandKeyMask != (event.modifierFlags & NSCommandKeyMask))
@@ -246,9 +244,12 @@
         goto bail;
     }
     
-    NSLog(@"key press: %x", [event keyCode]);
-    
     //handle key-code
+    // refresh (cmd+r)
+    // save (cmd+s)
+    // search (cmd+f)
+    // close window (cmd+w)
+    // info for selected task (cmd+i)
     switch ([event keyCode])
     {
         //'r' (refresh)

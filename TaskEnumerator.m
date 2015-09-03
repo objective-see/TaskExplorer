@@ -14,6 +14,7 @@
 #import "AppDelegate.h"
 #import "Utilities.h"
 #import "TaskEnumerator.h"
+#import "Connection.h"
 
 #import <syslog.h>
 #import <signal.h>
@@ -634,6 +635,9 @@ bail:
     //file flag
     BOOL isFile = NO;
     
+    //connection flag
+    BOOL isConnection = NO;
+    
     //tasks
     hostTasks = [NSMutableArray array];
     
@@ -651,15 +655,24 @@ bail:
         isFile = YES;
     }
     
+    //check if item is connection
+    else if(YES == [item isKindOfClass:[Connection class]])
+    {
+        //file
+        isConnection = YES;
+    }
+    
     //sanity check
     if( (YES != isDylib) &&
-        (YES != isFile) )
+        (YES != isFile) &&
+        (YES != isConnection) )
     {
         //bail
         goto bail;
     }
     
     //sync
+    //TODO: B4 RELEASE, sync files/dylibs/connections
     @synchronized(self.tasks)
     {
         //iterate over all tasks
@@ -687,7 +700,7 @@ bail:
             }//dylib check
             
             //file check
-            else
+            else if(YES == isFile)
             {
                 //check if file is loaded in task
                 for(File* taskFile in task.files)
@@ -704,6 +717,25 @@ bail:
                 }
                 
             }//file check
+            
+            //connection check
+            else if(YES == isConnection)
+            {
+                //check if connection is 'in' task
+                for(Connection* taskConnection in task.connections)
+                {
+                    //check for task has connection
+                    // note: ->check via endpoints, as that a good representation of connection(?)
+                    if(YES == [taskConnection.endpoints isEqualToString: ((Connection*)item).endpoints])
+                    {
+                        //save
+                        [hostTasks addObject:task];
+                        
+                        //can bail, since match was found
+                        break;
+                    }
+                }
+            }
         
         }//all tasks
         

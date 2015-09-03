@@ -12,9 +12,6 @@
 #import "ItemBase.h"
 #import "Connection.h"
 
-//file filter keywords
-//NSString * const FILE_FILTERS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
-
 //binary filter keywords
 NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
 
@@ -210,7 +207,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 }
 
 //filter network connections
-//TODO: match on family/connection type
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
     //first reset filter'd items
@@ -220,7 +216,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     for(Connection* item in items)
     {
         //check local ip
-        if(NSNotFound != [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+        if( (nil != item.localIPAddr) &&
+            (NSNotFound != [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
         {
             //save match
             [results addObject:item];
@@ -230,7 +227,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         }
         
         //check local port
-        if(NSNotFound != [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+        if( (nil != item.localIPAddr) &&
+            (NSNotFound != [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
         {
             //save match
             [results addObject:item];
@@ -253,6 +251,39 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         //check remote port
         if( (nil != item.remoteIPAddr) &&
             (NSNotFound != [[NSString stringWithFormat:@"%d", [item.remotePort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+        //check family
+        if( (nil != item.family) &&
+            (NSNotFound != [item.family rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+        //check protocol
+        if( (nil != item.proto) &&
+            (NSNotFound != [item.proto rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        {
+            //save match
+            [results addObject:item];
+            
+            //next
+            continue;
+        }
+        
+        //check state
+        if( (nil != item.state) &&
+            (NSNotFound != [item.state rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
         {
             //save match
             [results addObject:item];

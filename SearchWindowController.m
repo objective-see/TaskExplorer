@@ -503,6 +503,9 @@ bail:
     //matching files
     NSMutableDictionary* matchingFiles = nil;
     
+    //matching connections
+    NSMutableDictionary* matchingConnections = nil;
+    
     //task
     Task* task = nil;
     
@@ -517,6 +520,9 @@ bail:
     
     //alloc dictionary for matching files
     matchingFiles = [NSMutableDictionary dictionary];
+    
+    //alloc dictionary for matching connections
+    matchingConnections = [NSMutableDictionary dictionary];
     
     //reset search results
     [self.searchResults removeAllObjects];
@@ -564,6 +570,9 @@ bail:
     @synchronized(allTasks)
     {
         
+    //reset
+    [matchingItems removeAllObjects];
+        
     //TODO: B4 RELEASE! SYNC DYLIBS ARRAY!!!
     //walk all tasks
     // ->scan each for dylib matches, only processing first match
@@ -604,6 +613,9 @@ bail:
     //sync
     @synchronized(allTasks)
     {
+        //reset
+        [matchingItems removeAllObjects];
+        
         //walk all tasks
         // ->scan each for file matches, only processing first match
         for(NSNumber* taskPid in allTasks)
@@ -639,7 +651,48 @@ bail:
     //refresh table to display dylib
     [self.searchTable reloadData];
     
-    //TODO: search network conns
+    //4th: search for all matching network comms
+    //sync
+    //TODO: sync network connections
+    @synchronized(allTasks)
+    {
+        //reset
+        [matchingItems removeAllObjects];
+        
+        //walk all tasks
+        // ->scan each for file matches, only processing first match
+        for(NSNumber* taskPid in allTasks)
+        {
+            //extract task
+            task = allTasks[taskPid];
+            
+            //filter
+            [self.filterObj filterConnections:searchString items:task.connections results:matchingItems];
+            
+            //process all matching connections
+            // ->but first check if processed due to matching in another task already
+            for(Connection* connection in matchingItems)
+            {
+                //ignore if already seen/processed
+                if(nil != matchingConnections[connection.endpoints])
+                {
+                    //skip
+                    continue;
+                }
+                
+                //process
+                [self.searchResults addObject:connection];
+                
+                //save
+                matchingConnections[connection.endpoints] = connection;
+            }
+            
+        }//all tasks
+        
+    }//sync
+    
+    //refresh table to display dylib
+    [self.searchTable reloadData];
     
 //bail
 bail:

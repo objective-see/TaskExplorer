@@ -36,9 +36,9 @@ NSTableCellView* createItemView(NSTableView* tableView, id owner, id item)
     }
     
     //handle logic for search results
-    // ->dylibs and files have the special global 'loaded in' views
+    // ->dylibs/files/connections have the special global 'loaded in' views
     else if( (YES == [owner isKindOfClass:[SearchWindowController class]]) &&
-           ( (YES == [item isKindOfClass:[Binary class]]) || (YES == [item isKindOfClass:[File class]]) ) )
+             (YES != [item isKindOfClass:[Task class]]) )
     {
         //create & config view
         itemCell = createLoadedItemView(tableView, owner, item);
@@ -164,7 +164,6 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
   
     //get host tasks
     // ->works with dylibs or files
-    //TODO: make work w/ network connections
     tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
     
     //add dylib indicator
@@ -180,6 +179,13 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     {
         //init
         loadedIn = [NSMutableString stringWithFormat:@"(file, loaded in:"];
+    }
+    //add connection indicator
+    //-> '(connection, in: ... '
+    else if(YES == [item isKindOfClass:[Connection class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@"(connection, in:"];
     }
     
     //add all tasks
@@ -212,6 +218,13 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     {
         //create
         loadedItemCell = [tableView makeViewWithIdentifier:@"FileCell" owner:owner];
+    }
+    //connections
+    // ->create cell
+    else if(YES == [item isKindOfClass:[Connection class]])
+    {
+        //create
+        loadedItemCell = [tableView makeViewWithIdentifier:@"ConnectionCell" owner:owner];
     }
     
     //sanity check
@@ -256,9 +269,21 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     // ->(re)set main textfield's color to black
     loadedItemCell.textField.textColor = [NSColor blackColor];
     
-    //set main text
-    // ->name
-    [loadedItemCell.textField setStringValue:[item name]];
+    //dylibs/files
+    // ->main text is name
+    if( (YES == [item isKindOfClass:[Binary class]]) ||
+        (YES == [item isKindOfClass:[File class]]) )
+    {
+        //set name
+        [loadedItemCell.textField setStringValue:[item name]];
+    }
+    //connections
+    // ->main text is endpoints string
+    else
+    {
+        //set endpoints string
+        [loadedItemCell.textField setStringValue:[item endpoints]];
+    }
     
     //get name frame
     nameFrame = loadedItemCell.textField.frame;
@@ -273,13 +298,41 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     // ->should now be exact size of text
     loadedItemCell.textField.frame = nameFrame;
     
-    //set pid
+    //set host task(s) string
     // ->immediately follows name
     [((NSTextField*)[loadedItemCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:loadedIn];
     
-    //set path
-    [[loadedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:[item path]];
-    
+    //dylibs/files
+    // ->subtext is path
+    if( (YES == [item isKindOfClass:[Binary class]]) ||
+        (YES == [item isKindOfClass:[File class]]) )
+    {
+        //set path
+        [[loadedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:[item path]];
+    }
+    //connections
+    // ->subtext is connection status
+    else
+    {
+        //set details
+        // ->TCP socket
+        if(nil != ((Connection*)item).state)
+        {
+            //add state
+            [[loadedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:((Connection*)item).state];
+        }
+        //set details
+        // ->UDP socket
+        else if(YES == [((Connection*)item).type isEqualToString:@"SOCK_DGRAM"])
+        {
+            //bound
+            // ->add state
+            [[loadedItemCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:@"bound (UDP) socket"];
+        
+            //TODO: connected UDP socket?
+        }
+    }
+
     //only dylibs have VT button
     if(YES == [item isKindOfClass:[Binary class]])
     {
@@ -343,7 +396,9 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     
     //set code signing icon
     ((NSImageView*)[taskCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(task.binary);
-        
+    
+    //TODO: red for flagged?
+    
     //default
     // ->(re)set main textfield's color to black
     taskCell.textField.textColor = [NSColor blackColor];
@@ -508,6 +563,7 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
     //item cell
     NSTableCellView* connectionCell = nil;
     
+    //TODO: don't need this to be mutable str?
     //connection details
     NSMutableString* details = nil;
     
