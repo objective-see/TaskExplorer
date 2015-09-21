@@ -108,6 +108,9 @@
         });
     }
     
+    //TODO:
+    //else, hide text!!!
+    
     return;
 }
 

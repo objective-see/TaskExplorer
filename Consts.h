@@ -306,7 +306,7 @@
 
 //TODO: CHANGE B4 RELEASE
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 1
+#define SEARCH_WAIT_TIME 10
 
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (intial) task/dylib/file enumeration please wait"

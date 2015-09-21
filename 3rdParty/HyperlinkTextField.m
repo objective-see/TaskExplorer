@@ -136,7 +136,7 @@
     NSPoint localPoint = [self convertPoint:[theEvent locationInWindow] fromView:nil];
     NSUInteger index = [textView.layoutManager characterIndexForPoint:localPoint inTextContainer:textView.textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
     
-    if (index != NSNotFound)
+    if(index != NSNotFound)
     {
         for (NSDictionary *info in self.hyperlinkInfos)
         {

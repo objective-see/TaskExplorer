@@ -367,7 +367,7 @@ bail:
         return NSOrderedSame;
     };
     
-    //interate over all task
+    //interate over all tasks
     // ->insert task into parent's *ordered* child array
     for(NSNumber* key in newTasks.allKeys)
     {
@@ -377,7 +377,7 @@ bail:
         //ignore tasks that have died
         if(YES != isAlive([task.pid intValue]))
         {
-            //next
+            //skip
             continue;
         }
         
@@ -408,7 +408,6 @@ bail:
         
         //insert child
         [parent.children insertObject:task.pid atIndex:childIndex];
-        
     }
     
     return;

@@ -41,7 +41,7 @@
 
 //TODO: search include network (and improved filtering to include state/proto/type) - DONE!
 
-//TODO: check all searches that use NSNotFound also check for nil (other != NSNotFound will be true for nil!!)
+//TODO: check all searches that use NSNotFound also check for nil - DONE
 
 @implementation AppDelegate
 
@@ -1205,7 +1205,6 @@ bail:
 
 //invoked when user clicks 'save' icon
 // ->show popup that allows user to save results
-//TODO: make alert have local 'hyperlink' to file!
 -(IBAction)saveResults:(id)sender
 {
     //save panel

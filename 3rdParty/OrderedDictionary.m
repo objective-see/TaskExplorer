@@ -65,12 +65,12 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
 	return self;
 }
 
-- (id)copy
+-(id)copy
 {
 	return [self mutableCopy];
 }
 
-- (void)setObject:(id)anObject forKey:(id)aKey
+-(void)setObject:(id)anObject forKey:(id)aKey
 {
 	if(![dictionary objectForKey:aKey])
 	{
@@ -80,7 +80,7 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
 	[dictionary setObject:anObject forKey:aKey];
 }
 
-- (void)removeObjectForKey:(id)aKey
+-(void)removeObjectForKey:(id)aKey
 {
 	[dictionary removeObjectForKey:aKey];
 	[array removeObject:aKey];
@@ -91,18 +91,17 @@ NSString *DescriptionForObject(NSObject *object, id locale, NSUInteger indent)
 	return [dictionary count];
 }
 
-- (id)objectForKey:(id)aKey
+-(id)objectForKey:(id)aKey
 {
 	return [dictionary objectForKey:aKey];
 }
 
-- (NSEnumerator *)keyEnumerator
+-(NSEnumerator *)keyEnumerator
 {
 	return [array objectEnumerator];
 }
 
 
- 
 -(void)insertObject:(id)anObject forKey:(id)aKey atIndex:(NSUInteger)anIndex
 {
 	if([dictionary objectForKey:aKey])

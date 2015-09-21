@@ -112,7 +112,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         {
             //check path first
             // ->mostly likely to match
-            if(NSNotFound != [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            if( (nil != task.binary.path) &&
+                (NSNotFound != [task.binary.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
             {
                 //save match
                 [results addObject:task];
@@ -122,7 +123,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
             }
             
             //check name
-            if(NSNotFound != [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            if( (nil != task.binary.name) &&
+                (NSNotFound != [task.binary.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
             {
                 //save match
                 [results addObject:task];
@@ -181,7 +183,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         {
             //check path first
             // ->most likely to match
-            if(NSNotFound != [item.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            if( (nil != item.path) &&
+                (NSNotFound != [item.path rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
             {
                 //save match
                 [results addObject:item];
@@ -191,7 +194,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
             }
 
             //check name
-            if(NSNotFound != [item.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location)
+            if( (nil != item.name) &&
+                (NSNotFound != [item.name rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
             {
                 //save match
                 [results addObject:item];
