@@ -68,17 +68,19 @@
     if(nil != self.state)
     {
         //listening
-        if(YES == [self.state isEqualToString:SOCKET_LISTENING])
+        if(YES == [self.state isEqualToString:@"listening"])
         {
             //set
             self.icon = [NSImage imageNamed:@"listeningIcon"];
         }
         //connected
-        else if(YES == [self.state isEqualToString:SOCKET_ESTABLISHED])
+        else if(YES == [self.state isEqualToString:@"established"])
         {
             //set
             self.icon = [NSImage imageNamed:@"connectedIcon"];
         }
+        
+        //TODO: set other icon?
     }
     
     //set icon for UDP sockets

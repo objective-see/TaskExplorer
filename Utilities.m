@@ -128,7 +128,7 @@ NSDictionary* extractSigningInfo(NSString* path)
     if(STATUS_SUCCESS != status)
     {
         //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %s with %d", [path UTF8String], status);
+        //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecStaticCodeCreateWithPath() failed on %s with %d", [path UTF8String], status);
         
         //bail
         goto bail;
@@ -151,7 +151,7 @@ NSDictionary* extractSigningInfo(NSString* path)
         if(STATUS_SUCCESS != status)
         {
             //err msg
-            syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecCodeCopySigningInformation() failed on %s with %d", [path UTF8String], status);
+            //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: SecCodeCopySigningInformation() failed on %s with %d", [path UTF8String], status);
             
             //bail
             goto bail;
@@ -547,7 +547,7 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     
     //set task's output
     [task setStandardOutput:outPipe];
-    
+
     //wrap task launch
     @try {
         
@@ -556,6 +556,9 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     }
     @catch(NSException *exception)
     {
+        //err msg
+        //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: taskExec(%s) failed with %s", [binaryPath UTF8String], [[exception description] UTF8String]);
+        
         //bail
         goto bail;
     }
@@ -569,6 +572,8 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     
     //grab any left over data
     [output appendData:[readHandle readDataToEndOfFile]];
+    
+    //syslog(LOG_ERR, "OBJECTIVE-SEE: results here: %s", [[output description] UTF8String]);
     
 //bail
 bail:
@@ -870,4 +875,36 @@ bail:
     
     return;
 }
+
+//check	if remote process is i386
+BOOL Is32Bit(pid_t targetPID)
+{
+    //info struct
+    struct proc_bsdshortinfo procInfo = {0};
+    
+    //flag
+    BOOL isI386 = NO;
+    
+    //get proc info
+    if(proc_pidinfo(targetPID, PROC_PIDT_SHORTBSDINFO, 0, &procInfo, PROC_PIDT_SHORTBSDINFO_SIZE) <= 0)
+    {
+        //error
+        goto bail;
+    }
+    
+    //check 64bit process flag
+    if(PROC_FLAG_LP64 != (procInfo.pbsi_flags & PROC_FLAG_LP64))
+    {
+        //not x86_64
+        // ->thus, i386
+        isI386 = YES;
+    }
+    
+//bail
+bail:
+    
+    return isI386;
+    
+}
+    
 

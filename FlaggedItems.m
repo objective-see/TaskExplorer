@@ -326,7 +326,7 @@ bail:
     
     //open Finder
     // ->will reveal binary
-    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:nil];
+    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
     
     //bail
 bail:

@@ -5,8 +5,11 @@
 //  Created by Patrick Wardle on 5/27/15.
 //  Copyright (c) 2015 Patrick Wardle. All rights reserved.
 //
-#import "remoteTaskService.h"
+
 #import "Consts.h"
+#import "Utilities.h"
+#import "remoteTaskService.h"
+
 
 #import <mach-o/dyld_images.h>
 #import <mach/mach_init.h>
@@ -23,6 +26,22 @@
 #import <netdb.h>
 #import <syslog.h>
 
+//socket states
+// ->note, index correspondes to numberic value
+static const char* socketStates[] =
+{
+    "closed",
+    "listening",
+    "syn sent",
+    "syn received",
+    "established",
+    "close/wait",
+    "fin wait 1",
+    "closing",
+    "last act",
+    "fin wait 2",
+    "time wait",
+};
 
 static const char *socketFamilies[] =
 {
@@ -90,6 +109,41 @@ struct dyld_image_info_32 {
 // ->dylibs returned in array arg
 -(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
 {
+    //dylibs
+    NSMutableArray* dylibPaths = nil;
+    
+    //minor OS X version
+    SInt32 versionMinor = 0;
+    
+    //get minor version
+    versionMinor = getVersion(gestaltSystemVersionMinor);
+    
+    //when OS version is older then el capitan
+    // ->read memory directly
+    if(versionMinor < OS_MINOR_VERSION_EL_CAPITAN)
+    {
+        //enum dylibs
+        dylibPaths = [self enumerateDylibsOld:(NSNumber*)taskPID];
+        
+    }
+    //OS version is el capitan
+    // ->have to use vmmap, since we don't com.apple.system-task-ports entitlement
+    else
+    {
+        //enum dylibs
+        dylibPaths = [self enumerateDylibsNew:(NSNumber*)taskPID];
+    }
+    
+    //invoke reply block
+    reply(dylibPaths);
+    
+    return;
+}
+
+//enumerate dylibs via direct memory reading
+// ->can only do this pre-el capitan
+-(NSMutableArray*)enumerateDylibsOld:(NSNumber*)pid
+{
     //status
     kern_return_t status = !KERN_SUCCESS;
     
@@ -133,14 +187,14 @@ struct dyld_image_info_32 {
     mach_msg_type_number_t dpBytesRead = 0;
     
     //dylibs
-    NSMutableArray* dylibPaths = nil;
+    NSMutableArray* dylibs = nil;
     
     //alloc array for dylibs
-    dylibPaths = [NSMutableArray array];
+    dylibs = [NSMutableArray array];
     
     //get task for pid
     // ->allows access to read remote process memory
-    status = task_for_pid(mach_task_self(), [taskPID intValue], &remoteTask);
+    status = task_for_pid(mach_task_self(), [pid intValue], &remoteTask);
     if(KERN_SUCCESS != status)
     {
         //err msg
@@ -161,9 +215,6 @@ struct dyld_image_info_32 {
         //bail
         goto bail;
     }
-    
-    //dbg msg
-    //NSLog(@"got dyld_info: %#llx : %llx  - %d", dyldInfo.all_image_info_addr, dyldInfo.all_image_info_size, dyldInfo.all_image_info_format);
     
     //remotely read dyld_all_image_infos
     status = mach_vm_read(remoteTask, (vm_address_t)dyldInfo.all_image_info_addr, dyldInfo.all_image_info_size, (vm_offset_t*)&allImageInfo, &aifBytesRead);
@@ -247,22 +298,16 @@ struct dyld_image_info_32 {
         if( (KERN_SUCCESS != status) ||
             (NULL == dylibPath) )
         {
-            //err msg
-            //NSLog(@"ERROR: mach_vm_read() failed w/ %d", status);
-            
             //try next
             continue;
         }
         
-        //dbg msg
-        //NSLog(@"path (%d): %s", dpBytesRead, dylibPath);
-        
         //save it
-        [dylibPaths addObject:[NSString stringWithUTF8String:dylibPath]];
+        [dylibs addObject:[NSString stringWithUTF8String:dylibPath]];
         
         //dealloc
         mach_vm_deallocate(mach_task_self(), (vm_offset_t)dylibPath, dpBytesRead);
-
+        
     }//for all dyld_image_info_32/dyld_image_info structs
     
 //bail
@@ -283,25 +328,106 @@ bail:
     }
     
     //remove dups
-    //TODO: this isn't mutable - which is ok, but maybe change reply method def?
-    [dylibPaths setArray:[[NSSet setWithArray:dylibPaths] allObjects]];
+    [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
     
-    //invoke reply block
-    reply(dylibPaths);
+    return dylibs;
     
-    return;
+}
+
+//enumerate dylibs via vmmap
+// ->OS version is el capitan, and we don't have the com.apple.system-task-ports entitlement :/
+-(NSMutableArray*)enumerateDylibsNew:(NSNumber*)pid
+{
+    //dylibs
+    NSMutableArray* dylibs = nil;
+
+    //results from 'file' cmd
+    NSString* results = nil;
+    
+    //path offset
+    NSRange pathOffset = {0};
+    
+    //dylib
+    NSString* dylib = nil;
+    
+    //alloc array for dylibs
+    dylibs = [NSMutableArray array];
+    
+    //vmmap can't directly handle 32bit procs
+    // ->so exec via 'arch -i386 vmmap <32bit pid>' ...though El Capitan doesn't have i386 version :/
+    if(YES == Is32Bit(pid.unsignedIntValue))
+    {
+        //exec 'file' to get file type
+        results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]]) encoding:NSUTF8StringEncoding];
+    }
+    //for 64bit procs
+    // ->just exec vmmap directly
+    else
+    {
+        //exec 'file' to get file type
+        results = [[NSString alloc] initWithData:execTask(VMMAP, @[@"-w", [pid stringValue]]) encoding:NSUTF8StringEncoding];
+    }
+    
+    //sanity check
+    if( (nil == results) ||
+        (0 == results.length))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //iterate over all results
+    // ->line by line, looking for '__TEXT'
+    for(NSString* line in [results componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\n"]])
+    {
+        //ignore any line that doesn't start with '__TEXT'
+        if(YES != [line hasPrefix:@"__TEXT"])
+        {
+            //skip
+            continue;
+        }
+        
+        //format of line is: __TEXT 00007fff63564000-00007fff6359b000 [  220K] r-x/rwx SM=COW  /usr/lib/dyld
+        // ->grab path, by finding: '  /'
+        pathOffset = [line rangeOfString:@"  /"];
+        
+        //sanity check
+        // ->make sure path was found
+        if(NSNotFound == pathOffset.location)
+        {
+            //not found
+            continue;
+        }
+        
+        //extract dylib's path
+        // ->trim leading whitespace
+        dylib = [[line substringFromIndex:pathOffset.location] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        
+        //sanity check
+        if(nil == dylib)
+        {
+            //skip
+            continue;
+        }
+        
+        //add to results array
+        [dylibs addObject:dylib];
+    }
+    
+    //remove dups
+    [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
+
+//bail
+bail:
+    
+    return dylibs;
+    
 }
 
 //enumerate open files
 // ->accomplish this via lsof, since proc_pidinfo() misses some files...
 -(void)enumerateFiles:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
 {
-    //task
-    NSTask* task = nil;
-    
-    //pipe
-    NSPipe* pipe = nil;
-    
     //results
     NSData* results = nil;
     
@@ -321,36 +447,14 @@ bail:
     //unique files
     NSMutableArray* files = nil;
     
-    //init task
-    task = [[NSTask alloc] init];
-    
-    //init pipe
-    pipe = [NSPipe pipe];
-    
     //init array for file paths
     filePaths = [NSMutableArray array];
     
     //init array for unqiue files
     files = [NSMutableArray array];
-    
-    //set task's stdout to pipe
-    [task setStandardOutput:pipe];
-    
-    //set task's stderr to pipe
-    [task setStandardError:pipe];
-    
-    //set launch path
-    [task setLaunchPath:LSOF];
-    
-    //set tasks's args
-    // -> -Fn -p <taskPid>
-    [task setArguments:@[@"-Fn", @"-p", taskPID.stringValue]];
-    
-    //launch
-    [task launch];
-    
-    //get results
-    results = [[[task standardOutput] fileHandleForReading] readDataToEndOfFile];
+   
+    //exec 'file' to get file type
+    results = execTask(LSOF, @[@"-Fn", @"-p", taskPID.stringValue]);
     
     //sanity check(s)
     if( (nil == results) ||
@@ -600,9 +704,7 @@ bail:
         if(SOCK_STREAM == socketInfo.psi.soi_type)
         {
             //set state
-            // ->for now, this will only be 'listening' or 'established'
             socket[KEY_SOCKET_STATE] = socketState2String(socketInfo.psi.soi_proto.pri_tcp.tcpsi_state);
-
         }
         
         //add
@@ -731,35 +833,17 @@ NSString* socketState2String(int state)
     //socket proto
     NSString* socketState = nil;
     
-    //convert to string
-    switch(state)
+    //set state
+    if(state < TCP_NSTATES)
     {
-        //listening
-        case TCPS_LISTEN:
-            
-            //set
-            socketState = SOCKET_LISTENING;
-            break;
-            
-        //established
-        case TCPS_ESTABLISHED:
-            
-            //set
-            socketState = SOCKET_ESTABLISHED;
-            break;
-            
-        default:
-            
-            //TODO: what states?
-            NSLog(@"unknown state: %d", state);
-            
-            //can't return nil
-            //TODO: hrmm
-            socketState = @"unknown";
-            
-            break;
+        //set state
+        socketState = [NSString stringWithUTF8String:socketStates[state]];
     }
-    
+    //invalid/unknown socket state
+    else
+    {
+        socketState = [NSString stringWithFormat:@"unknown state (%d)", state];
+    }
     
     return socketState;
 }

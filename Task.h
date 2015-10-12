@@ -79,13 +79,13 @@ struct dyld_image_info_32 {
 
 //enumerate all dylibs
 // ->new ones are added to 'existingDylibs' (global) dictionary
--(void)enumerateDylibs:(NSXPCConnection*)xpcConnection allDylibs:(NSMutableDictionary*)allDylibs;
+-(void)enumerateDylibs:(NSMutableDictionary*)allDylibs;
 
 //enumerate all open files
--(void)enumerateFiles:(NSXPCConnection*)xpcConnection;
+-(void)enumerateFiles;
 
 //enumerate network sockets/connections
--(void)enumerateNetworking:(NSXPCConnection*)xpcConnection;
+-(void)enumerateNetworking;
 
 //convert self to JSON string
 -(NSString*)toJSON;

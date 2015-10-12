@@ -23,7 +23,7 @@
 
 @implementation TaskEnumerator
 
-@synthesize files;
+//@synthesize files;
 @synthesize tasks;
 @synthesize dylibs;
 @synthesize binaryQueue;
@@ -55,7 +55,6 @@
 
 //enumerate all tasks
 // ->calls back into app delegate to update task (top) table when pau
-//   TODO: call every x # of seconds?
 //   TODO: existsing tasks w/ nil vtInfo, call [vtObject addItem:binary] ?
 -(void)enumerateTasks
 {
@@ -68,16 +67,13 @@
     //new tasks
     OrderedDictionary* newTasks = nil;
     
-    //xpc connection
-    NSXPCConnection* xpcConnection = nil;
+    //thread priority
+    double threadPriority = 0;
 
     //determine if network is connected
     // ->sets 'isConnected' flag
     ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
     
-    //get xpc connection
-    xpcConnection = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).xpcConnection;
-
     //get all tasks
     // ->pids and binary obj with just path/name
     newTasks = [self getAllTasks];
@@ -101,6 +97,7 @@
     // ->ensures existing task and their info are reused
     for(NSNumber* key in newTasks.allKeys)
     {
+        
         //get task
         newTask = newTasks[key];
         
@@ -123,9 +120,8 @@
         //sync
         @synchronized(self.tasks)
         {
-        
-        //add new task
-        [self.tasks setObject:newTask forKey:newTask.pid];
+            //add new task
+            [self.tasks setObject:newTask forKey:newTask.pid];
             
         }//sync
         
@@ -161,10 +157,6 @@
             continue;
         }
         
-        //nap
-        // ->helps with UI
-        [NSThread sleepForTimeInterval:0.01f];
-        
         //generate signing info
         [newTask.binary generatedSigningInfo];
         
@@ -176,20 +168,30 @@
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
 
     }//signing info for all new tasks
+
+    /*
+      begin enumeration of dylibs/files/network connections
+      ->this is for global search, as otherwise, each is re-gen'd per task on each bottom-pane click
+    */
+    
+    //get current thread priority
+    threadPriority = [NSThread threadPriority];
+    
+    //reduce thread priorty
+    [NSThread setThreadPriority:0.0f];
     
     //begin dylib enumeration
-    // ->this is really just for search/filter views since they are re-gen'd per task on each bottom-pane click
     for(NSNumber* key in newTasks)
     {
         //get task
         newTask = newTasks[key];
         
         //enumerate
-        [newTask enumerateDylibs:xpcConnection allDylibs:self.dylibs];
+        [newTask enumerateDylibs:self.dylibs];
         
         //nap
         // ->helps with UI
-        [NSThread sleepForTimeInterval:0.01f];
+        [NSThread sleepForTimeInterval:0.1f];
     }
     
     //begin file enumeration
@@ -200,11 +202,11 @@
         newTask = newTasks[key];
         
         //enumerate
-        [newTask enumerateFiles:xpcConnection];
+        [newTask enumerateFiles];
         
         //nap
         // ->helps with UI
-        [NSThread sleepForTimeInterval:0.01f];
+        [NSThread sleepForTimeInterval:0.1f];
     }
     
     //begin network enumeration
@@ -215,12 +217,15 @@
         newTask = newTasks[key];
         
         //enumerate
-        [newTask enumerateNetworking:xpcConnection];
+        [newTask enumerateNetworking];
         
         //nap
         // ->helps with UI
-        [NSThread sleepForTimeInterval:0.01f];
+        [NSThread sleepForTimeInterval:0.1f];
     }
+    
+    //reset thread priority
+    [NSThread setThreadPriority:threadPriority];
     
     return;
 }
@@ -267,7 +272,7 @@
     if(status < 0)
     {
         //err
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: proc_listpids() failed with %d", status);
+        //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: proc_listpids() failed with %d", status);
         
         //bail
         goto bail;
@@ -437,14 +442,6 @@ bail:
     // ->the dead task or its dylibs might have been flagged
     [self updateFlaggedItems:deadTask];
     
-    //(re)set label for flagged items to black
-    // when there are no flagged items
-    if(0 == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems.count)
-    {
-        //set to gray
-        ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedLabel.textColor = [NSColor lightGrayColor];
-    }
-    
     //get launchd's task
     // ->its 'pid' is 0x1
     launchdTask = self.tasks[@1];
@@ -470,8 +467,19 @@ bail:
         }
     }
     
-    //remove dead task task
-    [self.tasks removeObjectForKey:deadTask.pid];
+    //sync to remove from all tasks
+    @synchronized(self.tasks)
+    {
+        //remove dead task task
+        [self.tasks removeObjectForKey:deadTask.pid];
+    }
+    
+    //sync to remove from all executables
+    @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables)
+    {
+        //remove dead executables
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables removeObjectForKey:deadTask.binary.path];
+    }
     
     //get parent
     parent = [self.tasks objectForKey:deadTask.ppid];
@@ -556,6 +564,17 @@ bail:
         }
     }
     
+    //when there are no flagged items
+    // ->(re)set flagged icon to black
+    if(0 == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems.count)
+    {
+        //set main image
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedButton setImage:[NSImage imageNamed:@"flagged"]];
+        
+        //set alternate image
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedButton setAlternateImage:[NSImage imageNamed:@"flaggedBG"]];
+    }
+
     return;
 }
 
@@ -671,7 +690,6 @@ bail:
     }
     
     //sync
-    //TODO: B4 RELEASE, sync files/dylibs/connections
     @synchronized(self.tasks)
     {
         //iterate over all tasks
@@ -683,59 +701,74 @@ bail:
             //dylib check
             if(YES == isDylib)
             {
-                //check if dylib is loaded in task
-                for(Binary* taskDylib in task.dylibs)
+                //sync
+                @synchronized(task.dylibs)
                 {
-                    //check for task has dylib
-                    if(taskDylib == (Binary*)item)
+                    //check if dylib is loaded in task
+                    for(Binary* taskDylib in task.dylibs)
                     {
-                        //save
-                        [hostTasks addObject:task];
-                        
-                        //can bail, since match was found
-                        break;
+                        //check for task has dylib
+                        if(taskDylib == (Binary*)item)
+                        {
+                            //save
+                            [hostTasks addObject:task];
+                            
+                            //can bail, since match was found
+                            break;
+                        }
                     }
-                }
-            }//dylib check
+                    
+                }//sync
+                
+            }//dylibs
             
             //file check
             else if(YES == isFile)
             {
-                //check if file is loaded in task
-                for(File* taskFile in task.files)
+                //sync
+                @synchronized(task.files)
                 {
-                    //check for task has dylib
-                    if(taskFile == (File*)item)
+                    //check if file is loaded in task
+                    for(File* taskFile in task.files)
                     {
-                        //save
-                        [hostTasks addObject:task];
-                        
-                        //can bail, since match was found
-                        break;
+                        //check for task has file
+                        if(taskFile == (File*)item)
+                        {
+                            //save
+                            [hostTasks addObject:task];
+                            
+                            //can bail, since match was found
+                            break;
+                        }
                     }
-                }
+                }//sync
                 
-            }//file check
+            }//files
             
             //connection check
             else if(YES == isConnection)
             {
-                //check if connection is 'in' task
-                for(Connection* taskConnection in task.connections)
+                //sync
+                @synchronized(task.connections)
                 {
-                    //check for task has connection
-                    // note: ->check via endpoints, as that a good representation of connection(?)
-                    if(YES == [taskConnection.endpoints isEqualToString: ((Connection*)item).endpoints])
+                    //check if connection is 'in' task
+                    for(Connection* taskConnection in task.connections)
                     {
-                        //save
-                        [hostTasks addObject:task];
-                        
-                        //can bail, since match was found
-                        break;
+                        //check for task has connection
+                        // note: ->check via endpoints, as that a good representation of connection(?)
+                        if(YES == [taskConnection.endpoints isEqualToString: ((Connection*)item).endpoints])
+                        {
+                            //save
+                            [hostTasks addObject:task];
+                            
+                            //can bail, since match was found
+                            break;
+                        }
                     }
-                }
-            }
-        
+                }//sync
+            
+            }//connections
+    
         }//all tasks
         
     }//sync

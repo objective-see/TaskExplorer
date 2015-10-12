@@ -137,7 +137,7 @@
         }
         
         //set args
-        [self.arguments setStringValue:[self valueForStringItem:[task.arguments componentsJoinedByString:@""] default:@"no arguments"]];
+        [self.arguments setStringValue:[self valueForStringItem:[task.arguments componentsJoinedByString:@""] default:@"no arguments/unknown"]];
          
         //set path
         [self.path setStringValue:[self valueForStringItem:task.binary.path default:@"unknown"]];

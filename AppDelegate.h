@@ -143,9 +143,6 @@
 //flagged items button
 @property (weak) IBOutlet NSButton *flaggedButton;
 
-//flagged items label
-@property (weak) IBOutlet NSTextField *flaggedLabel;
-
 //top constraint
 @property(nonatomic, retain)NSLayoutConstraint* topConstraint;
 
@@ -157,9 +154,6 @@
 
 //top constraint
 @property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
-
-//remote XPC interface
-@property(nonatomic, retain)NSXPCConnection* xpcConnection;
 
 //flagged items
 @property(nonatomic, retain)NSMutableArray* flaggedItems;
@@ -181,9 +175,6 @@
 //complete a few inits
 // ->then invoke helper method to start enum'ing task (in bg thread)
 -(void)go;
-
-//init (setup) XPC connection
--(BOOL)initXPC;
 
 //switch between flat/tree view
 -(IBAction)switchView:(id)sender;

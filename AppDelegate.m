@@ -17,31 +17,8 @@
 #import "Task.h"
 
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
-//TODO: add 'am i on main thread' guard and test
-
-
 //TODO: autolayout vertically
-//TODO: filter VT results - HUH?
-//TODO: # autocomplete - DONE
-
-//TODO: keyboard shortcuts - DONE!
-//      see: https://mail.google.com/mail/u/0/#inbox/14eeb163d4dd2852
 //TODO: show 'from where' via quarantine attrz
-//TODO: show user (after pid): -> (pid, user)?
-
-//TODO: syncronize filtered tasks - DONE!
-
-//TODO: add files/dylibs/connections to save - DONE!
-//TODO: sync while saving
-
-//TODO: JavaW (iWorm) dylibs...
-
-//TODO: remove task, remove from taskEnum's global list for executables, and dylibs, etc
-//TODO: also refresh!....
-
-//TODO: search include network (and improved filtering to include state/proto/type) - DONE!
-
-//TODO: check all searches that use NSNotFound also check for nil - DONE
 
 @implementation AppDelegate
 
@@ -59,7 +36,6 @@
 @synthesize viewSelector;
 @synthesize scannerThread;
 @synthesize virusTotalObj;
-@synthesize xpcConnection;
 @synthesize taskEnumerator;
 @synthesize taskViewFormat;
 @synthesize commandHandling;
@@ -97,9 +73,7 @@
 {
     //first thing...
     // ->install exception handlers!
-    
-    //TODO: CHANGE B4 RELEASE!!
-    //installExceptionHandlers();
+    installExceptionHandlers();
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -339,13 +313,6 @@ bail:
 // ->then invoke helper method to start enum'ing task (in bg thread)
 -(void)go
 {
-    //init XPC
-    if(YES != [self initXPC])
-    {
-        //bail
-        goto bail;
-    }
-    
     //init mouse-over areas
     [self initTrackingAreas];
     
@@ -356,68 +323,6 @@ bail:
 bail:
     
     return;
-}
-
-
-//init (setup) XPC connection
--(BOOL)initXPC
-{
-    //status
-    BOOL initialized = NO;
-    
-    //alloc XPC connection
-    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
-    
-    //sanity check
-    if(nil == self.xpcConnection)
-    {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to find/initialize XPC service");
-        
-        //bail
-        goto bail;
-    }
-    
-    //set remote object interface
-    self.xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
-    
-    //set classes
-    // ->arrays & strings are what is ok to vend
-    [self.xpcConnection.remoteObjectInterface
-     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
-     forSelector: @selector(enumerateDylibs:withReply:)
-     argumentIndex: 0  // the first parameter
-     ofReply: YES // in the method itself.
-     ];
-    
-    //set classes
-    // ->arrays & strings are what is ok to vend
-    [self.xpcConnection.remoteObjectInterface
-     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
-     forSelector: @selector(enumerateFiles:withReply:)
-     argumentIndex: 0  // the first parameter
-     ofReply: YES // in the method itself.
-     ];
-    
-    //set classes
-    // ->arrays & strings are what is ok to vend
-    [self.xpcConnection.remoteObjectInterface
-     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], [NSNumber class], nil]
-     forSelector: @selector(enumerateNetwork:withReply:)
-     argumentIndex: 0  // the first parameter
-     ofReply: YES // in the method itself.
-     ];
-    
-    //resume
-    [self.xpcConnection resume];
-    
-    //happy
-    initialized = YES;
-    
-//bail
-bail:
-    
-    return initialized;
 }
 
 
@@ -766,7 +671,7 @@ bail:
     {
         //reload
         // ->in main UI thread
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_sync(dispatch_get_main_queue(), ^{
             
             //set not found label
             self.noItemsLabel.stringValue = noItemsMsg;
@@ -1137,10 +1042,22 @@ bail:
         }
         
         //set original flagged items image
+        // ->but also handle case where there are still flagged items
         else if(FLAGGED_BUTTON_TAG == tag)
         {
-            //set
-            imageName = @"flagged";
+            //when no flagged items
+            if(0 == self.flaggedItems.count)
+            {
+                //set
+                imageName = @"flagged";
+            }
+            //flagged items
+            else
+            {
+                //set
+                imageName = @"flaggedRed";
+            }
+
         }
     }
     //highlight button
@@ -1172,10 +1089,21 @@ bail:
         }
         
         //set mouse over flagged items image
+        // ->also handles case where flagged items are present
         else if(FLAGGED_BUTTON_TAG == tag)
         {
-            //set
-            imageName = @"flaggedOver";
+            //when no flagged items
+            if(0 == self.flaggedItems.count)
+            {
+                //set
+                imageName = @"flaggedOver";
+            }
+            //flagged items
+            else
+            {
+                //set
+                imageName = @"flaggedRedOver";
+            }
         }
     }
     
@@ -1541,7 +1469,7 @@ bail:
             
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateDylibs:self.xpcConnection allDylibs:self.taskEnumerator.dylibs];
+            [self.currentTask enumerateDylibs:self.taskEnumerator.dylibs];
             
             break;
             
@@ -1556,7 +1484,7 @@ bail:
             
             //(re)enumerate files via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateFiles:self.xpcConnection];
+            [self.currentTask enumerateFiles];
 
             break;
             
@@ -1568,7 +1496,7 @@ bail:
             
             //(re)enumerate network connections via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateNetworking:self.xpcConnection];
+            [self.currentTask enumerateNetworking];
             
             break;
             
@@ -1797,7 +1725,7 @@ bail:
     return;
 }
 
-//action for 'refresh' button / cmd+r hotkey
+//action for 'refresh' button/cmd+r hotkey
 // ->query OS to refresh/reload all tasks
 -(IBAction)refreshTasks:(id)sender
 {
@@ -1813,10 +1741,8 @@ bail:
     //sync
     @synchronized(self.taskTableController.filteredItems)
     {
-    
-    //remove all filtered items
-    [self.taskTableController.filteredItems removeAllObjects];
-    
+        //remove all filtered items
+        [self.taskTableController.filteredItems removeAllObjects];
     }
     
     //reset filter box
@@ -1827,10 +1753,6 @@ bail:
     
     //scroll to top
     [self.taskTableController scrollToTop];
-    
-    //reload
-    // ->ensure that top row/task is correctly selected
-    //[self.taskTableController.itemView reloadData];
 
     //select top row
     [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -1900,7 +1822,6 @@ bail:
     return;
 }
 
-//TODO: handle reset on refresh?
 //save a flagged item
 // ->also set text flagged items button label to red
 -(void)saveFlaggedBinary:(Binary*)binary
@@ -1921,11 +1842,15 @@ bail:
     }
     
     //when count is 1
-    // ->means first flagged file so set text to red
+    // ->means first flagged file so set image to red
     if(1 == self.flaggedItems.count)
     {
-        //set to red
-        self.flaggedLabel.textColor = [NSColor redColor];
+        //set main image
+        [self.flaggedButton setImage:[NSImage imageNamed:@"flaggedRed"]];
+        
+        //set alternate image
+        [self.flaggedButton setAlternateImage:[NSImage imageNamed:@"flaggedRedBG"]];
+    
     }
     
 //bail
@@ -1946,7 +1871,7 @@ bail:
     if(0 == self.flaggedItems.count)
     {
         //alloc/init alert
-        alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"No items flagged by VirusTotal"] defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"horray! 😇"];
+        alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"No items flagged by VirusTotal"] defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"hooray! 😇"];
         
         //and show it
         [alert runModal];

@@ -397,8 +397,6 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     //set code signing icon
     ((NSImageView*)[taskCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(task.binary);
     
-    //TODO: red for flagged?
-    
     //default
     // ->(re)set main textfield's color to black
     taskCell.textField.textColor = [NSColor blackColor];
@@ -563,7 +561,6 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
     //item cell
     NSTableCellView* connectionCell = nil;
     
-    //TODO: don't need this to be mutable str?
     //connection details
     NSMutableString* details = nil;
     
@@ -636,10 +633,7 @@ void configVTButton(NSTableCellView *itemCell, id owner, Binary* binary)
 
     //grab virus total button
     vtButton = [itemCell viewWithTag:TABLE_ROW_VT_BUTTON];
-    
-    
-    //[itemCell viewWithTag:TABLE_ROW_VT_BUTTON];
-    
+   
     //configure/show VT info
     // ->only if 'disable' preference not set
     //if(YES != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).prefsWindowController.disableVTQueries)

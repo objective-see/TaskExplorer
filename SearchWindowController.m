@@ -7,9 +7,6 @@
 //
 
 
-//TODO: mouse over for info/show in finder buttons!
-
-
 #import "AppDelegate.h"
 #import "SearchWindowController.h"
 #import "ItemView.h"
@@ -107,9 +104,6 @@
             
         });
     }
-    
-    //TODO:
-    //else, hide text!!!
     
     return;
 }
@@ -218,7 +212,8 @@
         });
     }
     
-    //update UI on main thread
+    //timeout hit
+    // ->update UI on main thread
     dispatch_async(dispatch_get_main_queue(), ^{
         
         //hide overlay
@@ -484,8 +479,6 @@ bail:
 }
 
 //search
-//TODO: SYNC DYLIBS etc
-//TODO: search network conns
 -(void)search
 {
     //search string
@@ -553,14 +546,8 @@ bail:
     }
 
     //1st: search for all matching tasks
-    //sync
-    @synchronized(allTasks)
-    {
-        
     //search for all matching tasks
     [self.filterObj filterTasks:searchString items:allTasks results:matchingTasks];
-    
-    }//sync
     
     //add all tasks
     [self.searchResults addObjectsFromArray:matchingTasks];
@@ -572,40 +559,38 @@ bail:
     //sync
     @synchronized(allTasks)
     {
-        
-    //reset
-    [matchingItems removeAllObjects];
-        
-    //TODO: B4 RELEASE! SYNC DYLIBS ARRAY!!!
-    //walk all tasks
-    // ->scan each for dylib matches, only processing first match
-    for(NSNumber* taskPid in allTasks)
-    {
-        //extract task
-        task = allTasks[taskPid];
-        
-        //filter
-        [self.filterObj filterFiles:searchString items:task.dylibs results:matchingItems];
-        
-        //process all matching dylibs
-        // ->but first check if processed due to matching in another task already
-        for(Binary* dylib in matchingItems)
+        //reset
+        [matchingItems removeAllObjects];
+            
+        //walk all tasks
+        // ->scan each for dylib matches, only processing first match
+        for(NSNumber* taskPid in allTasks)
         {
-            //ignore if already seen/processed
-            if(nil != matchingDylibs[dylib.path])
+            //extract task
+            task = allTasks[taskPid];
+            
+            //filter
+            [self.filterObj filterFiles:searchString items:task.dylibs results:matchingItems];
+            
+            //process all matching dylibs
+            // ->but first check if processed due to matching in another task already
+            for(Binary* dylib in matchingItems)
             {
-                //skip
-                continue;
+                //ignore if already seen/processed
+                if(nil != matchingDylibs[dylib.path])
+                {
+                    //skip
+                    continue;
+                }
+                
+                //process
+                [self.searchResults addObject:dylib];
+                
+                //save
+                matchingDylibs[dylib.path] = dylib;
             }
             
-            //process
-            [self.searchResults addObject:dylib];
-            
-            //save
-            matchingDylibs[dylib.path] = dylib;
-        }
-
-    }//all tasks
+        }//all tasks
         
     }//sync
         
@@ -625,10 +610,10 @@ bail:
         {
             //extract task
             task = allTasks[taskPid];
-            
+           
             //filter
             [self.filterObj filterFiles:searchString items:task.files results:matchingItems];
-            
+                
             //process all matching dylibs
             // ->but first check if processed due to matching in another task already
             for(File* file in matchingItems)
@@ -656,7 +641,6 @@ bail:
     
     //4th: search for all matching network comms
     //sync
-    //TODO: sync network connections
     @synchronized(allTasks)
     {
         //reset
@@ -822,7 +806,7 @@ bail:
     
     //open Finder
     // ->will reveal binary
-    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:nil];
+    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
     
 //bail
 bail:

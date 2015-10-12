@@ -9,6 +9,9 @@
 #ifndef DHS_Utilities_h
 #define DHS_Utilities_h
 
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+
 
 //get the signing info of a file
 NSDictionary* extractSigningInfo(NSString* path);
@@ -73,5 +76,8 @@ BOOL isNetworkConnected();
 
 //set or unset button's highlight
 void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset);
+
+//check	if remote process is i386
+BOOL Is32Bit(pid_t targetPID);
 
 #endif

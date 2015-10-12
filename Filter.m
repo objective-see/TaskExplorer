@@ -92,6 +92,10 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     // ->note: already checked its a full/matching keyword
     isKeyword = [filterText hasPrefix:@"#"];
     
+    //sync
+    @synchronized(items)
+    {
+
     //iterate over all tasks
     for(NSNumber* taskKey in items)
     {
@@ -146,9 +150,10 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 
     }//all tasks
     
+    }//sync
+        
     return;
 }
-
 
 //filter dylibs and files
 // ->name and path
@@ -163,6 +168,10 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //set keyword flag
     // ->note: already checked its a full/matching keyword
     isKeyword = [filterText hasPrefix:@"#"];
+    
+    //sync
+    @synchronized(items)
+    {
     
     //iterate over all tasks
     for(ItemBase* item in items)
@@ -206,6 +215,9 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         }
         
     }//all items
+        
+    //sync
+    }
     
     return;
 }
@@ -216,87 +228,92 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //first reset filter'd items
     [results removeAllObjects];
     
-    //iterate over all tasks
-    for(Connection* item in items)
+    //sync
+    @synchronized(items)
     {
-        //check local ip
-        if( (nil != item.localIPAddr) &&
-            (NSNotFound != [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+        //iterate over all tasks
+        for(Connection* item in items)
         {
-            //save match
-            [results addObject:item];
+            //check local ip
+            if( (nil != item.localIPAddr) &&
+                (NSNotFound != [item.localIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check local port
-        if( (nil != item.localIPAddr) &&
-            (NSNotFound != [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check local port
+            if( (nil != item.localIPAddr) &&
+                (NSNotFound != [[NSString stringWithFormat:@"%d", [item.localPort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check remote ip
-        if( (nil != item.remoteIPAddr) &&
-            (NSNotFound != [item.remoteIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check remote ip
+            if( (nil != item.remoteIPAddr) &&
+                (NSNotFound != [item.remoteIPAddr rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check remote port
-        if( (nil != item.remoteIPAddr) &&
-            (NSNotFound != [[NSString stringWithFormat:@"%d", [item.remotePort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check remote port
+            if( (nil != item.remoteIPAddr) &&
+                (NSNotFound != [[NSString stringWithFormat:@"%d", [item.remotePort unsignedShortValue]] rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check family
-        if( (nil != item.family) &&
-            (NSNotFound != [item.family rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check family
+            if( (nil != item.family) &&
+                (NSNotFound != [item.family rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check protocol
-        if( (nil != item.proto) &&
-            (NSNotFound != [item.proto rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check protocol
+            if( (nil != item.proto) &&
+                (NSNotFound != [item.proto rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-        //check state
-        if( (nil != item.state) &&
-            (NSNotFound != [item.state rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
-        {
-            //save match
-            [results addObject:item];
+            //check state
+            if( (nil != item.state) &&
+                (NSNotFound != [item.state rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
             
-            //next
-            continue;
-        }
-        
-    }//all connections
+        }//all connections
+    
+    }//sync
     
     return;
 }

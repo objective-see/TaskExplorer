@@ -35,11 +35,14 @@
 //OS version x
 #define OS_MAJOR_VERSION_X 10
 
-//OS version lion
+//OS minor version lion
 #define OS_MINOR_VERSION_LION 8
 
-//OS version yosemite
+//OS minor version yosemite
 #define OS_MINOR_VERSION_YOSEMITE 10
+
+//OS minor version el capitan
+#define OS_MINOR_VERSION_EL_CAPITAN 11
 
 
 //executable path
@@ -53,6 +56,15 @@
 
 //path to LSOF
 #define LSOF @"/usr/sbin/lsof"
+
+//path to vmmap
+#define VMMAP @"/usr/bin/vmmap"
+
+//path to arch
+#define ARCH @"/usr/bin/arch"
+
+//path to file
+#define FILE @"/usr/bin/file"
 
 //hash key, SHA1
 #define KEY_HASH_SHA1 @"sha1"
@@ -289,12 +301,6 @@
 //socket protocol
 #define KEY_SOCKET_PROTO @"socketProto"
 
-//listening socket
-#define SOCKET_LISTENING @"listening"
-
-//connected socket
-#define SOCKET_ESTABLISHED @"connected"
-
 //sort by pid
 #define SORT_BY_PID 0x0
 
@@ -304,9 +310,8 @@
 //delta for pid tag
 #define PID_TAG_DELTA 1000
 
-//TODO: CHANGE B4 RELEASE
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 10
+#define SEARCH_WAIT_TIME 30
 
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (intial) task/dylib/file enumeration please wait"

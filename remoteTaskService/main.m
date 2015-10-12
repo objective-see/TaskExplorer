@@ -41,7 +41,7 @@ OSStatus SecTaskValidateForRequirement(SecTaskRef task, CFStringRef requirement)
 
 //TODO: CHANGE B4 RELEASE!!
 //-> for testing: @"Mac Developer: patrick wardle (5SKKU32KLJ)"
-#define SIGNING_AUTH @"Mac Developer: patrick wardle (5SKKU32KLJ)"//@"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
+#define SIGNING_AUTH @"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
 
 //skeleton interface
 @interface ServiceDelegate : NSObject <NSXPCListenerDelegate>
@@ -105,6 +105,10 @@ bail:
 
 int main(int argc, const char *argv[])
 {
+    //make really r00t
+    // ->needed for exec'ing vmmap
+    setuid(0);
+    
     //create the delegate for the service.
     ServiceDelegate *delegate = [ServiceDelegate new];
     

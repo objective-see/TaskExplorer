@@ -26,7 +26,7 @@
 @property(nonatomic, retain)NSMutableDictionary* executables;
 
 //all (opened) files
-@property(nonatomic, retain)NSMutableDictionary* files;
+//@property(nonatomic, retain)NSMutableDictionary* files;
 
 //all dylibs
 @property(nonatomic, retain)NSMutableDictionary* dylibs;

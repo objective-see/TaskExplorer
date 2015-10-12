@@ -26,6 +26,7 @@
 #import <libproc.h>
 #import <arpa/inet.h>
 #import <netinet/tcp_fsm.h>
+#import <syslog.h>
 
 
 @implementation Task
@@ -305,8 +306,11 @@ bail:
 
 //enumerate all dylibs
 // ->new ones are added to 'existingDylibs' (global) dictionary
--(void)enumerateDylibs:(NSXPCConnection*)xpcConnection allDylibs:(NSMutableDictionary*)allDylibs
+-(void)enumerateDylibs:(NSMutableDictionary*)allDylibs
 {
+    //xpc connection
+    __block NSXPCConnection* xpcConnection = nil;
+    
     //dylib instance (as Binary) obj
     __block Binary* dylib = nil;
     
@@ -317,9 +321,33 @@ bail:
     //alloc array for new dylibs
     newDylibs = [NSMutableArray array];
     
+    //alloc XPC connection
+    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
+
+    //set remote object interface
+    xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
+     forSelector: @selector(enumerateDylibs:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //resume
+    [xpcConnection resume];
+    
     //invoke XPC service (running as r00t)
     // ->will enumerate dylibs, then invoke reply block to save into iVar
     [[xpcConnection remoteObjectProxy] enumerateDylibs:self.pid withReply:^(NSMutableArray* dylibPaths) {
+        
+        //close connection
+        [xpcConnection invalidate];
+        
+        //nil out
+        xpcConnection = nil;
         
         //sync
         @synchronized(self.dylibs)
@@ -425,23 +453,50 @@ bail:
 }
 
 //enumerate all file descriptors
--(void)enumerateFiles:(NSXPCConnection*)xpcConnection
+-(void)enumerateFiles
 {
+    //xpc connection
+    __block NSXPCConnection* xpcConnection = nil;
+    
     //File object
     __block File* file = nil;
     
     //new files
-    NSMutableArray* newFiles = nil;
+    //NSMutableArray* newFiles = nil;
     
     //file path
     __block NSString* filePath = nil;
     
     //alloc array for new files
-    newFiles = [NSMutableArray array];
+    //newFiles = [NSMutableArray array];
+    
+    //alloc XPC connection
+    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
+    
+    //set remote object interface
+    xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
+     forSelector: @selector(enumerateFiles:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //resume
+    [xpcConnection resume];
     
     //invoke XPC service (running as r00t)
     // ->will enumerate files, then invoke reply block so can save into iVar
     [[xpcConnection remoteObjectProxy] enumerateFiles:self.pid withReply:^(NSMutableArray* fileDescriptors) {
+        
+        //close connection
+        [xpcConnection invalidate];
+        
+        //nil out
+        xpcConnection = nil;
         
         //sync
         @synchronized(self.files)
@@ -474,13 +529,14 @@ bail:
                 [self.files addObject:file];
             }
             
+            /*
             //save new files
-            // ->will be processed below
             if(nil == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files objectForKey:filePath])
             {
                 //save as new
                 [newFiles addObject:file];
             }
+            */
         }
         
         //sort by name
@@ -496,13 +552,11 @@ bail:
             
         }//sync
         
+        /* ...don't need to process as search is done via task iteration
         //process all new files
         // ->determine type, etc & save into global list
         for(File* newFile in newFiles)
         {
-            //generate detailed info
-            [newFile generateDetailedInfo];
-            
             //sync
             @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files)
             {
@@ -510,20 +564,48 @@ bail:
                 [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files setObject:newFile forKey:filePath];
             }
         }
+        */
     }];
     
    return;
 }
 
 //enumerate network sockets/connections
--(void)enumerateNetworking:(NSXPCConnection*)xpcConnection
+-(void)enumerateNetworking
 {
-    //File object
+    //xpc connection
+    __block NSXPCConnection* xpcConnection = nil;
+    
+    //Connection object
     __block Connection* connection = nil;
+    
+    //alloc XPC connection
+    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
+    
+    //set remote object interface
+    xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [xpcConnection.remoteObjectInterface
+     setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], [NSNumber class], nil]
+     forSelector: @selector(enumerateNetwork:withReply:)
+     argumentIndex: 0  // the first parameter
+     ofReply: YES // in the method itself.
+     ];
+    
+    //resume
+    [xpcConnection resume];
     
     //invoke XPC service (running as r00t)
     // ->will enumerate network sockets/connections, then invoke reply block so can save into iVar
     [[xpcConnection remoteObjectProxy] enumerateNetwork:self.pid withReply:^(NSMutableArray* networkItems) {
+        
+        //close connection
+        [xpcConnection invalidate];
+        
+        //nil out
+        xpcConnection = nil;
     
         //sync
         @synchronized(self.connections)
@@ -615,7 +697,7 @@ bail:
        (0 == taskCommandLine.length))
     {
         //default
-        taskCommandLine = @"no arguments";
+        taskCommandLine = @"no arguments/unknown";
     }
     
     //init file hash to default string
@@ -676,7 +758,6 @@ bail:
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.binary.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
     //sync
-    //TODO: make sure this is sync'd elsewhere
     @synchronized(self.dylibs)
     {
         //convert all dylibs and add
@@ -695,7 +776,6 @@ bail:
     }
     
     //sync
-    //TODO: make sure this is sync'd elsewhere
     @synchronized(self.files)
     {
         //convert all file and add
@@ -714,7 +794,6 @@ bail:
     }
     
     //sync
-    //TODO: make sure this is sync'd elsewhere
     @synchronized(self.connections)
     {
         //convert all dylibs and add
