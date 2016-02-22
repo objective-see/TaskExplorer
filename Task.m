@@ -6,13 +6,13 @@
 //  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
+#import "File.h"
 #import "Task.h"
 #import "Consts.h"
 #import "Utilities.h"
-#import "File.h"
 #import "Connection.h"
-#import "remoteTaskService.h"
 #import "AppDelegate.h"
+#import "remoteTaskService.h"
 
 #import <mach-o/dyld_images.h>
 #import <mach/mach_init.h>
@@ -434,8 +434,19 @@ bail:
         for(Binary* newDylib in newDylibs)
         {
             //generate signing info
+            // ->do this before macho parsing!
             [newDylib generatedSigningInfo];
             
+            //parse
+            if(YES == [newDylib parse])
+            {
+                //save encrypted flag
+                newDylib.isEncrypted = [newDylib.parser.binaryInfo[KEY_IS_ENCRYPTED] boolValue];
+                
+                //save packed flag
+                newDylib.isPacked = [newDylib.parser.binaryInfo[KEY_IS_PACKED] boolValue];
+            }
+        
             //no need to reload if task is now longer current/selected
             if(((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask != self)
             {

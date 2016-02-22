@@ -18,7 +18,9 @@
 
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: autolayout vertically
-//TODO: show 'from where' via quarantine attrz
+//TODO: show 'from where' via quarantine attrz or database!! (simon email)
+//TODO: detect as procs die via GCD (simon blog post)
+
 
 @implementation AppDelegate
 

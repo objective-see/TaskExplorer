@@ -153,58 +153,6 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     //item cell
     NSTableCellView* loadedItemCell = nil;
     
-    //matching or host tasks
-    NSMutableArray* tasks = nil;
-    
-    //pid or 'loaded in' string
-    NSMutableString* loadedIn = nil;
-    
-    //task's name frame
-    CGRect nameFrame = {0};
-  
-    //get host tasks
-    // ->works with dylibs or files
-    tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
-    
-    //add dylib indicator
-    //-> '(dylib, loaded in: ... '
-    if(YES == [item isKindOfClass:[Binary class]])
-    {
-        //init
-        loadedIn = [NSMutableString stringWithFormat:@"(dylib, loaded in:"];
-    }
-    //add file indicator
-    //-> '(file, loaded in: ... '
-    else if(YES == [item isKindOfClass:[File class]])
-    {
-        //init
-        loadedIn = [NSMutableString stringWithFormat:@"(file, loaded in:"];
-    }
-    //add connection indicator
-    //-> '(connection, in: ... '
-    else if(YES == [item isKindOfClass:[Connection class]])
-    {
-        //init
-        loadedIn = [NSMutableString stringWithFormat:@"(connection, in:"];
-    }
-    
-    //add all tasks
-    for(Task* task in tasks)
-    {
-        //append name
-        [loadedIn appendFormat:@" %@,", task.binary.name];
-    }
-        
-    //remove last ','
-    if(YES == [loadedIn hasSuffix:@","])
-    {
-        //remove
-        [loadedIn deleteCharactersInRange:NSMakeRange([loadedIn length]-1, 1)];
-    }
-    
-    //terminate list/output
-    [loadedIn appendString:@")"];
-    
     //dylibs
     // ->create cell
     if(YES == [item isKindOfClass:[Binary class]])
@@ -268,39 +216,9 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     //default
     // ->(re)set main textfield's color to black
     loadedItemCell.textField.textColor = [NSColor blackColor];
-    
-    //dylibs/files
-    // ->main text is name
-    if( (YES == [item isKindOfClass:[Binary class]]) ||
-        (YES == [item isKindOfClass:[File class]]) )
-    {
-        //set name
-        [loadedItemCell.textField setStringValue:[item name]];
-    }
-    //connections
-    // ->main text is endpoints string
-    else
-    {
-        //set endpoints string
-        [loadedItemCell.textField setStringValue:[item endpoints]];
-    }
-    
-    //get name frame
-    nameFrame = loadedItemCell.textField.frame;
-    
-    //adjust width to fit text
-    nameFrame.size.width = [loadedItemCell.textField.stringValue sizeWithAttributes: @{NSFontAttributeName: loadedItemCell.textField.font}].width + 5;
-    
-    //disable autolayout for name
-    loadedItemCell.textField.translatesAutoresizingMaskIntoConstraints = YES;
-    
-    //update name frame
-    // ->should now be exact size of text
-    loadedItemCell.textField.frame = nameFrame;
-    
-    //set host task(s) string
-    // ->immediately follows name
-    [((NSTextField*)[loadedItemCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:loadedIn];
+
+    //set main text
+    loadedItemCell.textField.attributedStringValue = initLoadedInString(item);
     
     //dylibs/files
     // ->subtext is path
@@ -346,17 +264,225 @@ bail:
     return loadedItemCell;
 }
 
+//build binary string for main window
+// ->format: binary name (pid: <xxx> [encrypted|packed])
+NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
+{
+    //string for pid
+    NSMutableAttributedString* taskString = nil;
+    
+    //string attributes
+    NSDictionary* attributes = nil;
+    
+    //binary
+    Binary* binary = nil;
+    
+    //init task string
+    taskString = [[NSMutableAttributedString alloc] initWithString:@""];
+    
+    //grab binary from task
+    if(YES == [item isKindOfClass:[Task class]])
+    {
+        //grab
+        binary = ((Task*)item).binary;
+    }
+    //dylib
+    // ->just assign
+    else
+    {
+        //assign
+        binary = (Binary*)item;
+    }
+    
+    //add name
+    [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:binary.name]];
+    
+    //init color for pid
+    // ->light gray
+    attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+    
+    //search window
+    // ->only for tasks, since dylibs in search window are handled elsewhere ('loaded in')
+    if( (YES == isSearchWindow) &&
+        (YES == [item isKindOfClass:[Task class]]) )
+    {
+        //add pid
+        [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" (task: %@", ((Task*)item).pid] attributes:attributes]];
+    }
+    //normal window
+    // ->add encrypted/packed info...
+    else
+    {
+        //task
+        // ->add task's pid
+        if(YES == [item isKindOfClass:[Task class]])
+        {
+            //add pid
+            [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" (pid: %@", ((Task*)item).pid] attributes:attributes]];
+        }
+        
+        //added encrypted or packed
+        if( (YES == binary.isEncrypted) ||
+            (YES == binary.isPacked) )
+        {
+            //init color for comma, etc
+            // ->light gray
+            attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+            
+            //tasks
+            //add comma string
+            if(YES == [item isKindOfClass:[Task class]])
+            {
+                //close
+                [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@", " attributes:attributes]];
+            }
+            //dylibs
+            // ->open parents
+            else
+            {
+                //open
+                [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@" (" attributes:attributes]];
+            }
+            
+            //init color
+            // ->red
+            attributes  = [NSDictionary dictionaryWithObject:[NSColor redColor] forKey:NSForegroundColorAttributeName];
+            
+            //add 'encrypted'
+            if(YES == binary.isEncrypted)
+            {
+                //add
+                [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"encrypted" attributes:attributes]];
+            }
+            //add 'packed'
+            // ->can't be both...and encryption takes precedence 
+            else
+            {
+                //add
+                [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"packed" attributes:attributes]];
+            }
+            
+            //dylib, need to close string here
+            // ->normally it doesn't have anything after...
+            if(YES != [item isKindOfClass:[Task class]])
+            {
+                //init color for closing
+                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                
+                //close string
+                [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
+            }
+            
+        }//encrypted or packed
+    }
+    
+    //task
+    // ->close string
+    if(YES == [item isKindOfClass:[Task class]])
+    {
+        //init color for closing
+        // ->light gray
+        attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+        
+        //close string
+        [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
+    }
+       
+    return taskString;
+}
+
+//build item + 'loaded in...' string for dylibs, files, etc in search window
+NSAttributedString* initLoadedInString(id item)
+{
+    //string for pid
+    NSMutableAttributedString* taskString = nil;
+    
+    //string attributes
+    NSDictionary* attributes = nil;
+    
+    //pid or 'loaded in' string
+    NSMutableString* loadedIn = nil;
+    
+    //matching or host tasks
+    NSMutableArray* tasks = nil;
+    
+    //init task string
+    taskString = [[NSMutableAttributedString alloc] initWithString:@""];
+    
+    //get host tasks
+    // ->works with dylibs or files
+    tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
+    
+    //dylibs/files
+    // ->add name
+    if( (YES == [item isKindOfClass:[Binary class]]) ||
+        (YES == [item isKindOfClass:[File class]]) )
+    {
+        //add name
+        [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[item name]]];
+    }
+    //connections
+    // ->add endpoints
+    else
+    {
+        //set endpoints string
+        [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[item endpoints]]];
+    }
+
+    //init color for 'loaded in...'
+    // ->light gray
+    attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+    
+    //add dylib indicator
+    //-> '(dylib, loaded in: ... '
+    if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@" (dylib, loaded in:"];
+    }
+    //add file indicator
+    //-> '(file, loaded in: ... '
+    else if(YES == [item isKindOfClass:[File class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@" (file, loaded in:"];
+    }
+    //add connection indicator
+    //-> '(connection, in: ... '
+    else if(YES == [item isKindOfClass:[Connection class]])
+    {
+        //init
+        loadedIn = [NSMutableString stringWithFormat:@" (connection, in:"];
+    }
+    
+    //add all tasks
+    for(Task* task in tasks)
+    {
+        //append name
+        [loadedIn appendFormat:@" %@,", task.binary.name];
+    }
+    
+    //remove last ','
+    if(YES == [loadedIn hasSuffix:@","])
+    {
+        //remove
+        [loadedIn deleteCharactersInRange:NSMakeRange([loadedIn length]-1, 1)];
+    }
+    
+    //terminate list/output
+    [loadedIn appendString:@")"];
+    
+    //add 'loaded in...'
+    [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:loadedIn attributes:attributes]];
+
+    return taskString;
+}
+
 //create & customize Task view
 NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
 {
     //item cell
     NSTableCellView* taskCell = nil;
-    
-    //task's name frame
-    CGRect nameFrame = {0};
-    
-    //string for pid
-    NSString* pidString = nil;
     
     //sanity check
     if(nil == task.binary)
@@ -402,40 +528,7 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     taskCell.textField.textColor = [NSColor blackColor];
     
     //set main text
-    // ->name
-    [taskCell.textField setStringValue:task.binary.name];
-    
-    //get name frame
-    nameFrame = taskCell.textField.frame;
-    
-    //adjust width to fit text
-    nameFrame.size.width = [taskCell.textField.stringValue sizeWithAttributes: @{NSFontAttributeName: taskCell.textField.font}].width + 5;
-    
-    //disable autolayout for name
-    taskCell.textField.translatesAutoresizingMaskIntoConstraints = YES;
-    
-    //update name frame
-    // ->should now be exact size of text
-    taskCell.textField.frame = nameFrame;
-    
-    //init pid string
-    // ->search mode, show 'task,' to differential between files, etc
-    if(YES ==[owner isKindOfClass:[SearchWindowController class]])
-    {
-        //init
-        pidString = [NSString stringWithFormat:@"(task: %@)", task.pid];
-    }
-    //otherwise
-    // ->just set pid
-    else
-    {
-        //init
-        pidString = [NSString stringWithFormat:@"(%@)", task.pid];
-    }
-    
-    //set pid
-    // ->immediately follows name
-    [((NSTextField*)[taskCell viewWithTag:TABLE_ROW_PID_LABEL]) setStringValue:pidString];
+    taskCell.textField.attributedStringValue = initBinaryString(task, [owner isKindOfClass:[SearchWindowController class]]);
     
     //set path
     [[taskCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:task.binary.path];
@@ -488,8 +581,8 @@ NSTableCellView* createDylibView(NSTableView* tableView, id owner, Binary* dylib
     dylibCell.textField.textColor = [NSColor blackColor];
     
     //set main text
-    // ->name
-    [dylibCell.textField setStringValue:dylib.name];
+    // ->final arg is flag indicating normal or search window
+    dylibCell.textField.attributedStringValue = initBinaryString(dylib, [owner isKindOfClass:[SearchWindowController class]]);
     
     //set path
     [[dylibCell viewWithTag:TABLE_ROW_SUB_TEXT_TAG] setStringValue:dylib.path];

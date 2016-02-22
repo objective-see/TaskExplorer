@@ -681,7 +681,7 @@ bail:
     //only no for leafs
     // ->items w/o kids
     if( (nil != item) &&
-       (0 == [[item children] count]) )
+        (0 == [[item children] count]) )
     {
         return NO;
     }
@@ -691,7 +691,6 @@ bail:
     }
     //return !item ? YES : [[item children] count] != 0;
 }
-
 
 
 //return child

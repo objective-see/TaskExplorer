@@ -97,7 +97,7 @@
     if( (nil != self.binary.vtInfo) &&
         (0 != [self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue]) )
     {
-        //set color (light red)
+        //set color
         color = [NSColor redColor];
     }
     //non-flagged files

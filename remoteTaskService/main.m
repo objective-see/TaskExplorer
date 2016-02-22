@@ -6,14 +6,13 @@
 //  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "remoteTaskService.h"
 #import "serviceInterface.h"
+#import "remoteTaskService.h"
 
 #import <syslog.h>
 #import <libproc.h>
 #import <sys/proc_info.h>
-
+#import <Foundation/Foundation.h>
 
 //interface for 'extension' to NSXPCConnection
 // ->allows us to access the 'private' auditToken iVar
@@ -39,8 +38,7 @@
 //function def
 OSStatus SecTaskValidateForRequirement(SecTaskRef task, CFStringRef requirement);
 
-//TODO: CHANGE B4 RELEASE!!
-//-> for testing: @"Mac Developer: patrick wardle (5SKKU32KLJ)"
+//signing auth
 #define SIGNING_AUTH @"Developer ID Application: Objective-See, LLC (VBG97UB4TA)"
 
 //skeleton interface
@@ -102,6 +100,8 @@ bail:
 }
 
 @end
+
+//TODO: add exception handling!!!!
 
 int main(int argc, const char *argv[])
 {

@@ -57,6 +57,9 @@
 //path to LSOF
 #define LSOF @"/usr/sbin/lsof"
 
+//path to vmmap32
+#define VMMAP_32 @"/usr/bin/vmmap32"
+
 //path to vmmap
 #define VMMAP @"/usr/bin/vmmap"
 
@@ -131,8 +134,6 @@
 //id (tag) for path
 #define TABLE_ROW_PATH_LABEL 101
 
-//id (tag) for plist
-#define TABLE_ROW_PID_LABEL 102
 
 //id (tag) for 'virus total' button
 #define TABLE_ROW_VT_BUTTON 103

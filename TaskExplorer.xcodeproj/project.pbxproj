@@ -8,8 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
+		7D2A4C6C1BC789070029A284 /* Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA81D4E1A95B492009790E2 /* Utilities.m */; };
 		7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */; };
 		7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */; };
+		7D73480F1BCB82C900CD7235 /* flaggedRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D73480C1BCB82C900CD7235 /* flaggedRed.png */; };
+		7D7348101BCB82C900CD7235 /* flaggedRedBG.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D73480D1BCB82C900CD7235 /* flaggedRedBG.png */; };
+		7D7348111BCB82C900CD7235 /* flaggedRedOver.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */; };
+		7DA5CA0F1C7AA8CB00627DD7 /* MachO.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */; };
 		7DAA78091B903BF1004840B9 /* CustomTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DAA78081B903BF1004840B9 /* CustomTextField.m */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
@@ -156,6 +161,11 @@
 		7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SearchWindow.xib; path = UI/SearchWindow.xib; sourceTree = "<group>"; };
 		7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchWindowController.h; sourceTree = "<group>"; };
 		7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchWindowController.m; sourceTree = "<group>"; };
+		7D73480C1BCB82C900CD7235 /* flaggedRed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRed.png; path = images/flaggedRed.png; sourceTree = SOURCE_ROOT; };
+		7D73480D1BCB82C900CD7235 /* flaggedRedBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRedBG.png; path = images/flaggedRedBG.png; sourceTree = SOURCE_ROOT; };
+		7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRedOver.png; path = images/flaggedRedOver.png; sourceTree = SOURCE_ROOT; };
+		7DA5CA0D1C7AA8CB00627DD7 /* MachO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MachO.h; path = ../MachO/MachOParser/MachO.h; sourceTree = "<group>"; };
+		7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MachO.m; path = ../MachO/MachOParser/MachO.m; sourceTree = "<group>"; };
 		7DAA78071B903BF1004840B9 /* CustomTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomTextField.h; sourceTree = "<group>"; };
 		7DAA78081B903BF1004840B9 /* CustomTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomTextField.m; sourceTree = "<group>"; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
@@ -331,6 +341,7 @@
 		1D21BC42172AF43D009D1CFD = {
 			isa = PBXGroup;
 			children = (
+				7DA5CA0C1C7AA8B900627DD7 /* MachO */,
 				7DAA78071B903BF1004840B9 /* CustomTextField.h */,
 				7DAA78081B903BF1004840B9 /* CustomTextField.m */,
 				7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */,
@@ -432,9 +443,21 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		7DA5CA0C1C7AA8B900627DD7 /* MachO */ = {
+			isa = PBXGroup;
+			children = (
+				7DA5CA0D1C7AA8CB00627DD7 /* MachO.h */,
+				7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */,
+			);
+			name = MachO;
+			sourceTree = "<group>";
+		};
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				7D73480C1BCB82C900CD7235 /* flaggedRed.png */,
+				7D73480D1BCB82C900CD7235 /* flaggedRedBG.png */,
+				7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */,
 				CD74A06B1B7DA71200A8AAD3 /* flaggedBG.png */,
 				CD74A06C1B7DA71200A8AAD3 /* flaggedOver.png */,
 				CDFCA3551B7940970075492D /* flagged.png */,
@@ -640,7 +663,7 @@
 		1D21BC43172AF43D009D1CFD /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Lucas Derraugh";
 				TargetAttributes = {
 					1D21BC4A172AF43D009D1CFD = {
@@ -683,6 +706,7 @@
 				CD6AFB861B4BABB200D42C34 /* refreshIconBG.png in Resources */,
 				CDEE76FF1B3FD4B000763826 /* saveIconBG.png in Resources */,
 				CDA81D5B1A95B4B4009790E2 /* InfoPlist.strings in Resources */,
+				7D7348111BCB82C900CD7235 /* flaggedRedOver.png in Resources */,
 				CD4D53CA1B20296E00008030 /* unknown.png in Resources */,
 				CDEE77081B41220300763826 /* searchOver.png in Resources */,
 				CD74A07E1B81B5D400A8AAD3 /* FlaggedItems.xib in Resources */,
@@ -728,6 +752,7 @@
 				CD3F4D161AF89066002A2647 /* TreeView.xib in Resources */,
 				CD0219501AD34D8B005148A2 /* PrefsWindow.xib in Resources */,
 				CDFCA3561B7940970075492D /* flagged.png in Resources */,
+				7D7348101BCB82C900CD7235 /* flaggedRedBG.png in Resources */,
 				CDA81D6C1A95B4E9009790E2 /* showBG.png in Resources */,
 				CD3F4CFF1AF72BC4002A2647 /* TaskInfoWindow.xib in Resources */,
 				CDEE77001B3FD4B000763826 /* saveIconOver.png in Resources */,
@@ -747,6 +772,7 @@
 				CDA81DCA1A9960A3009790E2 /* infoBG.png in Resources */,
 				CDF08CD11AC4C6E8009B3423 /* settings.png in Resources */,
 				CDA81DD31A9970A0009790E2 /* signed.png in Resources */,
+				7D73480F1BCB82C900CD7235 /* flaggedRed.png in Resources */,
 				CDEE77071B41220300763826 /* searchBG.png in Resources */,
 				CDA81E661AA020FD009790E2 /* FileInfoWindow.xib in Resources */,
 			);
@@ -768,6 +794,7 @@
 			files = (
 				CD3F4CE81AF5CF68002A2647 /* TaskEnumerator.m in Sources */,
 				CD4D54221B2CE6F200008030 /* NSMutableArray+QueueAdditions.m in Sources */,
+				7DA5CA0F1C7AA8CB00627DD7 /* MachO.m in Sources */,
 				CD74A07B1B7F170B00A8AAD3 /* FlaggedItems.m in Sources */,
 				CDA5F6C41B16E20E003CE340 /* RequestRootWindowController.m in Sources */,
 				CDD2483B1AF5CC4D00232422 /* Task.m in Sources */,
@@ -808,6 +835,7 @@
 			files = (
 				CDA5F6B61B16D805003CE340 /* main.m in Sources */,
 				CDA5F6B41B16D805003CE340 /* remoteTaskService.m in Sources */,
+				7D2A4C6C1BC789070029A284 /* Utilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -853,7 +881,9 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -886,6 +916,7 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -904,12 +935,13 @@
 		1D21BC69172AF43D009D1CFD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = TaskExplorer;
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -919,12 +951,13 @@
 		1D21BC6A172AF43D009D1CFD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = TaskExplorer;
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -939,7 +972,7 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -955,6 +988,7 @@
 				INFOPLIST_FILE = remoteTaskService/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -968,7 +1002,7 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -981,6 +1015,7 @@
 				INFOPLIST_FILE = remoteTaskService/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

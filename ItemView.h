@@ -25,6 +25,7 @@ NSTableCellView* createFlaggedItemView(NSTableView* tableView, id owner, id item
 //create & customize global dylib/file view
 NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item);
 
+
 //create & customize task view
 NSTableCellView* createTaskView(NSTableView* tableView, id owner, id item);
 
@@ -39,6 +40,9 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
 
 //add a tracking area to a view within the item view
 void addTrackingArea(NSTableCellView* itemView, NSUInteger subviewTag, id owner);
+
+//build item + 'loaded in' string for dylibs, files, etc in search window
+NSAttributedString* initLoadedInString(id item);
 
 //set code signing image
 // ->either signed, unsigned, or unknown

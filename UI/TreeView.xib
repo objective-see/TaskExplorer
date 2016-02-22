@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <development version="5000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9532"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TaskTableController">
@@ -65,7 +65,7 @@
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="unknown" id="me9-Mx-iYQ"/>
                                                     </imageView>
                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Zt-oA-mKx">
-                                                        <rect key="frame" x="46" y="20" width="225" height="19"/>
+                                                        <rect key="frame" x="46" y="20" width="1103" height="19"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Task Name" id="TN7-i0-YKD">
                                                             <font key="font" size="13" name="Menlo-Regular"/>
                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -155,29 +155,18 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
-                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="102" translatesAutoresizingMaskIntoConstraints="NO" id="Gwh-Pi-Cr8">
-                                                        <rect key="frame" x="295" y="20" width="79" height="18"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="75" id="MYG-IH-nwD"/>
-                                                            <constraint firstAttribute="height" constant="18" id="TNF-eC-2mT"/>
-                                                        </constraints>
-                                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="pid" id="vq2-uQ-UKY">
-                                                            <font key="font" size="13" name="Menlo-Regular"/>
-                                                            <color key="textColor" white="0.49295236009999999" alpha="0.84999999999999998" colorSpace="calibratedWhite"/>
-                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                        </textFieldCell>
-                                                    </textField>
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstAttribute="trailing" secondItem="TmP-0K-QL5" secondAttribute="trailing" constant="20" id="0bt-Nx-vbM"/>
                                                     <constraint firstItem="nqZ-Aq-OkZ" firstAttribute="leading" secondItem="GDK-Bv-5jW" secondAttribute="trailing" constant="8" id="5yT-0e-n5j"/>
+                                                    <constraint firstItem="Bla-ft-Ebs" firstAttribute="leading" secondItem="1Zt-oA-mKx" secondAttribute="trailing" constant="8" id="7FQ-NJ-md1"/>
                                                     <constraint firstItem="2ct-ht-5c2" firstAttribute="leading" secondItem="mDy-ep-li0" secondAttribute="trailing" constant="22" id="9gD-bt-2Vv"/>
                                                     <constraint firstItem="GDK-Bv-5jW" firstAttribute="leading" secondItem="0MH-nf-7QQ" secondAttribute="trailing" constant="2" id="HOi-bL-Int"/>
                                                     <constraint firstItem="mDy-ep-li0" firstAttribute="leading" secondItem="Bla-ft-Ebs" secondAttribute="trailing" constant="22" id="ROe-3J-TzR"/>
-                                                    <constraint firstItem="Gwh-Pi-Cr8" firstAttribute="leading" secondItem="1Zt-oA-mKx" secondAttribute="trailing" constant="8" id="g0l-EE-VzB"/>
                                                     <constraint firstItem="VXc-BM-7cb" firstAttribute="leading" secondItem="nqZ-Aq-OkZ" secondAttribute="trailing" constant="11" id="jvP-fF-CXE"/>
                                                     <constraint firstAttribute="trailing" secondItem="2ct-ht-5c2" secondAttribute="trailing" constant="20" id="mnd-fE-dNh"/>
                                                     <constraint firstItem="TmP-0K-QL5" firstAttribute="leading" secondItem="VXc-BM-7cb" secondAttribute="trailing" constant="17" id="r5M-1N-uEu"/>
+                                                    <constraint firstItem="1Zt-oA-mKx" firstAttribute="leading" secondItem="Cgb-ea-yYy" secondAttribute="trailing" constant="4" id="tun-lc-XyP"/>
                                                     <constraint firstItem="0MH-nf-7QQ" firstAttribute="top" secondItem="cj0-rp-Uha" secondAttribute="top" constant="8" id="x2F-4g-SxS"/>
                                                     <constraint firstItem="0MH-nf-7QQ" firstAttribute="leading" secondItem="cj0-rp-Uha" secondAttribute="leading" constant="4" id="x6f-e1-y92"/>
                                                 </constraints>
@@ -198,7 +187,7 @@
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </clipView>
                     <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="mini" horizontal="YES" id="7QY-ke-KIc">
-                        <rect key="frame" x="1" y="109.73348331451416" width="220" height="16"/>
+                        <rect key="frame" x="1" y="109" width="220" height="16"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                     <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="mini" horizontal="NO" id="ifK-Bg-0Ke">

@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-
 #import "Binary.h"
 #import "Consts.h"
 #import "Utilities.h"
@@ -19,7 +18,10 @@
 @synthesize icon;
 @synthesize bundle;
 @synthesize hashes;
+@synthesize parser;
 @synthesize vtInfo;
+@synthesize isPacked;
+@synthesize isEncrypted;
 @synthesize signingInfo;
 @synthesize isTaskBinary;
 
@@ -53,6 +55,52 @@
 bail:
     
     return self;
+}
+
+//machO parse
+-(BOOL)parse
+{
+    //flag
+    BOOL wasParsed = NO;
+    
+    //sync
+    @synchronized(self)
+    {
+        //alloc parser
+        if(nil == parser)
+        {
+            //alloc macho parser iVar
+            parser = [[MachO alloc] init];
+            
+            //parse
+            if(YES != [self.parser parse:self.path])
+            {
+                //unset parser
+                self.parser = nil;
+                
+                //bail
+                goto bail;
+            }
+        }
+        
+        //unset 'packed' flag for apple signed binaries
+        // ->as apple doesn't pack binaries, but packer algo has some false positives
+        if( (nil != [self.signingInfo objectForKey:KEY_SIGNING_IS_APPLE]) &&
+            (YES == [self.signingInfo[KEY_SIGNING_IS_APPLE] boolValue]) )
+        {
+            //unset
+            self.parser.binaryInfo[KEY_IS_PACKED] = NO;
+        }
+        
+    }//sync
+    
+    //happy
+    wasParsed = YES;
+    
+//bail
+bail:
+    
+    return wasParsed;
 }
 
 //get task's name
@@ -174,7 +222,6 @@ bail:
     return;
     
 }
-
 
 //format the signing info dictionary
 -(NSString*)formatSigningInfo

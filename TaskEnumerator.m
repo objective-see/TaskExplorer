@@ -97,7 +97,6 @@
     // ->ensures existing task and their info are reused
     for(NSNumber* key in newTasks.allKeys)
     {
-        
         //get task
         newTask = newTasks[key];
         
@@ -142,7 +141,7 @@
         
     });
     
-    //now generate signing info
+    //now generate signing info/encryption check/packer check
     // ->for (new) tasks
     for(NSNumber* key in newTasks)
     {
@@ -158,7 +157,18 @@
         }
         
         //generate signing info
+        // ->do this before macho parsing!
         [newTask.binary generatedSigningInfo];
+        
+        //parse
+        if(YES == [newTask.binary parse])
+        {
+            //save encrypted flag
+            newTask.binary.isEncrypted = [newTask.binary.parser.binaryInfo[KEY_IS_ENCRYPTED] boolValue];
+            
+            //save packed flag
+            newTask.binary.isPacked = [newTask.binary.parser.binaryInfo[KEY_IS_PACKED] boolValue];
+        }
         
         //reload task (row) in table
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newTask];

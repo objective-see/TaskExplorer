@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
+#import "MachO.h"
 #import "ItemBase.h"
-
 
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -37,6 +37,15 @@
 //signing info
 @property(nonatomic, retain)NSDictionary* signingInfo;
 
+//macho parser
+@property(nonatomic, retain)MachO* parser;
+
+//encrypted flag
+@property BOOL isEncrypted;
+
+//packed flag
+@property BOOL isPacked;
+
 /* VIRUS TOTAL INFO */
 
 //dictionary returned by VT
@@ -47,6 +56,9 @@
 
 //init method
 -(id)initWithParams:(NSDictionary*)params;
+
+//machO parse
+-(BOOL)parse;
 
 //get task's name
 // ->either from bundle or path's last component

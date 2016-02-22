@@ -13,7 +13,7 @@
 #import "Connection.h"
 
 //binary filter keywords
-NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged"};
+NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged", @"#encrypted", @"#packed"};
 
 @implementation Filter
 
@@ -384,6 +384,29 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         goto bail;
     }
     
+    //handle '#encrypted'
+    else if( (YES == [keyword isEqualToString:@"#encrypted"]) &&
+             (YES == [self isEncrypted:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+    //handle '#packed'
+    else if( (YES == [keyword isEqualToString:@"#packed"]) &&
+             (YES == [self isPacked:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+    
 //bail
 bail:
     
@@ -462,5 +485,41 @@ bail:
     return isFlagged;
 }
 
+
+//keyword filter '#encrypted'
+// ->determine if binary is encrypted
+-(BOOL)isEncrypted:(Binary *)item
+{
+    //make sure item was parsed
+    if(nil == item.parser)
+    {
+        //parse
+        [item parse];
+        
+        //save encrypted flag
+        item.isEncrypted = [item.parser.binaryInfo[KEY_IS_ENCRYPTED] boolValue];
+    }
+    
+    //set flag
+    return item.isEncrypted;
+}
+
+//keyword filter '#packed'
+// ->determine if binary is packed
+-(BOOL)isPacked:(Binary *)item
+{
+    //make sure item was parsed
+    if(nil == item.parser)
+    {
+        //parse
+        [item parse];
+        
+        //save packed flag
+        item.isPacked = [item.parser.binaryInfo[KEY_IS_PACKED] boolValue];
+    }
+    
+    //set flag
+    return item.isPacked;
+}
 
 @end

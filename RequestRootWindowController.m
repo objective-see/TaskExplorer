@@ -155,8 +155,8 @@
     //2nd arg: permissions
     // ->4 at front is setuid
     //TODO: change b4 release
-    // ->make 4755 before deploy (for testing, 777 makes XCOde be able to del it during build!)
-    installArgs[1] = "4755";
+    // ->make 4755 before deploy (for testing, 777 makes Xcode be able to del it during build!)
+    installArgs[1] = "4777";
     
     //3rd arg: XPC service
     installArgs[2] = [xpcService UTF8String];

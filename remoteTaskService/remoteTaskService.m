@@ -354,17 +354,29 @@ bail:
     dylibs = [NSMutableArray array];
     
     //vmmap can't directly handle 32bit procs
-    // ->so exec via 'arch -i386 vmmap <32bit pid>' ...though El Capitan doesn't have i386 version :/
+    // ->so either exec 'vmmap32' or on older OSs, exec via 'arch -i386 vmmap <32bit pid>'
     if(YES == Is32Bit(pid.unsignedIntValue))
     {
-        //exec 'file' to get file type
-        results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]]) encoding:NSUTF8StringEncoding];
+        //when system has 32bit version of vmmap ('vmmap32')
+        // ->use that
+        if(YES == [[NSFileManager defaultManager] fileExistsAtPath:VMMAP_32])
+        {
+            //exec vmmap32
+            results = [[NSString alloc] initWithData:execTask(VMMAP_32, @[@"-w", [pid stringValue]]) encoding:NSUTF8StringEncoding];
+        }
+        //otherwise
+        // ->assume vmmap is 'fat', and exec 32bit version (pre El Capitan)
+        else
+        {
+            //exec 'file' to get file type
+            results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]]) encoding:NSUTF8StringEncoding];
+        }
     }
     //for 64bit procs
     // ->just exec vmmap directly
     else
     {
-        //exec 'file' to get file type
+        //exec vmmap
         results = [[NSString alloc] initWithData:execTask(VMMAP, @[@"-w", [pid stringValue]]) encoding:NSUTF8StringEncoding];
     }
     

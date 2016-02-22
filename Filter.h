@@ -35,6 +35,14 @@
 // ->determine if binary is flagged by VT
 -(BOOL)isFlagged:(Binary*)item;
 
+//keyword filter '#encrypted'
+// ->determine if binary is encrypted
+-(BOOL)isEncrypted:(Binary*)item;
+
+//keyword filter '#packed'
+// ->determine if binary is packed
+-(BOOL)isPacked:(Binary*)item;
+
 //filter tasks
 -(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
 

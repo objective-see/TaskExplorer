@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <development version="5000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9532"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TaskTableController">
@@ -65,7 +65,7 @@
                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="unknown" id="2ru-B9-6b1"/>
                                                     </imageView>
                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ryD-lC-8IR">
-                                                        <rect key="frame" x="46" y="20" width="225" height="19"/>
+                                                        <rect key="frame" x="46" y="20" width="1103" height="19"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Task Name" id="fEY-SM-ufc">
                                                             <font key="font" size="13" name="Menlo-Regular"/>
                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -155,22 +155,9 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
-                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" tag="102" translatesAutoresizingMaskIntoConstraints="NO" id="Nky-Qb-S7Z">
-                                                        <rect key="frame" x="295" y="20" width="79" height="18"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="18" id="ecq-WO-Xtq"/>
-                                                            <constraint firstAttribute="width" constant="75" id="qxm-8e-ma2"/>
-                                                        </constraints>
-                                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="pid" id="BVj-TR-eR2">
-                                                            <font key="font" size="13" name="Menlo-Regular"/>
-                                                            <color key="textColor" white="0.49295236009999999" alpha="0.84999999999999998" colorSpace="calibratedWhite"/>
-                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                        </textFieldCell>
-                                                    </textField>
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstItem="cG6-PF-La2" firstAttribute="top" secondItem="sdY-t5-tbW" secondAttribute="top" constant="7" id="5Ro-94-5jo"/>
-                                                    <constraint firstItem="Nky-Qb-S7Z" firstAttribute="leading" secondItem="ryD-lC-8IR" secondAttribute="trailing" constant="8" id="7Og-f1-rQH"/>
                                                     <constraint firstItem="cG6-PF-La2" firstAttribute="leading" secondItem="sdY-t5-tbW" secondAttribute="leading" constant="4" id="7ms-dD-as0"/>
                                                     <constraint firstItem="MqO-G8-w9L" firstAttribute="leading" secondItem="aPz-9H-xyy" secondAttribute="trailing" constant="11" id="AYq-NQ-9ty"/>
                                                     <constraint firstItem="Y4J-KD-8iy" firstAttribute="leading" secondItem="eBe-7K-OiH" secondAttribute="trailing" constant="22" id="AeK-oE-FOW"/>
@@ -179,7 +166,9 @@
                                                     <constraint firstItem="gpF-bM-EQR" firstAttribute="leading" secondItem="MqO-G8-w9L" secondAttribute="trailing" constant="17" id="YUh-1b-zZn"/>
                                                     <constraint firstAttribute="trailing" secondItem="gpF-bM-EQR" secondAttribute="trailing" constant="20" id="ZwL-8K-oUV"/>
                                                     <constraint firstItem="eBe-7K-OiH" firstAttribute="leading" secondItem="Dtg-ac-EVZ" secondAttribute="trailing" constant="22" id="llC-i6-MPv"/>
+                                                    <constraint firstItem="ryD-lC-8IR" firstAttribute="leading" secondItem="M2y-fe-Zb7" secondAttribute="trailing" constant="4" id="pFh-5j-5D1"/>
                                                     <constraint firstAttribute="trailing" secondItem="Y4J-KD-8iy" secondAttribute="trailing" constant="20" id="qVu-zJ-0T1"/>
+                                                    <constraint firstItem="Dtg-ac-EVZ" firstAttribute="leading" secondItem="ryD-lC-8IR" secondAttribute="trailing" constant="8" id="sdA-ud-S6g"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="imageView" destination="cG6-PF-La2" id="v1M-Zn-U5X"/>
