@@ -8,6 +8,7 @@
 
 #import "serviceInterface.h"
 #import "remoteTaskService.h"
+#import "../Exception.h"
 
 #import <syslog.h>
 #import <libproc.h>
@@ -101,20 +102,30 @@ bail:
 
 @end
 
-//TODO: add exception handling!!!!
-
+//main entrypoint
+// ->install exception handlers & setup/kickoff listener
 int main(int argc, const char *argv[])
 {
+    //service delegate
+    ServiceDelegate* delegate = nil;
+    
+    //listener
+    NSXPCListener* listener = nil;
+    
+    //first thing...
+    // ->install exception handlers!
+    installExceptionHandlers();
+    
     //make really r00t
-    // ->needed for exec'ing vmmap
+    // ->needed for exec'ing vmmap, etc
     setuid(0);
     
     //create the delegate for the service.
-    ServiceDelegate *delegate = [ServiceDelegate new];
+    delegate = [ServiceDelegate new];
     
     //set up the one NSXPCListener for this service
     // ->handles incoming connections
-    NSXPCListener *listener = [NSXPCListener serviceListener];
+    listener = [NSXPCListener serviceListener];
     
     //set delegate
     listener.delegate = delegate;

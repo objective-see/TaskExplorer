@@ -3,7 +3,7 @@
 
 #import <syslog.h>
 #import <signal.h>
-
+#import <Foundation/Foundation.h>
 
 //install exception/signal handlers
 void installExceptionHandlers();

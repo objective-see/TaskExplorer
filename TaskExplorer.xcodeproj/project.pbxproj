@@ -16,6 +16,7 @@
 		7D7348111BCB82C900CD7235 /* flaggedRedOver.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */; };
 		7DA5CA0F1C7AA8CB00627DD7 /* MachO.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */; };
 		7DAA78091B903BF1004840B9 /* CustomTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DAA78081B903BF1004840B9 /* CustomTextField.m */; };
+		7DB0FCA21C7AECB300D2CE0D /* Exception.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7B9F4F1ACB9A8400DF3C71 /* Exception.m */; };
 		CD001B381AB903040089014A /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B351AB903040089014A /* logo.png */; };
 		CD001B391AB903040089014A /* logoApple.png in Resources */ = {isa = PBXBuildFile; fileRef = CD001B361AB903040089014A /* logoApple.png */; };
 		CD02194F1AD34D8B005148A2 /* AboutWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD02194D1AD34D8B005148A2 /* AboutWindow.xib */; };
@@ -833,6 +834,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DB0FCA21C7AECB300D2CE0D /* Exception.m in Sources */,
 				CDA5F6B61B16D805003CE340 /* main.m in Sources */,
 				CDA5F6B41B16D805003CE340 /* remoteTaskService.m in Sources */,
 				7D2A4C6C1BC789070029A284 /* Utilities.m in Sources */,

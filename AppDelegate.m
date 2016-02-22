@@ -20,6 +20,7 @@
 //TODO: autolayout vertically
 //TODO: show 'from where' via quarantine attrz or database!! (simon email)
 //TODO: detect as procs die via GCD (simon blog post)
+//TODO: max'd out window ->set max? (dual monitors)
 
 
 @implementation AppDelegate
