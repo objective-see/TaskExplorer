@@ -55,7 +55,7 @@
 
 //enumerate all tasks
 // ->calls back into app delegate to update task (top) table when pau
-//   TODO: existsing tasks w/ nil vtInfo, call [vtObject addItem:binary] ?
+//   TODO: existing tasks w/ nil vtInfo, call [vtObject addItem:binary] ?
 -(void)enumerateTasks
 {
     //(new) task item

@@ -20,7 +20,6 @@
 //TODO: autolayout vertically
 //TODO: show 'from where' via quarantine attrz or database!! (simon email)
 //TODO: detect as procs die via GCD (simon blog post)
-//TODO: max'd out window ->set max? (dual monitors)
 
 
 @implementation AppDelegate
@@ -1429,8 +1428,8 @@ bail:
     //always hide 'no items' label
     self.noItemsLabel.hidden = YES;
     
-    //clear out existing items
-    [self.bottomViewController.tableItems removeAllObjects];
+    //unset existing items
+    self.bottomViewController.tableItems = nil;
     
     //when in a background thread
     // ->perform UI stuff on main thread
@@ -1702,8 +1701,8 @@ bail:
         if( (YES == self.taskTableController.isFiltered) &&
             (0 == self.taskTableController.filteredItems.count) )
         {
-            //remove bottom pane's items
-            [self.bottomViewController.tableItems removeAllObjects];
+            //unset bottom pane's items
+            self.bottomViewController.tableItems = nil;
             
             //reset current task
             self.currentTask = nil;

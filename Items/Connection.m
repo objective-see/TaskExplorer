@@ -94,6 +94,34 @@
     return;
 }
 
+
+//resolve a remote IP address to nice DNS name
+// ->uses address and port, which are passed to getaddrinfo
+// note: get thread to call this, cuz it can be slow!!
+-(void)addressesForHost
+{
+    /*
+    struct addrinfo hints = {.ai_family=PF_UNSPEC;.ai_socktype=SOCK_STREAM;.ai_protocol=IPPROTO_TCP};
+    struct addrinfo *res;
+    int gai_error = getaddrinfo(host.UTF8String, port.stringValue.UTF8String, &hints, &res);
+    if (gai_error) {
+        if (outError) *outError = [NSError errorWithDomain:@"MyDomain" code:gai_error userInfo:@{NSLocalizedDescriptionKey:@(gai_strerror(gai_error))}];
+        return nil;
+    }
+    NSMutableArray *addresses = [NSMutableArray array];
+    struct addrinfo *ai = res;
+    do {
+        NSData *address = [NSData dataWithBytes:ai->ai_addr length:ai->ai_addrlen];
+        [addresses addObject:address];
+    } while (ai = ai->ai_next);
+    freeaddrinfo(res);
+    return [addresses copy];
+    */
+}
+
+
+
+
 //build nice string
 -(void)setConnectionString
 {

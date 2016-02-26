@@ -624,24 +624,21 @@ bail:
         
         //remove any existing enum'd networking sockets/connections
         [self.connections removeAllObjects];
-        
-        //
-        //NSLog(@"found %d connections", networkItems.count);
-        
+            
         //create/add all network sockets/connection
         for(NSMutableDictionary* networkItem in networkItems)
         {
             //alloc/init File obj
             connection = [[Connection alloc] initWithParams:networkItem];
             
-            //add File obj
+            //add connection obj
             if(nil != connection)
             {
                 //add
                 [self.connections addObject:connection];
             }
         }
-    
+            
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:NETWORKING_VIEW];
             
@@ -807,7 +804,7 @@ bail:
     //sync
     @synchronized(self.connections)
     {
-        //convert all dylibs and add
+        //convert all connections and add
         for(Connection* connection in self.connections)
         {
             //convert/add

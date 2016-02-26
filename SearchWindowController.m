@@ -6,14 +6,15 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
+#import <syslog.h>
 
+#import "KKRow.h"
+#import "Consts.h"
+#import "Filter.h"
+#import "ItemView.h"
+#import "Utilities.h"
 #import "AppDelegate.h"
 #import "SearchWindowController.h"
-#import "ItemView.h"
-#import "KKRow.h"
-#import "Filter.h"
-#import "Utilities.h"
-#import "Consts.h"
 
 
 @implementation SearchWindowController
@@ -546,6 +547,7 @@ bail:
     }
 
     //1st: search for all matching tasks
+    
     //search for all matching tasks
     [self.filterObj filterTasks:searchString items:allTasks results:matchingTasks];
     
@@ -556,6 +558,7 @@ bail:
     [self.searchTable reloadData];
     
     //2nd: search for all matching dylibs
+    
     //sync
     @synchronized(allTasks)
     {
@@ -598,6 +601,7 @@ bail:
     [self.searchTable reloadData];
     
     //3rd: search for all matching files
+    
     //sync
     @synchronized(allTasks)
     {
@@ -640,6 +644,7 @@ bail:
     [self.searchTable reloadData];
     
     //4th: search for all matching network comms
+    
     //sync
     @synchronized(allTasks)
     {
@@ -647,7 +652,7 @@ bail:
         [matchingItems removeAllObjects];
         
         //walk all tasks
-        // ->scan each for file matches, only processing first match
+        // ->scan each for connections matches, only processing first match
         for(NSNumber* taskPid in allTasks)
         {
             //extract task
@@ -655,7 +660,7 @@ bail:
             
             //filter
             [self.filterObj filterConnections:searchString items:task.connections results:matchingItems];
-            
+
             //process all matching connections
             // ->but first check if processed due to matching in another task already
             for(Connection* connection in matchingItems)

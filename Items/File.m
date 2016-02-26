@@ -66,10 +66,7 @@ bail:
     NSArray* parsedResults = nil;
     
     //exec 'file' to get file type
-    //TODO: make const, and this ERRORS out a bunch?
     results = [[NSString alloc] initWithData:execTask(FILE, @[self.path]) encoding:NSUTF8StringEncoding];
-    
-    //sanity check
     if(nil == results)
     {
         //bail
