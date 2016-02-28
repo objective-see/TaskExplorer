@@ -26,6 +26,9 @@
 //remote port
 @property(nonatomic, retain)NSNumber* remotePort;
 
+//remote name (url)
+@property(nonatomic, retain)NSString* remoteName;
+
 //socket type
 @property(nonatomic, retain)NSString* type;
 

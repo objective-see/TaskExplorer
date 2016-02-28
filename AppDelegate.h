@@ -6,27 +6,23 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-#import "Binary.h"
-#import "ItemBase.h"
-
-#import "Filter.h"
-#import "VirusTotal.h"
-#import "TaskTableController.h"
-
-#import "AboutWindowController.h"
-#import "PrefsWindowController.h"
-#import "FlaggedItems.h"
-#import "ResultsWindowController.h"
-#import "RequestRootWindowController.h"
-#import "SearchWindowController.h"
-#import "CustomTextField.h"
-
+#import <Cocoa/Cocoa.h>
 
 #import "Task.h"
+#import "Filter.h"
+#import "Binary.h"
+#import "ItemBase.h"
+#import "VirusTotal.h"
 #import "TaskEnumerator.h"
+#import "CustomTextField.h"
+#import "TaskTableController.h"
+#import "AboutWindowController.h"
+#import "PrefsWindowController.h"
+#import "SearchWindowController.h"
+#import "ResultsWindowController.h"
+#import "FlaggedItemWindowController.h"
+#import "RequestRootWindowController.h"
 
-
-#import <Cocoa/Cocoa.h>
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate>
 {

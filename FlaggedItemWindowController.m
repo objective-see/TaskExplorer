@@ -6,11 +6,11 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-#import "AppDelegate.h"
-#import "FlaggedItems.h"
-#import "ItemView.h"
 #import "KKRow.h"
+#import "ItemView.h"
 #import "Utilities.h"
+#import "AppDelegate.h"
+#import "FlaggedItemWindowController.h"
 
 @interface FlaggedItems ()
 
@@ -200,8 +200,11 @@ bail:
 // ->launch browser and browse to virus total's page
 -(void)showVTInfo:(id)sender
 {
+    //item
+    id item = nil;
+    
     //binary
-    Binary* item = nil;
+    Binary* binary = nil;
     
     //row
     NSInteger itemRow = 0;
@@ -221,8 +224,30 @@ bail:
     //extract item for row
     item = self.flaggedItems[itemRow];
     
+    //tasks
+    // ->grab binary
+    if(YES == [item isKindOfClass:[Task class]])
+    {
+        //get binary
+        binary = ((Task*)item).binary;
+    }
+    //binaries
+    // ->can use as is
+    else if(YES == [item isKindOfClass:[Binary class]])
+    {
+        //set
+        binary = item;
+    }
+    
+    //sanity check
+    if(nil == binary)
+    {
+        //bail
+        goto bail;
+    }
+    
     //alloc/init info window
-    vtWindowController = [[VTInfoWindowController alloc] initWithItem:item];
+    vtWindowController = [[VTInfoWindowController alloc] initWithItem:binary];
     
     //show it
     [self.vtWindowController.windowController showWindow:self];

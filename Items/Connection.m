@@ -13,6 +13,7 @@
 @implementation Connection
 
 @synthesize endpoints;
+@synthesize remoteName;
 
 //init method
 -(id)initWithParams:(NSDictionary*)params
@@ -52,8 +53,18 @@
         //set icon
         [self setConnectionIcon];
         
+        //resolve in background
+        //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            
+                //resolve
+                [self addressesForHost];
+        
+        
         //build/set connection string
         [self setConnectionString];
+        
+        //});
+        
     
     }
     
@@ -79,8 +90,28 @@
             //set
             self.icon = [NSImage imageNamed:@"connectedIcon"];
         }
+        //wait related states
+        else if( (YES == [self.state isEqualToString:@"close/wait"]) ||
+                 (YES == [self.state isEqualToString:@"in wait 1"]) ||
+                 (YES == [self.state isEqualToString:@"closing"]) ||
+                 (YES == [self.state isEqualToString:@"last act"]) ||
+                 (YES == [self.state isEqualToString:@"fin wait 2"]) ||
+                 (YES == [self.state isEqualToString:@"time wait"]) )
+        {
+            //set
+            self.icon = [NSImage imageNamed:@"closeWait"];
+        }
+        
+        //closed
+        else if(YES == [self.state isEqualToString:@"closed"])
+        {
+            //set
+            self.icon = [NSImage imageNamed:@"closedIcon"];
+        }
         
         //TODO: set other icon?
+        //YES: close-wait!!!
+        
     }
     
     //set icon for UDP sockets
@@ -97,32 +128,23 @@
 
 //resolve a remote IP address to nice DNS name
 // ->uses address and port, which are passed to getaddrinfo
-// note: get thread to call this, cuz it can be slow!!
+//   note: call from bg thread, cuz it can be slow due to DNS resolution(s)
 -(void)addressesForHost
 {
-    /*
-    struct addrinfo hints = {.ai_family=PF_UNSPEC;.ai_socktype=SOCK_STREAM;.ai_protocol=IPPROTO_TCP};
-    struct addrinfo *res;
-    int gai_error = getaddrinfo(host.UTF8String, port.stringValue.UTF8String, &hints, &res);
-    if (gai_error) {
-        if (outError) *outError = [NSError errorWithDomain:@"MyDomain" code:gai_error userInfo:@{NSLocalizedDescriptionKey:@(gai_strerror(gai_error))}];
-        return nil;
-    }
-    NSMutableArray *addresses = [NSMutableArray array];
-    struct addrinfo *ai = res;
-    do {
-        NSData *address = [NSData dataWithBytes:ai->ai_addr length:ai->ai_addrlen];
-        [addresses addObject:address];
-    } while (ai = ai->ai_next);
-    freeaddrinfo(res);
-    return [addresses copy];
-    */
+    //host
+    NSHost* host = nil;
+    
+    //init host
+    host = [NSHost hostWithAddress:self.remoteIPAddr];
+    
+    //extract/save name
+    self.remoteName = host.name;
+    
+    return;
 }
 
 
-
-
-//build nice string
+//build printable connection string
 -(void)setConnectionString
 {
     //add local addr/port to endpoint string
@@ -133,8 +155,15 @@
     if( (nil != self.remoteIPAddr) &&
         (nil != self.remotePort) )
     {
-        //add remote endpoint
+        //add remote IP:port
         [self.endpoints appendString:[NSString stringWithFormat:@" -> %@:%d", self.remoteIPAddr, [self.remotePort unsignedShortValue]]];
+        
+        //add DNS name
+        if(nil != self.remoteName)
+        {
+            //add
+            [self.endpoints appendString:[NSString stringWithFormat:@" (%@)", self.remoteName]];
+        }
     }
     
     return;

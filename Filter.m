@@ -311,6 +311,17 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
                 continue;
             }
             
+            //check DNS name
+            if( (nil != item.remoteName) &&
+                (NSNotFound != [item.remoteName rangeOfString:filterText options:NSCaseInsensitiveSearch].location) )
+            {
+                //save match
+                [results addObject:item];
+                
+                //next
+                continue;
+            }
+            
         }//all connections
     
     }//sync

@@ -607,32 +607,33 @@ bail:
 {
     //item
     // ->task, dylib, file, etc
-    Binary* item = nil;
+    Binary* binary = nil;
     
     //for top pane
-    // ->get task
+    // ->get binary from task
     if(YES != self.isBottomPane)
     {
-        //get task
-        item = [(Task*)[self taskForRow:sender] binary];
+        //get task's binary
+        binary = [(Task*)[self taskForRow:sender] binary];
     }
     
     //bottom pane
+    // ->straight assign
     else
     {
         //get item
-        item = (Binary*)[self itemForRow:sender];
+        binary = (Binary*)[self itemForRow:sender];
     }
 
-    //bail on nil items
-    if(nil == item)
+    //bail on nil binaries
+    if(nil == binary)
     {
         //bail
         goto bail;
     }
     
     //alloc/init info window
-    vtWindowController = [[VTInfoWindowController alloc] initWithItem:item];
+    vtWindowController = [[VTInfoWindowController alloc] initWithItem:binary];
     
     //show it
     [self.vtWindowController.windowController showWindow:self];

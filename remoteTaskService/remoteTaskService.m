@@ -568,7 +568,7 @@ bail:
     //number of handle
     int numberOfProcFDs = 0;
     
-    //socket handle struct
+    //socket info struct
     struct socket_fdinfo socketInfo = {0};
     
     //socket local addr
