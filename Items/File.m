@@ -25,19 +25,6 @@
     self = [super initWithParams:params];
     if(self)
     {
-        //always skip not-existent paths
-        if(YES != [[NSFileManager defaultManager] fileExistsAtPath:params[KEY_RESULT_PATH]])
-        {
-            //err msg
-            //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s not found", [params[KEY_RESULT_PATH] UTF8String]);
-            
-            //set self to nil
-            self = nil;
-            
-            //bail
-            goto bail;
-        }
-        
         //extract name
         self.name = [[self.path lastPathComponent] stringByDeletingPathExtension];
      
@@ -46,7 +33,6 @@
         
         //grab attributes
         self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
-
     }
            
 //bail

@@ -525,29 +525,12 @@ bail:
             //alloc/init File obj
             file = [[File alloc] initWithParams:@{KEY_RESULT_PATH:filePath}];
             
-            //skip nil files
-            //TODO: look into what files err out!!
-            if(nil == file)
-            {
-                //next
-                continue;
-            }
-        
             //sync
             @synchronized(self.files)
             {
                 //add to task's files
                 [self.files addObject:file];
             }
-            
-            /*
-            //save new files
-            if(nil == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files objectForKey:filePath])
-            {
-                //save as new
-                [newFiles addObject:file];
-            }
-            */
         }
         
         //sort by name
@@ -563,19 +546,6 @@ bail:
             
         }//sync
         
-        /* ...don't need to process as search is done via task iteration
-        //process all new files
-        // ->determine type, etc & save into global list
-        for(File* newFile in newFiles)
-        {
-            //sync
-            @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files)
-            {
-                //save into global list
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.files setObject:newFile forKey:filePath];
-            }
-        }
-        */
     }];
     
    return;

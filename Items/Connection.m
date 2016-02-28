@@ -53,19 +53,15 @@
         //set icon
         [self setConnectionIcon];
         
-        //resolve in background
-        //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            
-                //resolve
-                [self addressesForHost];
-        
+        //resolve DNS names
+        if(nil != self.remoteIPAddr)
+        {
+            //resolve
+            [self addressesForHost];
+        }
         
         //build/set connection string
         [self setConnectionString];
-        
-        //});
-        
-    
     }
     
     return self;
@@ -109,9 +105,8 @@
             self.icon = [NSImage imageNamed:@"closedIcon"];
         }
         
-        //TODO: set other icon?
-        //YES: close-wait!!!
-        
+        //by design, other connection states won't have an icon
+        // TODO: maybe add other icons?
     }
     
     //set icon for UDP sockets
@@ -124,7 +119,6 @@
     
     return;
 }
-
 
 //resolve a remote IP address to nice DNS name
 // ->uses address and port, which are passed to getaddrinfo
@@ -142,7 +136,6 @@
     
     return;
 }
-
 
 //build printable connection string
 -(void)setConnectionString
@@ -168,7 +161,6 @@
     
     return;
 }
-
 
 //convert Connection object to a JSON string
 -(NSString*)toJSON
