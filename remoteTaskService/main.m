@@ -68,7 +68,7 @@ OSStatus SecTaskValidateForRequirement(SecTaskRef task, CFStringRef requirement)
     //step 1: create task ref
     // ->uses NSXPCConnection's (private) 'auditToken' iVar
     taskRef = SecTaskCreateWithAuditToken(NULL, ((ExtendedNSXPCConnection*)newConnection).auditToken);
-    if(0 == taskRef)
+    if(NULL == taskRef)
     {
         //bail
         goto bail;
@@ -97,6 +97,16 @@ OSStatus SecTaskValidateForRequirement(SecTaskRef task, CFStringRef requirement)
 //bail
 bail:
     
+    //release task ref object
+    if(NULL != taskRef)
+    {
+        //release
+        CFRelease(taskRef);
+        
+        //unset
+        taskRef = NULL;
+    }
+    
     return shouldAccept;
 }
 
@@ -106,6 +116,9 @@ bail:
 // ->install exception handlers & setup/kickoff listener
 int main(int argc, const char *argv[])
 {
+    //ret var
+    int status = -1;
+    
     //service delegate
     ServiceDelegate* delegate = nil;
     
@@ -118,7 +131,14 @@ int main(int argc, const char *argv[])
     
     //make really r00t
     // ->needed for exec'ing vmmap, etc
-    setuid(0);
+    if(0 != setuid(0))
+    {
+        //err msg
+        syslog(LOG_ERR, "OBJECTIVE-SEE TASKEXPLORER ERROR: setuid() failed with: %d\n", errno);
+        
+        //bail
+        goto bail;
+    }
     
     //create the delegate for the service.
     delegate = [ServiceDelegate new];
@@ -134,5 +154,11 @@ int main(int argc, const char *argv[])
     // ->method does not return
     [listener resume];
     
-    return 0;
+    //happy
+    status = 0;
+    
+//bail
+bail:
+    
+    return status;
 }

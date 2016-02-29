@@ -312,10 +312,10 @@
 #define PID_TAG_DELTA 1000
 
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 30
+#define SEARCH_WAIT_TIME 45
 
 //pls wait (search) message
-#define PLS_WAIT_MESSAGE @"completing (intial) task/dylib/file enumeration please wait"
+#define PLS_WAIT_MESSAGE @"completing (initial) task/dylib/file enumeration please wait"
 
 //hotkey 's'
 #define KEYCODE_S 0x1
