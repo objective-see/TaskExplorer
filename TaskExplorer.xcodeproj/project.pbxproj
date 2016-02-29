@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1D21BC4F172AF43D009D1CFD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D21BC4E172AF43D009D1CFD /* Cocoa.framework */; };
+		7D10A6341C8293D700F6F7CA /* closeWait.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D10A6331C8293D700F6F7CA /* closeWait.png */; };
+		7D10A6361C8294FC00F6F7CA /* closedIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D10A6351C8294FC00F6F7CA /* closedIcon.png */; };
 		7D2A4C6C1BC789070029A284 /* Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA81D4E1A95B492009790E2 /* Utilities.m */; };
 		7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */; };
 		7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */; };
@@ -54,7 +56,7 @@
 		CD6E54FF1B1162B5007953AB /* ItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6E54FE1B1162B5007953AB /* ItemView.m */; };
 		CD74A06D1B7DA71200A8AAD3 /* flaggedBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CD74A06B1B7DA71200A8AAD3 /* flaggedBG.png */; };
 		CD74A06E1B7DA71200A8AAD3 /* flaggedOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD74A06C1B7DA71200A8AAD3 /* flaggedOver.png */; };
-		CD74A07B1B7F170B00A8AAD3 /* FlaggedItems.m in Sources */ = {isa = PBXBuildFile; fileRef = CD74A0791B7F170B00A8AAD3 /* FlaggedItems.m */; };
+		CD74A07B1B7F170B00A8AAD3 /* FlaggedItemWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD74A0791B7F170B00A8AAD3 /* FlaggedItemWindowController.m */; };
 		CD74A07E1B81B5D400A8AAD3 /* FlaggedItems.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD74A07D1B81B5D400A8AAD3 /* FlaggedItems.xib */; };
 		CD7B9F4D1ACB959200DF3C71 /* logoAppleOver.png in Resources */ = {isa = PBXBuildFile; fileRef = CD7B9F4C1ACB959200DF3C71 /* logoAppleOver.png */; };
 		CD7B9F501ACB9A8400DF3C71 /* Exception.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7B9F4F1ACB9A8400DF3C71 /* Exception.m */; };
@@ -159,6 +161,8 @@
 		1D21BC51172AF43D009D1CFD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1D21BC52172AF43D009D1CFD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		1D21BC53172AF43D009D1CFD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		7D10A6331C8293D700F6F7CA /* closeWait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = closeWait.png; path = images/closeWait.png; sourceTree = SOURCE_ROOT; };
+		7D10A6351C8294FC00F6F7CA /* closedIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = closedIcon.png; path = images/closedIcon.png; sourceTree = SOURCE_ROOT; };
 		7D2F567B1B81BEAB00C7D85E /* SearchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SearchWindow.xib; path = UI/SearchWindow.xib; sourceTree = "<group>"; };
 		7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchWindowController.h; sourceTree = "<group>"; };
 		7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchWindowController.m; sourceTree = "<group>"; };
@@ -218,8 +222,8 @@
 		CD6E54FE1B1162B5007953AB /* ItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ItemView.m; sourceTree = "<group>"; };
 		CD74A06B1B7DA71200A8AAD3 /* flaggedBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedBG.png; path = images/flaggedBG.png; sourceTree = SOURCE_ROOT; };
 		CD74A06C1B7DA71200A8AAD3 /* flaggedOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedOver.png; path = images/flaggedOver.png; sourceTree = SOURCE_ROOT; };
-		CD74A0781B7F170B00A8AAD3 /* FlaggedItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlaggedItems.h; sourceTree = "<group>"; };
-		CD74A0791B7F170B00A8AAD3 /* FlaggedItems.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlaggedItems.m; sourceTree = "<group>"; };
+		CD74A0781B7F170B00A8AAD3 /* FlaggedItemWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlaggedItemWindowController.h; sourceTree = "<group>"; };
+		CD74A0791B7F170B00A8AAD3 /* FlaggedItemWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlaggedItemWindowController.m; sourceTree = "<group>"; };
 		CD74A07D1B81B5D400A8AAD3 /* FlaggedItems.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = FlaggedItems.xib; path = UI/FlaggedItems.xib; sourceTree = "<group>"; };
 		CD7B9F4C1ACB959200DF3C71 /* logoAppleOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logoAppleOver.png; path = images/logoAppleOver.png; sourceTree = SOURCE_ROOT; };
 		CD7B9F4E1ACB9A8400DF3C71 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = SOURCE_ROOT; };
@@ -347,8 +351,6 @@
 				7DAA78081B903BF1004840B9 /* CustomTextField.m */,
 				7D2F567D1B81BEB300C7D85E /* SearchWindowController.h */,
 				7D2F567E1B81BEB400C7D85E /* SearchWindowController.m */,
-				CD74A0781B7F170B00A8AAD3 /* FlaggedItems.h */,
-				CD74A0791B7F170B00A8AAD3 /* FlaggedItems.m */,
 				CD4D54201B2CE6F200008030 /* NSMutableArray+QueueAdditions.h */,
 				CDBE49161B58DC9B0031FC22 /* NSApplicationKeyEvents.h */,
 				CDBE49171B58DC9B0031FC22 /* NSApplicationKeyEvents.m */,
@@ -456,6 +458,8 @@
 		CD6095501A8329FA00E091CD /* images */ = {
 			isa = PBXGroup;
 			children = (
+				7D10A6351C8294FC00F6F7CA /* closedIcon.png */,
+				7D10A6331C8293D700F6F7CA /* closeWait.png */,
 				7D73480C1BCB82C900CD7235 /* flaggedRed.png */,
 				7D73480D1BCB82C900CD7235 /* flaggedRedBG.png */,
 				7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */,
@@ -551,6 +555,8 @@
 		CDA81D781A95B939009790E2 /* UIControllers */ = {
 			isa = PBXGroup;
 			children = (
+				CD74A0781B7F170B00A8AAD3 /* FlaggedItemWindowController.h */,
+				CD74A0791B7F170B00A8AAD3 /* FlaggedItemWindowController.m */,
 				CDA5F6C21B16E20E003CE340 /* RequestRootWindowController.h */,
 				CDA5F6C31B16E20E003CE340 /* RequestRootWindowController.m */,
 				CD6E54FD1B1162B5007953AB /* ItemView.h */,
@@ -702,6 +708,7 @@
 				CD4D53D01B23ED3900008030 /* connectedIcon.png in Resources */,
 				CDF08CE81AC8A35C009B3423 /* vtLogo.png in Resources */,
 				CDA81D691A95B4E9009790E2 /* bug.png in Resources */,
+				7D10A6361C8294FC00F6F7CA /* closedIcon.png in Resources */,
 				CD02195E1AD39A74005148A2 /* ResultsWindow.xib in Resources */,
 				CD3F4D141AF85088002A2647 /* FlatView.xib in Resources */,
 				CD6AFB861B4BABB200D42C34 /* refreshIconBG.png in Resources */,
@@ -730,6 +737,7 @@
 				7D2F567C1B81BEAB00C7D85E /* SearchWindow.xib in Resources */,
 				CD0219591AD37748005148A2 /* unsigned2.png in Resources */,
 				CD4D54281B2EAC7800008030 /* NetworkInfoWindow.xib in Resources */,
+				7D10A6341C8293D700F6F7CA /* closeWait.png in Resources */,
 				CDA81D5C1A95B4B4009790E2 /* MainMenu.xib in Resources */,
 				CD7B9F4D1ACB959200DF3C71 /* logoAppleOver.png in Resources */,
 				CD0219581AD37748005148A2 /* signed2.png in Resources */,
@@ -796,7 +804,7 @@
 				CD3F4CE81AF5CF68002A2647 /* TaskEnumerator.m in Sources */,
 				CD4D54221B2CE6F200008030 /* NSMutableArray+QueueAdditions.m in Sources */,
 				7DA5CA0F1C7AA8CB00627DD7 /* MachO.m in Sources */,
-				CD74A07B1B7F170B00A8AAD3 /* FlaggedItems.m in Sources */,
+				CD74A07B1B7F170B00A8AAD3 /* FlaggedItemWindowController.m in Sources */,
 				CDA5F6C41B16E20E003CE340 /* RequestRootWindowController.m in Sources */,
 				CDD2483B1AF5CC4D00232422 /* Task.m in Sources */,
 				7D2F567F1B81BEB400C7D85E /* SearchWindowController.m in Sources */,

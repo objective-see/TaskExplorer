@@ -1240,6 +1240,10 @@ bail:
     //show it
     [self.searchWindowController showWindow:self];
     
+    //reset search string
+    [self.searchWindowController.searchBox setStringValue:@""];
+
+    
     return;
 }
 
