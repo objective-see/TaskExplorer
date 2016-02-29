@@ -189,6 +189,12 @@
     //no exit
     self.shouldExit = NO;
     
+    //make sure app's key window is (still) font
+    [((AppDelegate*)[[NSApplication sharedApplication] delegate]).window makeKeyAndOrderFront:self];
+    
+    //make sure app is (still) front
+    [NSApp activateIgnoringOtherApps:YES];
+    
     //call back into app delegate
     // ->kick off task enum, etc
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) go];

@@ -113,6 +113,12 @@
     //no need to have a first responder
     [self.window makeFirstResponder:nil];
     
+    //make main window front
+    [self.window makeKeyAndOrderFront:self];
+    
+    //make app front
+    [NSApp activateIgnoringOtherApps:YES];
+    
     //check that OS is supported
     if(YES != isSupportedOS())
     {
