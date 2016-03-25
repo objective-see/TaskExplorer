@@ -95,6 +95,9 @@
     // ->when showing info about a task
     Task* task = nil;
     
+    //task arguments
+    NSMutableString* taskArguments = nil;
+    
     //binary
     // ->when showing info about a dylib
     Binary* dylib = nil;
@@ -136,9 +139,32 @@
             [((Task*)self.itemObj) getArguments];
         }
         
-        //set args
-        [self.arguments setStringValue:[self valueForStringItem:[task.arguments componentsJoinedByString:@""] default:@"no arguments/unknown"]];
-         
+        //set default value for args
+        self.arguments.stringValue = @"no arguments/unknown";
+        
+        //set any args
+        // ->task path and name, make up the first to 'args', so skip/ignore those
+        if(task.arguments.count > 2)
+        {
+            //alloc string to build up args
+            taskArguments = [NSMutableString string];
+            
+            //build up args string
+            // ->start at index 2, to skip path/name
+            for(NSUInteger index = 2; index<task.arguments.count; index++)
+            {
+                //add arg
+                [taskArguments appendFormat:@"%@ ", task.arguments[index]];
+            }
+            
+            //set args into text field
+            if(0 != taskArguments.length)
+            {
+                //add
+                self.arguments.stringValue = taskArguments;
+            }
+        }
+    
         //set path
         [self.path setStringValue:[self valueForStringItem:task.binary.path default:@"unknown"]];
         

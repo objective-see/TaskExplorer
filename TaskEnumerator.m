@@ -250,6 +250,9 @@
     //task
     Task* task = nil;
     
+    //status
+    int status = -1;
+    
     //alloc/init list
     allTasks = [[OrderedDictionary alloc] init];
     
@@ -259,17 +262,8 @@
     //array of pids
     pid_t* pids = NULL;
     
-    //buffer for process path
-    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE] = {0};
-    
-    //status
-    int status = -1;
-    
     //process ID
     NSNumber* processID = nil;
-    
-    //process name
-    NSString* processName = nil;
     
     //get # of procs
     numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, NULL, 0);
@@ -299,30 +293,26 @@
             continue;
         }
         
-        //reset buffer
-        bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
-        
         //init process ID
         processID = [NSNumber numberWithInt:pids[i]];
         
-        //get path
-        status = proc_pidpath(pids[i], pathBuffer, sizeof(pathBuffer));
-        
-        //sanity check
-        // ->this generally just fails if process has exited....
-        if( (status < 0) ||
-            (0 == strlen(pathBuffer)) )
+        //ignore procs that have exited
+        if(YES != isAlive(pids[i]))
         {
             //skip
             continue;
         }
-            
-        //init process name
-        processName = [NSString stringWithUTF8String:pathBuffer];
         
         //init task
-        // ->pass in pid and name
-        task = [[Task alloc] initWithPID:processID andPath:processName];
+        // ->pass in pid
+        task = [[Task alloc] initWithPID:processID];
+        
+        //again, ignore procs that have exited
+        if(YES != isAlive(pids[i]))
+        {
+            //skip
+            continue;
+        }
         
         //add task to list
         // ->order by pid for now
@@ -331,7 +321,7 @@
     
     //always add kernel's task
     // ->hardcoded pid (0) and path to kernel
-    task = [[Task alloc] initWithPID:@0 andPath:path2Kernel()];
+    task = [[Task alloc] initWithPID:@0];
     
     //add kernel task
     [allTasks setObject:task forKey:@0];

@@ -14,20 +14,10 @@
 #import "AppDelegate.h"
 #import "remoteTaskService.h"
 
-#import <mach-o/dyld_images.h>
-#import <mach/mach_init.h>
-#import <mach/mach_vm.h>
-#import <sys/types.h>
-#import <mach/mach.h>
-#import <sys/ptrace.h>
-#import <sys/wait.h>
+#import <syslog.h>
+#import <libproc.h>
 #import <sys/sysctl.h>
 #import <sys/proc_info.h>
-#import <libproc.h>
-#import <arpa/inet.h>
-#import <netinet/tcp_fsm.h>
-#import <syslog.h>
-
 
 @implementation Task
 
@@ -41,10 +31,14 @@
 @synthesize arguments;
 @synthesize connections;
 
-//init w/ a pid + path
+//init w/ a pid
 // note: time consuming init's are done in other methods
--(id)initWithPID:(NSNumber*)taskPID andPath:(NSString*)taskPath
+-(id)initWithPID:(NSNumber*)taskPID
 {
+    //task's path
+    // ->not iVar, as assigned into task's binary obj
+    NSString* taskPath = nil;
+    
     //existing binaries
     NSMutableDictionary* existingBinaries = nil;
     
@@ -81,9 +75,16 @@
         //get parent id
         self.ppid = [NSNumber numberWithInteger:getParentID([taskPID intValue])];
         
+        //get task's path
+        taskPath = [self getPath];
+
         //try extract existing binary
-        // ->will succeed for multiple instances of the same task (process)
-        existingBinary = existingBinaries[taskPath];
+        // ->but only if task's path is known
+        if(YES != [taskPath isEqualToString:TASK_PATH_UNKNOWN])
+        {
+            //lookup
+            existingBinary = existingBinaries[taskPath];
+        }
         
         //re-use existing binaries
         if(nil != existingBinary)
@@ -128,179 +129,122 @@ bail:
     return self;
 }
 
-//get command-line args
--(void)getArguments
+//get task's path
+// ->via 'proc_pidpath()' or via task's args (via XPC) if that fails...
+-(NSString*)getPath
 {
-    //'management info base' array
-    int mib[3] = {0};
+    //task path
+    NSString* taskPath = nil;
     
-    //system's size for max args
-    int systemMaxArgs = 0;
+    //buffer for process path
+    char pathBuffer[PROC_PIDPATHINFO_MAXSIZE] = {0};
     
-    //process's args
-    char* processArgs = NULL;
+    //status
+    int status = -1;
     
-    //# of args
-    int numberOfArgs = 0;
+    //reset buffer
+    bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
     
-    //start of (each) arg
-    char* argStart = NULL;
-    
-    //size of buffers, etc
-    size_t size = 0;
-    
-    //parser pointer
-    char *parser;
-    
-    //init mib
-    // ->want system's size for max args
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_ARGMAX;
-    
-    //first time
-    // ->alloc array for args
-    if(nil == self.arguments)
+    //kernel 'task' is special
+    if(0 == self.pid.intValue)
     {
-        //alloc
-        arguments = [NSMutableArray array];
-    }
-    
-    //set size
-    size = sizeof(systemMaxArgs);
-    
-    //get system's size for max args
-    if(-1 == sysctl(mib, 2, &systemMaxArgs, &size, NULL, 0))
-    {
-        //bail
-        goto bail;
-    }
-    
-    //alloc space for args
-    processArgs = malloc(systemMaxArgs);
-    if(NULL == processArgs)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //init mib
-    // ->want process args
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_PROCARGS2;
-    mib[2] = [self.pid intValue];
-    
-    //set size
-    size = (size_t)systemMaxArgs;
-    
-    //get process's args
-    if(-1 == sysctl(mib, 3, processArgs, &size, NULL, 0))
-    {
-        //bail
-        goto bail;
-    }
-    
-    //extract number of args
-    // ->at start of buffer
-    memcpy(&numberOfArgs, processArgs, sizeof(numberOfArgs));
-    
-    //skip procs w/ no args
-    // ->note: don't care about arg[0]
-    if(numberOfArgs < 2)
-    {
-        //no args
-        goto bail;
-    }
-    
-    //init point to start of args
-    // ->they start right after # of args
-    parser = processArgs + sizeof(numberOfArgs);
-    
-    //skip over exe name
-    // ->always at front, yes, even before arg[0] (which is also exe name)
-    while(parser < &processArgs[size])
-    {
-        //scan till NULL-terminator
-        if(0x0 == *parser)
-        {
-            //end of exe name
-            break;
-        }
+        //set
+        taskPath = path2Kernel();
         
-        //next char
-        parser++;
-    }
-    
-    //sanity check
-    // ->make sure end-of-buffer wasn't reached
-    if(parser == &processArgs[size])
-    {
-        //bail
+        //all set
         goto bail;
     }
     
-    //skip all trailing NULLs
-    // ->scan will non-NULL is found
-    while(parser < &processArgs[size])
+    //get task's path via 'proc_pidpath()'
+    // ->this might fail, so will then attempt via task's args ('KERN_PROCARGS2')
+    status = proc_pidpath(self.pid.intValue, pathBuffer, sizeof(pathBuffer));
+    if(0 != status)
     {
-        //scan till NULL-terminator
-        if(0x0 != *parser)
-        {
-            //ok, got to argv[0]
-            break;
-        }
+        //init task's name
+        taskPath = [NSString stringWithUTF8String:pathBuffer];
+    }
+    //try via task's args (via XPC)
+    else
+    {
+        //grab args
+        // ->set's 'arguments' iVar
+        [self getArguments];
         
-        //next char
-        parser++;
-    }
-    
-    //sanity check
-    // ->(again), make sure end-of-buffer wasn't reached
-    if(parser == &processArgs[size])
-    {
-        //bail
-        goto bail;
-    }
-    
-    //keep scanning until all args are found
-    // ->each is NULL-terminated
-    while(parser < &processArgs[size])
-    {
-        //bail if we've hit arg cnt
-        // ->note: don't save arg[0], so add 1
-        if(self.arguments.count + 1 == numberOfArgs)
+        //sanity check
+        if( (nil == self.arguments) ||
+            (0 == self.arguments.count) )
         {
             //bail
-            break;
+            goto bail;
         }
         
-        //each arg is NULL-terminated
-        if(*parser == '\0')
-        {
-            //save arg
-            // ->'argStart' is purposely NULL for argv[0]
-            if(NULL != argStart)
-            {
-                [self.arguments addObject:[NSString stringWithUTF8String:argStart]];
-            }
-            
-            //init string pointer to (possibly) next arg
-            argStart = ++parser;
-        }
-        
-        //next char
-        parser++;
+        //arg[0] should be full path
+        taskPath = self.arguments.firstObject;
     }
     
 //bail
 bail:
     
-    //free process args
-    if(NULL != processArgs)
+    //when task path is still nil
+    // ->set to const for unknown path...
+    if(nil == taskPath)
     {
-        //free
-        free(processArgs);
+        //set
+        taskPath = TASK_PATH_UNKNOWN;
     }
     
+    return taskPath;
+}
+
+//get command-line args via XPC request to remote service
+// ->waits for XPC, then sets 'arguments' iVar
+-(void)getArguments
+{
+    //xpc connection
+    __block NSXPCConnection* xpcConnection = nil;
+    
+    //wait semaphore
+    dispatch_semaphore_t waitSema = nil;
+    
+    //alloc XPC connection
+    xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
+    
+    //set remote object interface
+    xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
+    
+    //set classes
+    // ->arrays & strings are what is ok to vend
+    [xpcConnection.remoteObjectInterface setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSString class], nil]
+     forSelector: @selector(getTaskArgs:withReply:) argumentIndex: 0 ofReply: YES];
+    
+    //resume
+    [xpcConnection resume];
+    
+    //init wait semaphore
+    waitSema = dispatch_semaphore_create(0);
+    
+    //invoke XPC service (running as r00t)
+    // ->will enumerate files, then invoke reply block so can save into iVar
+    [[xpcConnection remoteObjectProxy] getTaskArgs:self.pid withReply:^(NSMutableArray* taskArguments)
+    {
+        //close connection
+        [xpcConnection invalidate];
+        
+        //nil out
+        xpcConnection = nil;
+        
+        //grab array
+        self.arguments = taskArguments;
+        
+        //signal sema
+        dispatch_semaphore_signal(waitSema);
+        
+    }];
+    
+    //wait until XPC is done
+    // ->XPC reply block will signal semaphore
+    dispatch_semaphore_wait(waitSema, DISPATCH_TIME_FOREVER);
+
     return;
 }
 
@@ -328,7 +272,7 @@ bail:
     xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
     
     //set classes
-    // ->arrays & strings are what is ok to vend
+    // ->arrays, dictionaries, & strings are what is ok to vend
     [xpcConnection.remoteObjectInterface
      setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
      forSelector: @selector(enumerateDylibs:withReply:)
@@ -359,7 +303,8 @@ bail:
         //add all dylibs
         for(NSString* dylibPath in dylibPaths)
         {
-            //skip main image
+            //skip main executable image
+            //TODO: also check realpath() or obj-c equiv!
             if(YES == [dylibPath isEqualToString:self.binary.path])
             {
                 //skip
@@ -412,7 +357,7 @@ bail:
             //add to task's dylibs
             [self.dylibs addObject:dylib];
     
-        } //all dylibs
+        }//all dylibs
         
         //sort by name
         self.dylibs = [[self.dylibs sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
@@ -488,7 +433,7 @@ bail:
     xpcConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(remoteTaskProto)];
     
     //set classes
-    // ->arrays & strings are what is ok to vend
+    // ->arrays, dictionaries, & strings are what is ok to vend
     [xpcConnection.remoteObjectInterface
      setClasses: [NSSet setWithObjects: [NSMutableArray class], [NSMutableDictionary class], [NSString class], nil]
      forSelector: @selector(enumerateFiles:withReply:)

@@ -39,16 +39,16 @@
         self.remotePort = params[KEY_REMOTE_PORT];
 
         //extract/save type
-        self.type = params[KEY_SOCKET_TYPE];
+        self.type = [self socketType2String:params[KEY_SOCKET_TYPE]];
         
         //extract/save family
-        self.family = params[KEY_SOCKET_FAMILY];
+        self.family = [self socketFamily2String:params[KEY_SOCKET_FAMILY]];
         
         //extract/save proto
-        self.proto = params[KEY_SOCKET_PROTO];
+        self.proto = [self socketProto2String:params[KEY_SOCKET_PROTO]];
         
         //extract/save state
-        self.state = params[KEY_SOCKET_STATE];
+        self.state = [self socketState2String:params[KEY_SOCKET_STATE]];
         
         //set icon
         [self setConnectionIcon];
@@ -104,13 +104,10 @@
             //set
             self.icon = [NSImage imageNamed:@"closedIcon"];
         }
-        
-        //by design, other connection states won't have an icon
-        // TODO: maybe add other icons?
     }
     
     //set icon for UDP sockets
-    // ->can't listen, so just show em as streaming
+    // ->can't listen, so just show 'em as streaming
     else if(YES == [self.type isEqualToString:@"SOCK_DGRAM"])
     {
         //set
@@ -135,6 +132,122 @@
     self.remoteName = host.name;
     
     return;
+}
+
+//convert a socket type into string
+-(NSString*) socketType2String:(NSNumber*)type
+{
+    //socket type
+    NSString* socketType = nil;
+    
+    //convert
+    switch(type.intValue)
+    {
+        //stream
+        case SOCK_STREAM:
+            socketType = @"SOCK_STREAM";
+            break;
+            
+        //dgram
+        case SOCK_DGRAM:
+            socketType = @"SOCK_DGRAM";
+            break;
+            
+            //raw
+        case SOCK_RAW:
+            socketType = @"SOCK_RAW";
+            break;
+            
+            //rdm
+        case SOCK_RDM:
+            socketType = @"SOCK_RDM";
+            break;
+            
+            //seq packet
+        case SOCK_SEQPACKET:
+            socketType = @"SOCK_SEQPACKET";
+            break;
+            
+        default:
+            break;
+    }
+    
+    return socketType;
+}
+
+
+//convert a socket family into string
+-(NSString*) socketFamily2String:(NSNumber*)family
+{
+    //socket family
+    NSString* socketFamily = nil;
+    
+    //sanity check
+    if( (family.intValue < 0) ||
+        (family.intValue >= SOCKET_FAMILY_MAX) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //init socket family string
+    socketFamily = [NSString stringWithUTF8String:socketFamilies[family.intValue]];
+    
+//bail
+bail:
+    
+    return socketFamily;
+}
+
+//convert a socket protocol into string
+-(NSString*) socketProto2String:(NSNumber*)proto
+{
+    //socket proto
+    NSString* socketProto = nil;
+    
+    //proto struct
+    struct protoent *protoInfo = NULL;
+    
+    //get proto info
+    protoInfo = getprotobynumber(proto.intValue);
+    
+    //sanity check
+    if(NULL == protoInfo)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //init proto string
+    // ->name comes from struct
+    socketProto = [NSString stringWithUTF8String:protoInfo->p_name];
+    
+//bail
+bail:
+    
+    return socketProto;
+}
+
+
+//convert a socket state into string
+-(NSString*) socketState2String:(NSNumber*)state
+{
+    //socket proto
+    NSString* socketState = nil;
+    
+    //set state
+    if(state.intValue < TCP_NSTATES)
+    {
+        //set state
+        socketState = [NSString stringWithUTF8String:socketStates[state.intValue]];
+    }
+    //invalid/unknown socket state
+    else
+    {
+        socketState = [NSString stringWithFormat:@"unknown state (%d)", state.intValue];
+    }
+    
+    return socketState;
 }
 
 //build printable connection string

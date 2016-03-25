@@ -6,27 +6,16 @@
 //  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 #import "serviceInterface.h"
+
+#import <Foundation/Foundation.h>
+
 
 // This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the service to make it available to the process hosting the service over an NSXPCConnection.
 @interface remoteTaskService : NSObject <remoteTaskProto, NSXPCListenerDelegate>
 
-
-//
+//default service
 +(remoteTaskService *)defaultService;
 
 @end
 
-
-//convert a socket type in to string
-NSString* socketType2String(int type);
-
-//convert a socket family into string
-NSString* socketFamily2String(int family);
-
-//convert a socket protocol into string
-NSString* socketProto2String(int proto);
-
-//convert a socket state into string
-NSString* socketState2String(int state);

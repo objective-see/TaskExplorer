@@ -20,7 +20,9 @@
 //TODO: autolayout vertically
 //TODO: show 'from where' via quarantine attrz or database!! (simon email)
 //TODO: detect as procs die via GCD (simon blog post)
-
+//TODO: missing icon (128) - new icon?
+//TODO: exception handling for mutated array!
+//TODO: check for "Apple Mac OS Application Signing" for Apple Apps - and add to 'OBJ-See' TODO doc
 
 @implementation AppDelegate
 

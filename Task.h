@@ -57,12 +57,11 @@ struct dyld_image_info_32 {
 //connections
 @property(nonatomic, retain)NSMutableArray* connections;
 
+//uid
 @property uid_t uid;
+
+//parent's pid
 @property (nonatomic, retain)NSNumber* ppid;
-
-
-//signing info
-//@property(nonatomic, retain)NSDictionary* signingInfo;
 
 //children
 @property (nonatomic, retain)NSMutableArray* children;
@@ -72,7 +71,11 @@ struct dyld_image_info_32 {
 
 //init w/ a pid + path
 // note: icons are dynamically determined only when process is shown in alert
--(id)initWithPID:(NSNumber*)taskPID andPath:(NSString*)taskPath;
+-(id)initWithPID:(NSNumber*)taskPID;
+
+//get task's path
+// ->via 'proc_pidpath()' or via task's args ('KERN_PROCARGS2')
+-(NSString*)getPath;
 
 //get command-line args
 -(void)getArguments;

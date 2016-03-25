@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "61F07AFB33748EF0C810BEEF6126283DAC63A899",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "61F07AFB33748EF0C810BEEF6126283DAC63A899" : 0,
+    "7564E3FECD3AE625755C217749E31B3EE2B69E20" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "FE4103FE-6F26-4639-8C9F-D8D32C76D6A9",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "61F07AFB33748EF0C810BEEF6126283DAC63A899" : "TaskExplorer",
+    "7564E3FECD3AE625755C217749E31B3EE2B69E20" : "machO\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "TaskExplorer",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "TaskExplorer.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/objective-see\/taskexplorer.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "61F07AFB33748EF0C810BEEF6126283DAC63A899"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/objective-see\/macho.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7564E3FECD3AE625755C217749E31B3EE2B69E20"
+    }
+  ]
+}

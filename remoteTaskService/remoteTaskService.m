@@ -10,81 +10,12 @@
 #import "Utilities.h"
 #import "remoteTaskService.h"
 
-
-#import <mach-o/dyld_images.h>
-#import <mach/mach_init.h>
-#import <mach/mach_vm.h>
-#import <sys/types.h>
-#import <mach/mach.h>
-#import <sys/ptrace.h>
-#import <sys/wait.h>
-#import <sys/sysctl.h>
-#import <sys/proc_info.h>
+#import <syslog.h>
 #import <libproc.h>
 #import <arpa/inet.h>
-#import <netinet/tcp_fsm.h>
-#import <netdb.h>
-#import <syslog.h>
-
-//socket states
-// ->note, index correspondes to numberic value
-static const char* socketStates[] =
-{
-    "closed",
-    "listening",
-    "syn sent",
-    "syn received",
-    "established",
-    "close/wait",
-    "fin wait 1",
-    "closing",
-    "last act",
-    "fin wait 2",
-    "time wait",
-};
-
-static const char *socketFamilies[] =
-{
-    "AF_UNSPEC",
-    "AF_UNIX",
-    "AF_INET",
-    "AF_IMPLINK",
-    "AF_PUP",
-    "AF_CHAOS",
-    "AF_NS",
-    "AF_ISO",
-    "AF_ECMA",
-    "AF_DATAKIT",
-    "AF_CCITT",
-    "AF_SNA",
-    "AF_DECnet",
-    "AF_DLI",
-    "AF_LAT",
-    "AF_HYLINK",
-    "AF_APPLETALK",
-    "AF_ROUTE",
-    "AF_LINK",
-    "#define",
-    "AF_COIP",
-    "AF_CNT",
-    "pseudo_AF_RTIP",
-    "AF_IPX",
-    "AF_SIP",
-    "pseudo_AF_PIP",
-    "pseudo_AF_BLUE",
-    "AF_NDRV",
-    "AF_ISDN",
-    "pseudo_AF_KEY",
-    "AF_INET6",
-    "AF_NATM",
-    "AF_SYSTEM",
-    "AF_NETBIOS",
-    "AF_PPP",
-    "pseudo_AF_HDRCMPLT",
-    "AF_RESERVED_36",
-};
-#define SOCKET_FAMILY_MAX (int)(sizeof(socketFamilies)/sizeof(char *))
-
+#import <sys/sysctl.h>
+#import <mach/mach_vm.h>
+#import <mach-o/dyld_images.h>
 
 //32bit
 struct dyld_image_info_32 {
@@ -105,9 +36,198 @@ struct dyld_image_info_32 {
     return shared;
 }
 
+//get task's commandline args
+// ->args returned in array arg
+-(void)getTaskArgs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
+{
+    //task's args
+    NSMutableArray* arguments = nil;
+    
+    //'management info base' array
+    int mib[3] = {0};
+    
+    //system's size for max args
+    int systemMaxArgs = 0;
+    
+    //process's args
+    char* taskArgs = NULL;
+    
+    //# of args
+    int numberOfArgs = 0;
+    
+    //start of (each) arg
+    char* argStart = NULL;
+    
+    //size of buffers, etc
+    size_t size = 0;
+    
+    //parser pointer
+    char* parser = NULL;
+    
+    //init mib
+    // ->want system's size for max args
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_ARGMAX;
+    
+    //alloc array for args
+    arguments = [NSMutableArray array];
+
+    //set size
+    size = sizeof(systemMaxArgs);
+    
+    //get system's size for max args
+    if(-1 == sysctl(mib, 2, &systemMaxArgs, &size, NULL, 0))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //alloc space for args
+    taskArgs = malloc(systemMaxArgs);
+    if(NULL == taskArgs)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //init mib
+    // ->want process args
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROCARGS2;
+    mib[2] = taskPID.intValue;
+    
+    //set size
+    size = (size_t)systemMaxArgs;
+    
+    //get process's args
+    if(-1 == sysctl(mib, 3, taskArgs, &size, NULL, 0))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //sanity check
+    // ->ensure buffer is somewhat sane
+    if(size <= sizeof(int))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //extract number of args
+    // ->at start of buffer
+    memcpy(&numberOfArgs, taskArgs, sizeof(numberOfArgs));
+    
+    //extract task's name
+    // ->follows # of args (int) and is NULL-terminated
+    [arguments addObject:[NSString stringWithUTF8String:taskArgs + sizeof(int)]];
+    
+    //init point to start of args
+    // ->they start right after # of args
+    parser = taskArgs + sizeof(numberOfArgs);
+    
+    //scan until end of task's NULL-terminated path
+    while(parser < &taskArgs[size])
+    {
+        //scan till NULL-terminator
+        if(0x0 == *parser)
+        {
+            //end of exe name
+            break;
+        }
+        
+        //next char
+        parser++;
+    }
+    
+    //sanity check
+    // ->make sure end-of-buffer wasn't reached
+    if(parser == &taskArgs[size])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //skip all trailing NULLs
+    // ->scan will non-NULL is found
+    while(parser < &taskArgs[size])
+    {
+        //scan till NULL-terminator
+        if(0x0 != *parser)
+        {
+            //ok, got to argv[0]
+            break;
+        }
+        
+        //next char
+        parser++;
+    }
+    
+    //sanity check
+    // ->(again), make sure end-of-buffer wasn't reached
+    if(parser == &taskArgs[size])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //parser should now point to argv[0], task name
+    // ->init arg start
+    argStart = parser;
+    
+    //keep scanning until all args are found
+    // ->each is NULL-terminated
+    while(parser < &taskArgs[size])
+    {
+        //each arg is NULL-terminated
+        // ->so scan till NULL, then save into array
+        if(*parser == '\0')
+        {
+            //save arg
+            if(NULL != argStart)
+            {
+                //save
+                [arguments addObject:[NSString stringWithUTF8String:argStart]];
+            }
+            
+            //init string pointer to (possibly) next arg
+            argStart = ++parser;
+            
+            //bail if we've hit arg cnt
+            // ->note: added full process path as faux arg[0], so add 1
+            if(arguments.count == numberOfArgs + 1)
+            {
+                //bail
+                break;
+            }
+        }
+        
+        //next char
+        parser++;
+    }
+    
+//bail
+bail:
+    
+    //free process args
+    if(NULL != taskArgs)
+    {
+        //free
+        free(taskArgs);
+        
+        //reset
+        taskArgs = NULL;
+    }
+    
+    //invoke reply block
+    reply(arguments);
+
+    return;
+}
+
 //enumerate dylibs for a specified task
 // ->dylibs returned in array arg
--(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
+-(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
 {
     //dylibs
     NSMutableArray* dylibPaths = nil;
@@ -368,7 +488,7 @@ bail:
         // ->assume vmmap is 'fat', and exec 32bit version (pre El Capitan)
         else
         {
-            //exec 'file' to get file type
+            //exec vmmap, but it's i386 version
             results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]]) encoding:NSUTF8StringEncoding];
         }
     }
@@ -428,6 +548,12 @@ bail:
     
     //remove dups
     [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
+    
+    //TODO: remove
+    if(pid.intValue == 13084)
+    {
+        syslog(LOG_ERR, "TASK-EXPLORER: %s\n", dylibs.description.UTF8String);
+    }
 
 //bail
 bail:
@@ -438,7 +564,7 @@ bail:
 
 //enumerate open files
 // ->accomplish this via lsof, since proc_pidinfo() misses some files...
--(void)enumerateFiles:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
+-(void)enumerateFiles:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
 {
     //results
     NSData* results = nil;
@@ -551,7 +677,7 @@ bail:
 
 //TODO: soi_rcv/soi_snd to get packets!?
 //enumerate network connections
--(void)enumerateNetwork:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
+-(void)enumerateNetwork:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
 {
     //task's sockets
     NSMutableArray* sockets = nil;
@@ -702,21 +828,21 @@ bail:
         }
         
         //set type
-        socket[KEY_SOCKET_TYPE] = socketType2String(socketInfo.psi.soi_type);
+        socket[KEY_SOCKET_TYPE] = [NSNumber numberWithInt:socketInfo.psi.soi_type];
         
         //set family
         // ->for now this will only be 'AF_INET' or 'AF_INET6'
-        socket[KEY_SOCKET_FAMILY] = socketFamily2String(socketInfo.psi.soi_family);
+        socket[KEY_SOCKET_FAMILY] = [NSNumber numberWithInt:socketInfo.psi.soi_family];
         
         //set protocol
-        socket[KEY_SOCKET_PROTO] = socketProto2String(socketInfo.psi.soi_protocol);
+        socket[KEY_SOCKET_PROTO] = [NSNumber numberWithInt:socketInfo.psi.soi_protocol];
         
         //get state
         // ->only for stream stockets though
         if(SOCK_STREAM == socketInfo.psi.soi_type)
         {
             //set state
-            socket[KEY_SOCKET_STATE] = socketState2String(socketInfo.psi.soi_proto.pri_tcp.tcpsi_state);
+            socket[KEY_SOCKET_STATE] = [NSNumber numberWithInt:socketInfo.psi.soi_proto.pri_tcp.tcpsi_state];
         }
         
         //add
@@ -724,7 +850,6 @@ bail:
         
     }//all FDs
 
-    
 //bail
 bail:
     
@@ -742,124 +867,5 @@ bail:
 }
 
 @end
-
-
-//convert a socket type into string
-NSString* socketType2String(int type)
-{
-    //socket type
-    NSString* socketType = nil;
-    
-    //convert
-    switch(type)
-    {
-        //stream
-        case SOCK_STREAM:
-            socketType = @"SOCK_STREAM";
-            break;
-            
-        //dgram
-        case SOCK_DGRAM:
-            socketType = @"SOCK_DGRAM";
-            break;
-          
-        //raw
-        case SOCK_RAW:
-            socketType = @"SOCK_RAW";
-            break;
-            
-        //rdm
-        case SOCK_RDM:
-            socketType = @"SOCK_RDM";
-            break;
-            
-        //seq packet
-        case SOCK_SEQPACKET:
-            socketType = @"SOCK_SEQPACKET";
-            break;
-            
-        default:
-            break;
-    }
-    
-    return socketType;
-}
-
-
-//convert a socket family into string
-NSString* socketFamily2String(int family)
-{
-    //socket family
-    NSString* socketFamily = nil;
-    
-    //sanity check
-    if( (family < 0) ||
-        (family >= SOCKET_FAMILY_MAX) )
-    {
-        //bail
-        goto bail;
-    }
-    
-    //init socket family string
-    socketFamily = [NSString stringWithUTF8String:socketFamilies[family]];
-    
-//bail
-bail:
-    
-    return socketFamily;
-}
-
-//convert a socket protocol into string
-NSString* socketProto2String(int proto)
-{
-    //socket proto
-    NSString* socketProto = nil;
-    
-    //proto struct
-    struct protoent *protoInfo = NULL;
-    
-    //get proto info
-    protoInfo = getprotobynumber(proto);
-    
-    //sanity check
-    if(NULL == protoInfo)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //init proto string
-    // ->name comes from struct
-    socketProto = [NSString stringWithUTF8String:protoInfo->p_name];
-    
-//bail
-bail:
-    
-    return socketProto;
-}
-
-
-//convert a socket state into string
-NSString* socketState2String(int state)
-{
-    //socket proto
-    NSString* socketState = nil;
-    
-    //set state
-    if(state < TCP_NSTATES)
-    {
-        //set state
-        socketState = [NSString stringWithUTF8String:socketStates[state]];
-    }
-    //invalid/unknown socket state
-    else
-    {
-        socketState = [NSString stringWithFormat:@"unknown state (%d)", state];
-    }
-    
-    return socketState;
-}
-
-
 
 

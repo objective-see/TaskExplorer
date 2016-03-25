@@ -84,7 +84,7 @@ bail:
     return version;
 }
 
-
+//TODO: calling 'isApple' does this all over again!?
 //get the signing info of a file
 NSDictionary* extractSigningInfo(NSString* path)
 {
@@ -114,9 +114,6 @@ NSDictionary* extractSigningInfo(NSString* path)
     
     //init signing status
     signingStatus = [NSMutableDictionary dictionary];
-    
-    //signingStatus[KEY_SIGNATURE_STATUS] = @0;
-    //return signingStatus;
     
     //create static code
     status = SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode);
@@ -624,21 +621,18 @@ pid_t getParentID(int pid)
     //size
     size_t procBufferSize = sizeof(processStruct);
     
-    //mib
-    const u_int mibLength = 4;
-    
     //syscall result
     int sysctlResult = -1;
     
     //init mib
-    int mib[mibLength] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid};
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid};
     
     //make syscall
-    sysctlResult = sysctl(mib, mibLength, &processStruct, &procBufferSize, NULL, 0);
+    sysctlResult = sysctl(mib, sizeof(mib)/sizeof(*mib), &processStruct, &procBufferSize, NULL, 0);
     
     //check if got ppid
     if( (STATUS_SUCCESS == sysctlResult) &&
-       (0 != procBufferSize) )
+        (0 != procBufferSize) )
     {
         //save ppid
         parentID = processStruct.kp_eproc.e_ppid;
@@ -695,14 +689,60 @@ BOOL isAlive(pid_t targetPID)
     //flag
     BOOL isAlive = YES;
     
+    //reset errno
+    errno = 0;
+    
+    //'management info base' array
+    int mib[4] = {0};
+    
+    //kinfo proc
+    struct kinfo_proc procInfo = {0};
+    
     //try 'kill' with 0
-    // ->no harm done, but will fail with 'ESRCH' if process is dead!
-    if( (0 != kill(targetPID, 0)) &&
-        (ESRCH == errno) )
+    // ->no harm done, but will fail with 'ESRCH' if process is dead
+    kill(targetPID, 0);
+    
+    //dead proc -> 'ESRCH'
+    // ->'No such process'
+    if(ESRCH == errno)
     {
-        //alive
+        //dead
         isAlive = NO;
+        
+        //bail
+        goto bail;
     }
+    
+    //size
+    size_t size = 0;
+    
+    //init mib
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC;
+    mib[2] = KERN_PROC_PID;
+    mib[3] = targetPID;
+    
+    //init size
+    size = sizeof(procInfo);
+
+    //get task's flags
+    // ->allows to check for zombies
+    if(0 == sysctl(mib, sizeof(mib)/sizeof(*mib), &procInfo, &size, NULL, 0))
+    {
+        //check for zombies
+        if(((procInfo.kp_proc.p_stat) & SZOMB) == SZOMB)
+        {
+            //dead
+            isAlive = NO;
+            
+            //bail
+            goto bail;
+            
+        }
+    }
+    
+//bail
+bail:
     
     return isAlive;
 }
@@ -903,8 +943,7 @@ BOOL Is32Bit(pid_t targetPID)
 //bail
 bail:
     
-    return isI386;
-    
+    return isI386;    
 }
-    
+
 

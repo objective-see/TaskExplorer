@@ -332,4 +332,7 @@
 //hotkey 'i'
 #define KEYCODE_I 0x22
 
+//unknown task
+#define TASK_PATH_UNKNOWN @"<unknown>"
+
 #endif

@@ -12,7 +12,10 @@
 #import "Task.h"
 
 @protocol remoteTaskProto
-//- (void)compressFile:(NSFileHandle *)inFile toFile:(NSFileHandle *)outFile withReply:(void (^)(NSError *error))reply;
+
+//get task's commandline args
+// ->args returned in array arg
+-(void)getTaskArgs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
 
 //enumerate loaded dylibs in a task
 -(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply;
