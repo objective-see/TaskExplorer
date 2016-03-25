@@ -549,12 +549,6 @@ bail:
     //remove dups
     [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
     
-    //TODO: remove
-    if(pid.intValue == 13084)
-    {
-        syslog(LOG_ERR, "TASK-EXPLORER: %s\n", dylibs.description.UTF8String);
-    }
-
 //bail
 bail:
     

@@ -80,6 +80,9 @@ void exceptionHandler(NSException *exception)
     //err msg
     syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s", [[[NSThread callStackSymbols] description] UTF8String]);
     
+    //try print any objective-c objects in exception's 'reason'
+    displayObject(exception);
+    
     //main thread
     // ->just show UI alert
     if(YES == [NSThread isMainThread])
@@ -152,4 +155,68 @@ void signalHandler(int signal, siginfo_t *info, void *context)
     }
     
 	return;
+}
+
+//given an error reason (e.g. '*** Collection <__NSArrayM: 0x7fdb36a72b80> was mutated while being enumerated'
+// ->extract and grab objective-c object's description; 0x7fdb36a72b80 (NSArray*)
+void displayObject(NSException* exception)
+{
+    //object description
+    NSString* objectDescription = nil;
+    
+    //start
+    NSRange start = {0};
+    
+    //end
+    NSRange end = {0};
+    
+    //extracted addr
+    NSString* extractedAddr = nil;
+    
+    //scanner
+    // ->used to convert hex string to pointer
+    NSScanner* scanner = nil;
+    
+    //address
+    unsigned long long objAddress = 0;
+    
+    //find start
+    // ->find '0x' in something like: *** Collection <__NSArrayM: 0x7fdb36a72b80>
+    start = [exception.reason rangeOfString:@"0x"];
+    if(NSNotFound == start.location)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //find end
+    // ->find '>' in something like: *** Collection <__NSArrayM: 0x7fdb36a72b80>
+    end = [exception.reason rangeOfString:@">"];
+    if(NSNotFound == end.location)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //extract address
+    // ->will still be a (hex) string, but will be converted below
+    extractedAddr = [exception.reason substringWithRange:NSMakeRange(start.location + start.length, end.location - start.location- start.length)];
+    
+    //init scanner
+    scanner = [NSScanner scannerWithString:extractedAddr];
+    
+    //convert extracted address from hex string to pointer
+    [scanner scanHexLongLong:&objAddress];
+    
+    //cast to obj-c object
+    // ->then get description
+    objectDescription = [(__bridge_transfer NSArray*)((void*)objAddress) description];
+    
+    //err msg
+    syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: object: %s", [objectDescription UTF8String]);
+    
+//bail
+bail:
+    
+    return;
 }

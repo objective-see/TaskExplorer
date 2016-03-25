@@ -6,24 +6,17 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-//TODO: list of what's running on my Mac on website!!!!
-
+#import "KKRow.h"
 #import "Binary.h"
 #import "Consts.h"
+#import "ItemBase.h"
 #import "ItemView.h"
 #import "VTButton.h"
-
-
+#import "kkRowCell.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
-#import "ItemBase.h"
 #import "TaskTableController.h"
 #import "InfoWindowController.h"
-
-#import "KKRow.h"
-#import "kkRowCell.h"
-
-#import <AppKit/AppKit.h>
 
 @implementation TaskTableController
 
@@ -823,7 +816,7 @@ bail:
         //draw
         [selectedView setNeedsDisplay:YES];
         
-        //make hide it after .33 second
+        //make hidden it after .33 second
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.33 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             
             //reset color

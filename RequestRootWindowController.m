@@ -19,6 +19,7 @@
 @synthesize statusMsg;
 @synthesize authButton;
 @synthesize shouldExit;
+@synthesize cancelButton;
 
 //automatically called when nib is loaded
 // ->center window
@@ -76,9 +77,6 @@
 // ->auth user, then set XPC service as root/setuid
 -(IBAction)authenticate:(id)sender
 {
-    //status var
-    BOOL authdOK = NO;
-    
     //authorization ref
     AuthorizationRef authorizationRef = {0};
     
@@ -154,8 +152,6 @@
     
     //2nd arg: permissions
     // ->note: 4 at front is setuid
-    //TODO: change b4 release
-    // ->make 4755 before deploy (for testing, 777 makes Xcode be able to del it during build!)
     installArgs[1] = "4755";
     
     //3rd arg: XPC service
@@ -166,8 +162,6 @@
     
     //chmod XPC service w/ setuid
     osStatus = AuthorizationExecuteWithPrivileges(authorizationRef, "/bin/chmod", 0, (char* const*)installArgs, NULL);
-    
-    //check
     if(errAuthorizationSuccess != osStatus)
     {
         //err msg
@@ -182,23 +176,46 @@
         //bail
         goto bail;
     }
-    
-    //no errors
-    authdOK = YES;
-    
+
     //no exit
     self.shouldExit = NO;
     
-    //make sure app's key window is (still) font
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]).window makeKeyAndOrderFront:self];
+    //disable auth button
+    self.authButton.enabled = NO;
     
-    //make sure app is (still) front
-    [NSApp activateIgnoringOtherApps:YES];
+    //disable cancel button
+    self.cancelButton.enabled = NO;
     
-    //call back into app delegate
-    // ->kick off task enum, etc
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) go];
+    //update auth message
+    self.statusMsg.stringValue = @"ok: authorization successful";
     
+    //wait a bit
+    // ->then hide window & kick off action
+    {
+        
+    //dispatch, then action
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.50 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        //close window
+        [self.window close];
+        
+        //exec UI actions etc on main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            //make sure app's key window is (still) font
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).window makeKeyAndOrderFront:self];
+            
+            //make sure app is (still) front
+            [NSApp activateIgnoringOtherApps:YES];
+            
+            //call back into app delegate
+            // ->kick off task enum, etc
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) go];
+            
+        });
+    });
+        
+    }
 
 //bail
 bail:
@@ -210,13 +227,7 @@ bail:
         AuthorizationFree(authorizationRef, kAuthorizationFlagDestroyRights);
     }
     
-    //on auth/'install' success
-    // ->close window
-    if(YES == authdOK)
-    {
-        //close window
-        [self.window close];
-    }
+    
     
     return;
 }

@@ -20,9 +20,6 @@
 //TODO: autolayout vertically
 //TODO: show 'from where' via quarantine attrz or database!! (simon email)
 //TODO: detect as procs die via GCD (simon blog post)
-//TODO: missing icon (128) - new icon?
-//TODO: exception handling for mutated array!
-//TODO: check for "Apple Mac OS Application Signing" for Apple Apps - and add to 'OBJ-See' TODO doc
 
 @implementation AppDelegate
 
@@ -270,17 +267,6 @@
             
             break;
             
-        //'i' (info)
-        //case KEYCODE_I:
-            
-            //info
-            //TODO...this will take some work, search, flagged, item....
-            
-            //set flag
-            //wasHandled = YES;
-            
-            //break;
-        
         //'w' (close window)
         case KEYCODE_W:
             
@@ -1745,9 +1731,6 @@ bail:
 {
     //unselect current task
     self.currentTask = nil;
-    
-    //TODO: don't reset filtered items?
-    // ...will require some smart filtering :/
     
     //unset filter flag
     self.taskTableController.isFiltered = NO;

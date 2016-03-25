@@ -84,7 +84,6 @@ bail:
     return version;
 }
 
-//TODO: calling 'isApple' does this all over again!?
 //get the signing info of a file
 NSDictionary* extractSigningInfo(NSString* path)
 {
@@ -299,7 +298,6 @@ bail:
         CFRelease(staticCode);
     }
 
-    
     return isApple;
 }
 

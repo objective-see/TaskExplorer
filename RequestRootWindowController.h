@@ -18,6 +18,9 @@
 //auth button
 @property (weak) IBOutlet NSButton *authButton;
 
+//cancel button
+@property (weak) IBOutlet NSButton *cancelButton;
+
 //arrow icon
 @property (weak) IBOutlet NSImageView *arrowIcon;
 

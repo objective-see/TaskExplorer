@@ -304,8 +304,8 @@ bail:
         for(NSString* dylibPath in dylibPaths)
         {
             //skip main executable image
-            //TODO: also check realpath() or obj-c equiv!
-            if(YES == [dylibPath isEqualToString:self.binary.path])
+            // ->making sure to resolve symlinks
+            if(YES == [dylibPath isEqualToString:[self.binary.path stringByResolvingSymlinksInPath]])
             {
                 //skip
                 continue;
