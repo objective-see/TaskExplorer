@@ -833,9 +833,6 @@ void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset)
     //button
     NSButton* button = nil;
     
-    //button's label
-    NSTextField* label = nil;
-    
     //image name
     NSString* imageName =  nil;
     
@@ -898,7 +895,11 @@ void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset)
     //get button
     // ->tag id of button, passed in userData var
     button = [currentRow viewWithTag:[((NSDictionary*)event.userData)[@"tag"] unsignedIntegerValue]];
-    label = [currentRow viewWithTag: 1 + [((NSDictionary*)event.userData)[@"tag"] unsignedIntegerValue]];
+    if(nil == button)
+    {
+        //bail
+        goto bail;
+    }
     
     //restore default button image
     // ->for 'info' and 'show' buttons

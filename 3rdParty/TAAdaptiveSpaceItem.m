@@ -9,14 +9,24 @@
 #import "TAAdaptiveSpaceItem.h"
 #import "TAAdaptiveSpaceItemView.h"
 
+// Private
+@interface TAAdaptiveSpaceItem ()
+- ( void ) doAdaptiveSpaceItemInit_;
+@end // Private
+
 @implementation TAAdaptiveSpaceItem
 
-- (void)awakeFromNib
+- (instancetype ) initWithItemIdentifier:(NSString *)itemIdentifier
 {
-    TAAdaptiveSpaceItemView *adaptiveSpaceItemView = [[TAAdaptiveSpaceItemView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1)];
-    adaptiveSpaceItemView.adaptiveSpaceItem = self;
-    self.view = adaptiveSpaceItemView;
+    if ( self = [ super initWithItemIdentifier: itemIdentifier ] )
+        [ self doAdaptiveSpaceItemInit_ ];
+    return self;
 }
+
+- (void) awakeFromNib
+    {
+    [ self doAdaptiveSpaceItemInit_ ];
+    }
 
 - (NSString *)label
 {
@@ -68,5 +78,14 @@
     [self setMinSize:[self minSize]];
     [self setMaxSize:[self maxSize]];
 }
+
+// Private
+
+- ( void ) doAdaptiveSpaceItemInit_
+    {
+    TAAdaptiveSpaceItemView *adaptiveSpaceItemView = [[TAAdaptiveSpaceItemView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1)];
+    adaptiveSpaceItemView.adaptiveSpaceItem = self;
+    self.view = adaptiveSpaceItemView;
+    }
 
 @end

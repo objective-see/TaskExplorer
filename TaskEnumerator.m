@@ -55,7 +55,6 @@
 
 //enumerate all tasks
 // ->calls back into app delegate to update task (top) table when pau
-//   TODO: existing tasks w/ nil vtInfo, call [vtObject addItem:binary] ?
 -(void)enumerateTasks
 {
     //(new) task item
@@ -138,7 +137,7 @@
         
         //reload bottom pane
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
-        
+
     });
     
     //now generate signing info/encryption check/packer check
