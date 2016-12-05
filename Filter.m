@@ -5,15 +5,17 @@
 //  Created by Patrick Wardle on 2/21/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
+
+#import "Task.h"
 #import "Consts.h"
 #import "Filter.h"
-#import "Utilities.h"
-#import "Task.h"
 #import "ItemBase.h"
+#import "Utilities.h"
 #import "Connection.h"
+#import "AppDelegate.h"
 
 //binary filter keywords
-NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged", @"#encrypted", @"#packed"};
+NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#unsigned", @"#flagged", @"#encrypted", @"#packed", @"#notfound"};
 
 @implementation Filter
 
@@ -49,31 +51,7 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 {
     //for now just check in binary keywords
     return [self.binaryFilters containsObject:searchString];
-    
-    /*
-    //flag
-    BOOL isKeyword = NO;
-    
-    //iterate over all keywords
-    // ->check for match
-    for(NSUInteger i=0; i < sizeof(KEYWORDS)/sizeof(KEYWORDS[0]); i++)
-    {
-        //check
-        if(YES == [KEYWORDS[i] isEqualToString:searchString])
-        {
-            //match
-            isKeyword = YES;
-            
-            //bail
-            break;
-        }
-    }
-    
-    return isKeyword;
-    */
-    
 }
-
 
 //filter tasks
 // ->name, path, pid
@@ -82,38 +60,44 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //task
     Task* task = nil;
     
-    //flag for keyword filter
-    BOOL isKeyword = NO;
-    
-    //first reset filter'd items
+    //first reset any previous filter'd items
     [results removeAllObjects];
     
-    //set keyword flag
+    //process #keyword filtering
     // ->note: already checked its a full/matching keyword
-    isKeyword = [filterText hasPrefix:@"#"];
-    
-    //sync
-    @synchronized(items)
+    if(YES == [filterText hasPrefix:@"#"])
     {
-
-    //iterate over all tasks
-    for(NSNumber* taskKey in items)
-    {
-        //extract task
-        task = items[taskKey];
+        //prep UI for filtering
+        // ->config/show overlay, etc
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:PANE_TOP];
         
-        //handle keyword filtering
-        if( (YES == isKeyword) &&
-            (YES == [self binaryFulfillsKeyword:filterText binary:task.binary]) )
+        //in background filter by keyword
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            //nap a 1/2second to let message show up
+            [NSThread sleepForTimeInterval:0.5];
+            
+            //filter
+            // ->calls back in UI to refresh when done!
+            [self filterByKeyword:(NSString*)filterText items:items.allValues results:(NSMutableArray*)results];
+            
+        });
+    }
+    
+    //not keyword
+    // ->do normal search here...
+    else
+    {
+        //sync
+        @synchronized(items)
         {
-            //add
-            [results addObject:task];
 
-        }//keywords
-       
-        //no keyword search
-        else
+        //iterate over all tasks
+        for(NSNumber* taskKey in items)
         {
+            //extract task
+            task = items[taskKey];
+            
             //check path first
             // ->mostly likely to match
             if( (nil != task.binary.path) &&
@@ -146,12 +130,81 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
                 //next
                 continue;
             }
-        }
 
-    }//all tasks
-    
-    }//sync
+        }//all tasks
         
+        }//sync
+        
+    }//normal filtering
+        
+    return;
+}
+
+//filter tasks
+// ->name, path, pid
+-(void)filterByKeyword:(NSString*)filterText items:(NSArray*)items results:(NSMutableArray*)results
+{
+    //pane
+    NSUInteger pane = PANE_TOP;
+
+    //sync
+    @synchronized(items)
+    {
+        //sanity check
+        if(0 == items.count)
+        {
+            //bail
+            goto bail;
+        }
+    
+        //handle tasks
+        if(YES == [items.firstObject isKindOfClass:[Task class]])
+        {
+            //set pane
+            pane = PANE_TOP;
+            
+            //iterate over all items
+            for(id item in items)
+            {
+                //check if task's binary matches filter
+                if(YES == [self binaryFulfillsKeyword:filterText binary:((Task*)item).binary])
+                {
+                    //add
+                    [results addObject:item];
+                }
+            }
+        }
+        //handle dylibs
+        else if(YES == [items.firstObject isKindOfClass:[Binary class]])
+        {
+            //set pane
+            pane = PANE_BOTTOM;
+            
+            //iterate over all items
+            for(id item in items)
+            {
+                //check if dylib's binary matches filter
+                if(YES == [self binaryFulfillsKeyword:filterText binary:((Binary*)item)])
+                {
+                    //add
+                    [results addObject:item];
+                }
+            }
+        }
+    
+    } //sync
+    
+    //tell the UI we are done
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        //finalize UI
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) finalizeFiltration:pane];
+        
+    });
+    
+//bail
+bail:
+    
     return;
 }
 
@@ -159,36 +212,41 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 // ->name and path
 -(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
-    //flag for keyword filter
-    BOOL isKeyword = NO;
-    
     //first reset filter'd items
     [results removeAllObjects];
     
-    //set keyword flag
+    //process #keyword filtering for dylibs
     // ->note: already checked its a full/matching keyword
-    isKeyword = [filterText hasPrefix:@"#"];
-    
-    //sync
-    @synchronized(items)
+    if( (YES == [filterText hasPrefix:@"#"]) &&
+        (YES == [items.firstObject isKindOfClass:[Binary class]]) )
     {
-    
-    //iterate over all tasks
-    for(ItemBase* item in items)
+        //prep UI for filtering
+        // ->config/show overlay, etc
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:PANE_BOTTOM];
+        
+        //in background filter by keyword
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            //nap a 1/2second to let message show up
+            [NSThread sleepForTimeInterval:0.5];
+            
+            //filter
+            // ->calls back in UI to refresh when done!
+            [self filterByKeyword:(NSString*)filterText items:items results:(NSMutableArray*)results];
+            
+        });
+    }
+
+    //not keyword
+    // ->do normal search here...
+    else
     {
-        //handle keyword filtering
-        // ->for now, only for dylibs (binaries)
-        if( (YES == [item isKindOfClass:[Binary class]]) &&
-            (YES == isKeyword) &&
-            (YES == [self binaryFulfillsKeyword:filterText binary:(Binary*)item]) )
+        //sync
+        @synchronized(items)
         {
-            //add
-            [results addObject:item];
         
-        }//keywords
-        
-        //no keyword search
-        else
+        //iterate over all items
+        for(ItemBase* item in items)
         {
             //check path first
             // ->most likely to match
@@ -212,12 +270,12 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
                 //next
                 continue;
             }
-        }
+            
+        }//all items
+            
+        }//sync
         
-    }//all items
-        
-    //sync
-    }
+    }//normal filtering
     
     return;
 }
@@ -417,6 +475,16 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         goto bail;
     }
     
+    //handle '#notfound'
+    else if( (YES == [keyword isEqualToString:@"#notfound"]) &&
+             (YES == [self notFound:binary]) )
+    {
+        //happy
+        fulfills = YES;
+        
+        //bail
+        goto bail;
+    }
     
 //bail
 bail:
@@ -531,6 +599,12 @@ bail:
     
     //set flag
     return item.isPacked;
+}
+
+//keyword filter '#notfound'
+-(BOOL)notFound:(Binary *)item
+{
+    return item.notFound;
 }
 
 @end

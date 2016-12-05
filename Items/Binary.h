@@ -46,6 +46,9 @@
 //packed flag
 @property BOOL isPacked;
 
+//not found
+@property BOOL notFound;
+
 /* VIRUS TOTAL INFO */
 
 //dictionary returned by VT

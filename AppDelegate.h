@@ -85,9 +85,6 @@
 //spinner
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 
-//status msg
-@property (weak) IBOutlet NSTextField *statusText;
-
 //non-UI thread that performs actual scan
 @property(nonatomic, strong)NSThread *scannerThread;
 
@@ -166,6 +163,15 @@
 //custom search field for items
 @property(nonatomic, retain)CustomTextField* customItemsFilter;
 
+//overlay view for filter
+@property (weak) IBOutlet NSView *filteringOverlay;
+
+//activity indicator for filtering
+@property (weak) IBOutlet NSProgressIndicator *filteringIndicator;
+
+//message for filtering
+@property (weak) IBOutlet NSTextField *filteringMessage;
+
 /* METHODS */
 
 //complete a few inits
@@ -235,6 +241,12 @@
 //callback for custom search fields
 // ->handle auto-complete filterings
 -(void)filterAutoComplete:(NSTextView*)textField;
+
+//show the filter overlay, etc
+-(void)prepUIForFiltering:(NSUInteger)pane;
+
+//hide overlay, etc
+-(void)unprepUIForFiltering;
 
 //code to complete filtering/search
 // ->reload table/scroll to top etc

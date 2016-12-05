@@ -9,8 +9,8 @@
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "FE4103FE-6F26-4639-8C9F-D8D32C76D6A9",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
-    "61F07AFB33748EF0C810BEEF6126283DAC63A899" : "TaskExplorer",
-    "7564E3FECD3AE625755C217749E31B3EE2B69E20" : "machO\/"
+    "61F07AFB33748EF0C810BEEF6126283DAC63A899" : "TaskExplorer\/",
+    "7564E3FECD3AE625755C217749E31B3EE2B69E20" : "MachO\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "TaskExplorer",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,

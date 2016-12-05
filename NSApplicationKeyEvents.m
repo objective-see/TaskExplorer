@@ -27,21 +27,12 @@
                 if ([self sendAction:@selector(paste:) to:nil from:self])
                     return;
             }
-            else if ([[event charactersIgnoringModifiers] isEqualToString:@"z"]) {
-                if ([self sendAction:@selector(undo:) to:nil from:self])
-                    return;
-            }
             else if ([[event charactersIgnoringModifiers] isEqualToString:@"a"]) {
                 if ([self sendAction:@selector(selectAll:) to:nil from:self])
                     return;
             }
         }
-        else if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask)) {
-            if ([[event charactersIgnoringModifiers] isEqualToString:@"Z"]) {
-                if ([self sendAction:@selector(redo:) to:nil from:self])
-                    return;
-            }
-        }
+        
     }
     [super sendEvent:event];
 }

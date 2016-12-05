@@ -12,6 +12,7 @@
 @implementation CustomTextField
 
 @synthesize owner;
+@synthesize lastMovement;
 
 //subclass override
 // ->see: http://stackoverflow.com/questions/5163646/how-to-make-nssearchfield-send-action-upon-autocompletion/5360535#5360535
@@ -24,6 +25,17 @@
         goto bail;
     }
     
+    //ignore if 2x 'enter'
+    if( (movement == NSReturnTextMovement) &&
+        (self.lastMovement == NSReturnTextMovement) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    //update
+    self.lastMovement = movement;
+     
     //show full replacements
     if(0 != charRange.location)
     {
@@ -44,7 +56,6 @@
     {
         //call up into owner to process
         [owner filterAutoComplete:self];
-        //[((AppDelegate*)[[NSApplication sharedApplication] delegate]) filterAutoComplete:self];
     }
     
 //bail

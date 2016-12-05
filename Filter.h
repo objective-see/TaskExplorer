@@ -43,6 +43,9 @@
 // ->determine if binary is packed
 -(BOOL)isPacked:(Binary*)item;
 
+//keyword filter '#notfound'
+-(BOOL)notFound:(Binary*)item;
+
 //filter tasks
 -(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
 

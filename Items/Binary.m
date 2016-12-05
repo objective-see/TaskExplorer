@@ -21,6 +21,7 @@
 @synthesize parser;
 @synthesize vtInfo;
 @synthesize isPacked;
+@synthesize notFound;
 @synthesize isEncrypted;
 @synthesize signingInfo;
 @synthesize isTaskBinary;
@@ -46,6 +47,9 @@
         //get task's icon
         // ->either from bundle or just use system icon
         self.icon = [self getIcon];
+        
+        //determine if its on disk
+        self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
         
         //grab attributes
         //self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];        
@@ -73,7 +77,7 @@ bail:
             parser = [[MachO alloc] init];
             
             //parse
-            if(YES != [self.parser parse:self.path])
+            if(YES != [self.parser parse:self.path classify:YES])
             {
                 //unset parser
                 self.parser = nil;

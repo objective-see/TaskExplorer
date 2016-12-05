@@ -195,6 +195,13 @@
         //get task
         newTask = newTasks[key];
         
+        //skip kernel
+        if(0 == newTask.pid.intValue)
+        {
+            //skip
+            continue;
+        }
+        
         //enumerate
         [newTask enumerateDylibs:self.dylibs];
         
@@ -210,6 +217,13 @@
         //get task
         newTask = newTasks[key];
         
+        //skip kernel
+        if(0 == newTask.pid.intValue)
+        {
+            //skip
+            continue;
+        }
+        
         //enumerate
         [newTask enumerateFiles];
         
@@ -224,6 +238,13 @@
     {
         //get task
         newTask = newTasks[key];
+        
+        //skip kernel
+        if(0 == newTask.pid.intValue)
+        {
+            //skip
+            continue;
+        }
         
         //enumerate
         [newTask enumerateNetworking];

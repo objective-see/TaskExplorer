@@ -312,6 +312,9 @@ bail:
     //row
     NSInteger itemRow = 0;
     
+    //file open error alert
+    NSAlert* errorAlert = nil;
+    
     //grab sender's row
     itemRow = [self.flaggedItemTable rowForView:sender];
     
@@ -349,11 +352,18 @@ bail:
         goto bail;
     }
     
-    //open Finder
-    // ->will reveal binary
-    [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
-    
-    //bail
+    //open item in Finder
+    // ->error alert shown if file open fails
+    if(YES != [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""])
+    {
+        //alloc/init alert
+        errorAlert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"ERROR:\nfailed to open %@", path] defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"errno value: %d", errno];
+        
+        //show it
+        [errorAlert runModal];
+    }
+
+//bail
 bail:
     
     return;

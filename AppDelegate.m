@@ -41,9 +41,12 @@
 @synthesize taskViewFormat;
 @synthesize commandHandling;
 @synthesize completePosting;
+@synthesize filteringMessage;
+@synthesize filteringOverlay;
 @synthesize customItemsFilter;
 @synthesize customTasksFilter;
 @synthesize progressIndicator;
+@synthesize filteringIndicator;
 @synthesize taskTableController;
 @synthesize bottomViewController;
 @synthesize aboutWindowController;
@@ -75,6 +78,9 @@
     //first thing...
     // ->install exception handlers!
     installExceptionHandlers();
+    
+    //for autolayout
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
     
     //init virus total object
     virusTotalObj = [[VirusTotal alloc] init];
@@ -690,6 +696,9 @@ bail:
     //stop progress indicator
     [self.bottomPaneSpinner stopAnimation:nil];
     
+    //hide
+    self.bottomPaneSpinner.hidden = YES;
+    
     //invoke refresh
     [(id)self.bottomViewController reloadTable];
     
@@ -698,7 +707,6 @@ bail:
     {
         //how
         self.noItemsLabel.hidden = NO;
-        
     }
     //got items?
     else
@@ -1439,6 +1447,9 @@ bail:
             //reload to clear
             [(id)self.bottomViewController reloadTable];
             
+            //show spinner
+            self.bottomPaneSpinner.hidden = NO;
+            
             //start progress indicator
             [self.bottomPaneSpinner startAnimation:nil];
             
@@ -1450,6 +1461,9 @@ bail:
     {
         //reload to clear
         [(id)self.bottomViewController reloadTable];
+        
+        //start spinner
+        self.bottomPaneSpinner.hidden = NO;
         
         //start progress indicator
         [self.bottomPaneSpinner startAnimation:nil];
@@ -1467,6 +1481,13 @@ bail:
             //remove all task's dylibs
             [self.currentTask.dylibs removeAllObjects];
             
+            //skip kernel
+            if(0 == self.currentTask.pid.intValue)
+            {
+                //skip
+                break;
+            }
+
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
             [self.currentTask enumerateDylibs:self.taskEnumerator.dylibs];
@@ -1482,6 +1503,13 @@ bail:
             //remove all task's dylibs
             [self.currentTask.files removeAllObjects];
             
+            //skip kernel
+            if(0 == self.currentTask.pid.intValue)
+            {
+                //skip
+                break;
+            }
+            
             //(re)enumerate files via XPC
             // ->triggers table reload when done
             [self.currentTask enumerateFiles];
@@ -1493,6 +1521,13 @@ bail:
             
             //init placeholder text for network
             filterPlaceholder = @"Filter Connections";
+            
+            //skip kernel
+            if(0 == self.currentTask.pid.intValue)
+            {
+                //skip
+                break;
+            }
             
             //(re)enumerate network connections via XPC
             // ->triggers table reload when done
@@ -1514,6 +1549,15 @@ bail:
             
             //set placeholder
             [[self.filterItemsBox cell] setPlaceholderString:filterPlaceholder];
+            
+            //kernel
+            // ->didn't enum so reload
+            if(0 == self.currentTask.pid.intValue)
+            {
+                //reload
+                [self reloadBottomPane:self.currentTask itemView:segmentTag];
+            }
+            
         });
     }
     //in main thread already
@@ -1522,12 +1566,18 @@ bail:
     {
         //set placeholder
         [[self.filterItemsBox cell] setPlaceholderString:filterPlaceholder];
+        
+        //kernel
+        // ->didn't enum so reload
+        if(0 == self.currentTask.pid.intValue)
+        {
+            //reload
+            [self reloadBottomPane:self.currentTask itemView:segmentTag];
+        }
     }
-    
     
 //bail
 bail:
-    
 
     return;
 }
@@ -1680,10 +1730,129 @@ bail:
     return;
 }
 
+//config/show the filter overlay
+// ->also disable all inputs/buttons
+-(void)prepUIForFiltering:(NSUInteger)pane
+{
+    //pre-req
+    [self.filteringOverlay setWantsLayer:YES];
+    
+    //rounded corners
+    self.filteringOverlay.layer.cornerRadius = 20.0;
+    
+    //maks
+    self.filteringOverlay.layer.masksToBounds = YES;
+    
+    //set overlay's view color to black
+    self.filteringOverlay.layer.backgroundColor = [NSColor grayColor].CGColor;
+    
+    //make it semi-transparent
+    self.filteringOverlay.alphaValue = 0.95;
+    
+    //show overlay
+    self.filteringOverlay.hidden = NO;
+    
+    //set text
+    // top pane
+    if(PANE_TOP == pane)
+    {
+        //set text
+        self.filteringMessage.stringValue = [NSString stringWithFormat:@"filtering tasks (%@)", self.filterTasksBox.stringValue];
+    }
+    //set text
+    // bottom pane
+    else
+    {
+        //set text
+        self.filteringMessage.stringValue = [NSString stringWithFormat:@"filtering dylibs (%@)", self.filterItemsBox.stringValue];
+    }
+    
+    //start spinner
+    [self.filteringIndicator startAnimation:nil];
+    
+    //disable view switcher
+    self.viewSelector.enabled = NO;
+    
+    //disable filter box
+    self.filterTasksBox.enabled = NO;
+    
+    //disable bottom pane switcher
+    self.bottomPaneBtn.enabled = NO;
+    
+    //disable bottom filter item box
+    self.filterItemsBox.enabled = NO;
+    
+    //disable refresh
+    self.refreshButton.enabled = NO;
+    
+    //disable search
+    self.searchButton.enabled = NO;
+    
+    //disable save
+    self.saveButton.enabled = NO;
+    
+    //disable flagged
+    self.flaggedButton.enabled = NO;
+    
+    //disable task table
+    self.taskTableController.itemView.enabled = NO;
+    
+    //disable item table
+    self.bottomViewController.itemView.enabled = NO;
+    
+    return;
+}
+
+//roll back changes to UI due to filtering
+// ->hide overlay and enable all inputs/buttons
+-(void)unprepUIForFiltering
+{
+    //always (attempt to) hide filter overlay
+    self.filteringOverlay.hidden = YES;
+    
+    //stop spinner
+    [self.filteringIndicator stopAnimation:nil];
+
+    //enable view switcher
+    self.viewSelector.enabled = YES;
+    
+    //enable filter box
+    self.filterTasksBox.enabled = YES;
+    
+    //enable bottom pane switcher
+    self.bottomPaneBtn.enabled = YES;
+    
+    //enable bottom filter item box
+    self.filterItemsBox.enabled = YES;
+    
+    //enable refresh
+    self.refreshButton.enabled = YES;
+    
+    //enable search
+    self.searchButton.enabled = YES;
+    
+    //enable save
+    self.saveButton.enabled = YES;
+    
+    //enable flagged
+    self.flaggedButton.enabled = YES;
+    
+    //enable task table
+    self.taskTableController.itemView.enabled = YES;
+    
+    //enable item table
+    self.bottomViewController.itemView.enabled = YES;
+    
+    return;
+}
+
 //code to complete filtering/search
 // ->reload table/scroll to top etc
 -(void)finalizeFiltration:(NSUInteger)pane
 {
+    //hide overlay, etc
+    [self unprepUIForFiltering];
+    
     //top pane (task)
     if(PANE_TOP == pane)
     {
@@ -1982,32 +2151,48 @@ bail:
     //set iVar flag
     self.commandHandling = YES;
     
-    //init invocation
-    textViewInvocationForSelector = [NSInvocation invocationWithMethodSignature:[textView methodSignatureForSelector:commandSelector]];
-    
-    //set target
-    [textViewInvocationForSelector setTarget:textView];
-    
-    //set selector
-    [textViewInvocationForSelector setSelector:commandSelector];
-    
-    //invoke selector
-    [textViewInvocationForSelector invoke];
-    
-    //unset iVar
-    self.commandHandling = NO;
-    
-    //indicate that selector was performed
-    didPerformRequestedSelectorOnTextView = YES;
-    
+    //handle 'enter'
+    // ->but only for #'s
+    if( (commandSelector == @selector(insertNewline:)) &&
+        (YES == [filterObj isKeyword:textView.string]) )
+    {
+        //filter
+        [self filterAutoComplete:textView];
+        
+        //unset iVar
+        self.commandHandling = NO;
+        
+        //set flag
+        didPerformRequestedSelectorOnTextView = YES;
+    }
+    //just invoke system handler for rest...
+    else
+    {
+        //init invocation
+        textViewInvocationForSelector = [NSInvocation invocationWithMethodSignature:[textView methodSignatureForSelector:commandSelector]];
+        
+        //set target
+        [textViewInvocationForSelector setTarget:textView];
+        
+        //set selector
+        [textViewInvocationForSelector setSelector:commandSelector];
+        
+        //invoke selector
+        [textViewInvocationForSelector invoke];
+        
+        //unset iVar
+        self.commandHandling = NO;
+        
+        //indicate that selector was performed
+        didPerformRequestedSelectorOnTextView = YES;
+    }
     
 //bail
 bail:
     
     return didPerformRequestedSelectorOnTextView;
 }
- 
- 
+
 //callback for custom search fields
 // ->handle auto-complete filterings
 -(void)filterAutoComplete:(NSTextView*)textView
@@ -2021,32 +2206,56 @@ bail:
     //handle top pane (tasks)
     if(textView == self.customTasksFilter)
     {
+        //set flag
+        self.taskTableController.isFiltered = YES;
+        
         //sync
         @synchronized(self.taskTableController.filteredItems)
         {
+            //remove all filtered tasks
+            [self.taskTableController.filteredItems removeAllObjects];
+            
+            //update ui
+            [self finalizeFiltration:PANE_TOP];
+            
             //filter
             [self.filterObj filterTasks:filterString items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
         }
         
-        //set flag
-        self.taskTableController.isFiltered = YES;
-        
-        //finalize filtering
-        [self finalizeFiltration:PANE_TOP];
-        
+        //refresh/update UI when not a keyword search
+        // ->keyword search are done in background, and will call this directly when pau
+        if(YES != [filterString hasPrefix:@"#"])
+        {
+            //finalize filtering
+            [self finalizeFiltration:PANE_TOP];
+        }
     }
     //handle bottom pane
     // ->just dylibs
     else if(textView == self.customItemsFilter)
     {
-        //filter
-        [self.filterObj filterFiles:filterString items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
-        
         //set flag
         self.bottomViewController.isFiltered = YES;
         
-        //finalize filtering
-        [self finalizeFiltration:PANE_BOTTOM];
+        @synchronized (self.bottomViewController.filteredItems)
+        {
+            //remove all filtered tasks
+            [self.bottomViewController.filteredItems removeAllObjects];
+            
+            //update ui
+            [self finalizeFiltration:PANE_BOTTOM];
+            
+            //filter
+            [self.filterObj filterFiles:filterString items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
+        }
+
+        //refresh/update UI when not a keyword search
+        // ->keyword search are done in background, and will call this directly when pau
+        if(YES != [filterString hasPrefix:@"#"])
+        {
+            //finalize filtering
+            [self finalizeFiltration:PANE_BOTTOM];
+        }
     }
     
 //bail
@@ -2081,14 +2290,10 @@ bail:
         //assign for return
         fieldEditor = self.customItemsFilter;
     }
-    
-    
+
 //bail
 bail:
     
     return fieldEditor;
 }
-
-
-
 @end

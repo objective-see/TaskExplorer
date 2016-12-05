@@ -17,6 +17,10 @@
 }
 
 //'owner'
-@property (nonatomic, retain)id owner;
+@property(nonatomic, retain)id owner;
+
+//last movement
+// ->helps avoid 2x 'Enter'
+@property NSInteger lastMovement;
 
 @end

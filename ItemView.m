@@ -337,7 +337,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@", " attributes:attributes]];
             }
             //dylibs
-            // ->open parents
+            // ->open'('
             else
             {
                 //open
@@ -362,6 +362,65 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"packed" attributes:attributes]];
             }
             
+            //dylib, need to close string here unless binary not found, then going to add that
+            // ->normally it doesn't have anything after...
+            if( (YES != [item isKindOfClass:[Task class]]) &&
+                (YES != binary.notFound))
+            {
+                //init color for closing
+                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                
+                //close string
+                [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
+            }
+            
+        }//encrypted or packed
+        
+        //add 'not found'
+        if(YES == binary.notFound)
+        {
+            //add ','
+            if( (YES == binary.isEncrypted) ||
+                (YES == binary.isPacked) )
+            {
+                //init color for comma,
+                // ->light gray
+                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                
+                //add
+                [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@", " attributes:attributes]];
+            }
+            //open string
+            else
+            {
+                //init color for comma, etc
+                // ->light gray
+                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                
+                //tasks
+                //add comma string
+                if(YES == [item isKindOfClass:[Task class]])
+                {
+                    //close
+                    [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@", " attributes:attributes]];
+                }
+                //dylibs
+                // ->open'('
+                else
+                {
+                    //open
+                    [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@" (" attributes:attributes]];
+                }
+
+            }
+            
+            //init color
+            // ->red
+            attributes  = [NSDictionary dictionaryWithObject:[NSColor redColor] forKey:NSForegroundColorAttributeName];
+            
+            //add
+            [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"not found" attributes:attributes]];
+            
             //dylib, need to close string here
             // ->normally it doesn't have anything after...
             if(YES != [item isKindOfClass:[Task class]])
@@ -373,7 +432,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
             }
             
-        }//encrypted or packed
+        }//not found
     }
     
     //task
