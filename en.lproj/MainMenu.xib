@@ -77,7 +77,7 @@
                                 <rect key="frame" x="662" y="125" width="32" height="32"/>
                             </progressIndicator>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kIC-ZZ-ldy">
-                                <rect key="frame" x="543" y="210" width="270" height="18"/>
+                                <rect key="frame" x="619" y="210" width="118" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="f5b-Ls-Iea"/>
                                 </constraints>
@@ -90,9 +90,8 @@
                         </subviews>
                         <constraints>
                             <constraint firstItem="LMT-Bu-FAk" firstAttribute="leading" secondItem="E4M-PF-VD0" secondAttribute="centerX" constant="-16" id="9rN-kn-Kch"/>
-                            <constraint firstItem="LMT-Bu-FAk" firstAttribute="top" secondItem="kIC-ZZ-ldy" secondAttribute="bottom" constant="53" id="DGl-Ls-bej"/>
                             <constraint firstItem="kIC-ZZ-ldy" firstAttribute="centerX" secondItem="LMT-Bu-FAk" secondAttribute="centerX" id="FHS-PP-sDV"/>
-                            <constraint firstItem="kIC-ZZ-ldy" firstAttribute="leading" secondItem="E4M-PF-VD0" secondAttribute="centerX" constant="-133" id="KMj-fD-TVd"/>
+                            <constraint firstItem="LMT-Bu-FAk" firstAttribute="centerY" secondItem="E4M-PF-VD0" secondAttribute="centerY" id="UJF-bU-Q8q"/>
                             <constraint firstItem="kIC-ZZ-ldy" firstAttribute="top" secondItem="E4M-PF-VD0" secondAttribute="top" constant="53" id="mO5-9B-M4K"/>
                         </constraints>
                     </customView>
@@ -222,7 +221,6 @@
                     <constraint firstItem="UiZ-UI-inM" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="49" id="hIv-ki-dG5"/>
                     <constraint firstItem="gtq-gn-VPL" firstAttribute="leading" secondItem="372" secondAttribute="centerX" constant="-109" id="iUK-4W-mmK"/>
                     <constraint firstAttribute="trailing" secondItem="bNA-gy-9Ta" secondAttribute="trailing" constant="8" id="k4n-CB-LFx"/>
-                    <constraint firstItem="joB-SY-vJU" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="500" id="mN5-g8-i4v"/>
                     <constraint firstItem="TNF-7q-Loy" firstAttribute="top" secondItem="372" secondAttribute="top" constant="-1" id="n5l-e4-yQi"/>
                     <constraint firstItem="UiZ-UI-inM" firstAttribute="leading" secondItem="hum-Mj-cDd" secondAttribute="trailing" constant="12" id="nDs-Pe-WqU"/>
                     <constraint firstItem="UiZ-UI-inM" firstAttribute="baseline" secondItem="hum-Mj-cDd" secondAttribute="baseline" id="oG8-Ak-Yjt"/>

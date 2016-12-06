@@ -1641,8 +1641,11 @@ bail:
             @synchronized(self.taskTableController.filteredItems)
             {
 
+            //remove prev
+            [self.taskTableController.filteredItems removeAllObjects];
+                
             //normal filter
-            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
             
             }
                 
@@ -1679,6 +1682,9 @@ bail:
             //get segment tag
             segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
             
+            //remove all filtered tasks
+            [self.bottomViewController.filteredItems removeAllObjects];
+            
             //get item
             // ->will bail if item isn't in (current) view, etc
             switch(segmentTag)
@@ -1687,7 +1693,7 @@ bail:
                 case DYLIBS_VIEW:
                 {
                     //normal filter
-                    [self.filterObj filterFiles:search.string items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
+                    [self.filterObj filterFiles:search.string items:self.currentTask.dylibs results:self.bottomViewController.filteredItems pane:PANE_BOTTOM];
                     
                     break;
                 }
@@ -1696,7 +1702,7 @@ bail:
                 case FILES_VIEW:
                 {
                     //filter
-                    [self.filterObj filterFiles:search.string items:self.currentTask.files results:self.bottomViewController.filteredItems];
+                    [self.filterObj filterFiles:search.string items:self.currentTask.files results:self.bottomViewController.filteredItems pane:PANE_BOTTOM];
                     
                     break;
                 }
@@ -1882,7 +1888,7 @@ bail:
         }
     }
     //bottom pane (dylibs, files, etc)
-    else
+    else if(PANE_BOTTOM == pane)
     {
         //always reload item (bottom) pane
         [self.bottomViewController.itemView reloadData];
@@ -2200,6 +2206,12 @@ bail:
     //filter string
     NSString* filterString = nil;
     
+    //tag
+    NSUInteger segmentTag = 0;
+    
+    //alert box
+    NSAlert* noKeywordsAlert = nil;
+    
     //extract filter
     filterString = textView.textStorage.string;
     
@@ -2219,7 +2231,7 @@ bail:
             [self finalizeFiltration:PANE_TOP];
             
             //filter
-            [self.filterObj filterTasks:filterString items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems];
+            [self.filterObj filterTasks:filterString items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
         }
         
         //refresh/update UI when not a keyword search
@@ -2234,10 +2246,29 @@ bail:
     // ->just dylibs
     else if(textView == self.customItemsFilter)
     {
+        //get segment tag
+        segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+        
+        //check if keyword was entered for files/networks
+        if(segmentTag != DYLIBS_VIEW)
+        {
+            //alloc/init alert
+            noKeywordsAlert = [NSAlert alertWithMessageText:@"#keywords not (yet) supported for files/connections" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@""];
+            
+            //and show it
+            [noKeywordsAlert runModal];
+            
+            //reset search
+            self.filterItemsBox.stringValue = @"";
+            
+            //bail
+            goto bail;
+        }
+        
         //set flag
         self.bottomViewController.isFiltered = YES;
         
-        @synchronized (self.bottomViewController.filteredItems)
+        @synchronized(self.bottomViewController.filteredItems)
         {
             //remove all filtered tasks
             [self.bottomViewController.filteredItems removeAllObjects];
@@ -2246,7 +2277,7 @@ bail:
             [self finalizeFiltration:PANE_BOTTOM];
             
             //filter
-            [self.filterObj filterFiles:filterString items:self.currentTask.dylibs results:self.bottomViewController.filteredItems];
+            [self.filterObj filterFiles:filterString items:self.currentTask.dylibs results:self.bottomViewController.filteredItems pane:PANE_BOTTOM];
         }
 
         //refresh/update UI when not a keyword search

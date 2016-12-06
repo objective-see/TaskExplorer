@@ -179,6 +179,9 @@
 //bottom pane
 #define PANE_BOTTOM 0x1
 
+//search pane
+#define PANE_SEARCH 0x2
+
 //for prefs
 //#define PREF_FIRST_RUN @"isFirstRun"
 
@@ -311,8 +314,9 @@
 //delta for pid tag
 #define PID_TAG_DELTA 1000
 
+//TODO: change back
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 45
+#define SEARCH_WAIT_TIME 10
 
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (initial) task/dylib/file enumeration please wait"

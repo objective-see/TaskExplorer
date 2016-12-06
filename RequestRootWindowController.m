@@ -117,6 +117,9 @@
     //end w/ NULL
     installArgs[3] = NULL;
     
+    //reset text color
+    self.statusMsg.textColor = [NSColor blackColor];
+    
     //create authorization ref
     osStatus = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, &authorizationRef);
     if(errAuthorizationSuccess != osStatus)

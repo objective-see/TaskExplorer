@@ -145,42 +145,73 @@
         //calc time remaining
         timeRemaining = SEARCH_WAIT_TIME - (currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
         
-        //pre-req
-        [self.overlayView setWantsLayer:YES];
-        
-        //rounded corners
-        self.overlayView.layer.cornerRadius = 20.0;
-        
-        //maks
-        self.overlayView.layer.masksToBounds = YES;
-        
-        //set overlay's view color to black
-        self.overlayView.layer.backgroundColor = [NSColor blackColor].CGColor;
-        
-        //make it semi-transparent
-        self.overlayView.alphaValue = 0.20;
-        
         //show overlay
-        self.overlayView.hidden = NO;
-
-        //disable search box
-        self.searchBox.enabled = NO;
-        
-        //show activity indicator
-        [self.activityIndicator setHidden:NO];
-        
-        //show activity indicator label
-        self.activityIndicatorLabel.hidden = NO;
-        
-        //start spinner
-        [self.activityIndicator startAnimation:nil];
-        
+        [self showOverlay];
+    
         //update w/ time
         self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
 
         //spin up thread to watch/wait until task enumeration is pau
         [NSThread detachNewThreadSelector:@selector(waitTillPau) toTarget:self withObject:nil];
     }
+    
+    return;
+}
+
+//display the overlay
+-(void)showOverlay
+{
+    //pre-req
+    [self.overlayView setWantsLayer:YES];
+    
+    //rounded corners
+    self.overlayView.layer.cornerRadius = 20.0;
+    
+    //maks
+    self.overlayView.layer.masksToBounds = YES;
+    
+    //set overlay's view color to black
+    self.overlayView.layer.backgroundColor = [NSColor blackColor].CGColor;
+    
+    //make it semi-transparent
+    self.overlayView.alphaValue = 0.20;
+    
+    //show overlay
+    self.overlayView.hidden = NO;
+    
+    //disable search box
+    self.searchBox.enabled = NO;
+    
+    //show activity indicator
+    [self.activityIndicator setHidden:NO];
+    
+    //show activity indicator label
+    self.activityIndicatorLabel.hidden = NO;
+    
+    //start spinner
+    [self.activityIndicator startAnimation:nil];
+    
+    return;
+}
+
+//callback for when searching is done
+// ->update UI by removing overlay and reloading table
+-(void)completeSearch
+{
+    //hide overlay
+    self.overlayView.hidden = YES;
+
+    //hide activity indicator
+    self.activityIndicator.hidden = YES;
+    
+    //hide activity indicator label
+    self.activityIndicatorLabel.hidden = YES;
+    
+    //enable search box
+    self.searchBox.enabled = YES;
+    
+    //reload table
+    [self.searchTable reloadData];
     
     return;
 }
@@ -479,7 +510,7 @@ bail:
     return;
 }
 
-//search
+//do the search
 -(void)search
 {
     //search string
@@ -487,39 +518,6 @@ bail:
     
     //all tasks
     OrderedDictionary* allTasks = nil;
-    
-    //matching items
-    NSMutableArray* matchingItems = nil;
-    
-    //matching tasks
-    NSMutableArray* matchingTasks = nil;
-    
-    //matching dylibs
-    NSMutableDictionary* matchingDylibs = nil;
-    
-    //matching files
-    NSMutableDictionary* matchingFiles = nil;
-    
-    //matching connections
-    NSMutableDictionary* matchingConnections = nil;
-    
-    //task
-    Task* task = nil;
-    
-    //alloc array for matching items
-    matchingItems = [NSMutableArray array];
-    
-    //alloc array for matching tasks
-    matchingTasks = [NSMutableArray array];
-    
-    //alloc dictionary for matching dylibs
-    matchingDylibs = [NSMutableDictionary dictionary];
-    
-    //alloc dictionary for matching files
-    matchingFiles = [NSMutableDictionary dictionary];
-    
-    //alloc dictionary for matching connections
-    matchingConnections = [NSMutableDictionary dictionary];
     
     //reset search results
     [self.searchResults removeAllObjects];
@@ -531,166 +529,32 @@ bail:
     //grab search string
     searchString = [self.searchBox stringValue];
     
+    //show overlay
+    [self showOverlay];
+    
+    //config it
+    self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"searching (%@)", searchString];
+    
+    //disable search input box
+    self.searchBox.enabled = NO;
+    
     //grab all tasks
-    allTasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    // ->make copy to avoid threading issues
+    allTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks copy];
     
-    //'#' indicates a keyword search
-    // ->check for keyword match, then filter by keyword
-    if(YES == [searchString hasPrefix:@"#"])
-    {
-        //ignore #search strings that don't match a keyword
-        if(YES != [filterObj isKeyword:searchString])
-        {
-            //ignore
-            goto bail;
-        }
-    }
-
-    //1st: search for all matching tasks
-    
-    //search for all matching tasks
-    [self.filterObj filterTasks:searchString items:allTasks results:matchingTasks];
-    
-    //add all tasks
-    [self.searchResults addObjectsFromArray:matchingTasks];
-    
-    //refresh table to display task matches
-    [self.searchTable reloadData];
-    
-    //2nd: search for all matching dylibs
-    
-    //sync
-    @synchronized(allTasks)
-    {
-        //reset
-        [matchingItems removeAllObjects];
-            
-        //walk all tasks
-        // ->scan each for dylib matches, only processing first match
-        for(NSNumber* taskPid in allTasks)
-        {
-            //extract task
-            task = allTasks[taskPid];
-            
-            //filter
-            [self.filterObj filterFiles:searchString items:task.dylibs results:matchingItems];
-            
-            //process all matching dylibs
-            // ->but first check if processed due to matching in another task already
-            for(Binary* dylib in matchingItems)
-            {
-                //ignore if already seen/processed
-                if(nil != matchingDylibs[dylib.path])
-                {
-                    //skip
-                    continue;
-                }
-                
-                //process
-                [self.searchResults addObject:dylib];
-                
-                //save
-                matchingDylibs[dylib.path] = dylib;
-            }
-            
-        }//all tasks
+    //kick off filtering in background
+    // ->will call back into to refresh UI when done
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-    }//sync
+        //nap to allow message to show
+        [NSThread sleepForTimeInterval:0.5];
         
-    //refresh table to display dylib
-    [self.searchTable reloadData];
-    
-    //3rd: search for all matching files
-    
-    //sync
-    @synchronized(allTasks)
-    {
-        //reset
-        [matchingItems removeAllObjects];
+        //filter
+        [self.filterObj filterAll:searchString items:allTasks results:self.searchResults];
         
-        //walk all tasks
-        // ->scan each for file matches, only processing first match
-        for(NSNumber* taskPid in allTasks)
-        {
-            //extract task
-            task = allTasks[taskPid];
-           
-            //filter
-            [self.filterObj filterFiles:searchString items:task.files results:matchingItems];
-                
-            //process all matching dylibs
-            // ->but first check if processed due to matching in another task already
-            for(File* file in matchingItems)
-            {
-                //ignore if already seen/processed
-                if(nil != matchingFiles[file.path])
-                {
-                    //skip
-                    continue;
-                }
-                
-                //process
-                [self.searchResults addObject:file];
-                
-                //save
-                matchingFiles[file.path] = file;
-            }
-            
-        }//all tasks
-        
-    }//sync
-    
-    //refresh table to display dylib
-    [self.searchTable reloadData];
-    
-    //4th: search for all matching network comms
-    
-    //sync
-    @synchronized(allTasks)
-    {
-        //reset
-        [matchingItems removeAllObjects];
-        
-        //walk all tasks
-        // ->scan each for connections matches, only processing first match
-        for(NSNumber* taskPid in allTasks)
-        {
-            //extract task
-            task = allTasks[taskPid];
-            
-            //filter
-            [self.filterObj filterConnections:searchString items:task.connections results:matchingItems];
-
-            //process all matching connections
-            // ->but first check if processed due to matching in another task already
-            for(Connection* connection in matchingItems)
-            {
-                //ignore if already seen/processed
-                if(nil != matchingConnections[connection.endpoints])
-                {
-                    //skip
-                    continue;
-                }
-                
-                //process
-                [self.searchResults addObject:connection];
-                
-                //save
-                matchingConnections[connection.endpoints] = connection;
-            }
-            
-        }//all tasks
-        
-    }//sync
-    
-    //refresh table to display dylib
-    [self.searchTable reloadData];
-    
-//bail
-bail:
+    });
     
     return;
-    
 }
 
 //invoked when the user clicks 'virus total' icon

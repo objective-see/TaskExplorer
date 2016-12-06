@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2555" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
         <capability name="Alignment constraints to the first baseline" minToolsVersion="6.0"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SearchWindowController">
@@ -415,6 +416,10 @@
                     </textField>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="YtR-V5-2Zi">
                         <rect key="frame" x="428" y="105" width="458" height="165"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="165" id="1C0-NI-zSF"/>
+                            <constraint firstAttribute="width" constant="458" id="ukQ-qr-9mr"/>
+                        </constraints>
                     </customView>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="RXw-FP-B7l">
                         <rect key="frame" x="636" y="196" width="32" height="32"/>
@@ -442,7 +447,6 @@
                     <constraint firstItem="8GA-gp-lIa" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="-1" id="bVx-kV-QU1"/>
                     <constraint firstAttribute="centerX" secondItem="Q88-hM-E3W" secondAttribute="centerX" constant="-8" id="dxs-NA-iEU"/>
                     <constraint firstAttribute="trailing" secondItem="8GA-gp-lIa" secondAttribute="trailing" constant="-1" id="hYI-5Z-VSU"/>
-                    <constraint firstItem="YtR-V5-2Zi" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="428" id="mJj-49-I9e"/>
                     <constraint firstItem="BB9-Xc-q8T" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="11" id="phr-KT-g4L"/>
                     <constraint firstItem="BB9-Xc-q8T" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" id="sZv-PY-ckN"/>
                 </constraints>

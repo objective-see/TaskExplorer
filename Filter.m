@@ -29,9 +29,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     self = [super init];
     if(nil != self)
     {
-        //alloc file filter keywords
-        //fileFilters = [NSMutableArray array];
-        
         //alloc binary filter keywords
         binaryFilters = [NSMutableArray array];
 
@@ -53,15 +50,85 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     return [self.binaryFilters containsObject:searchString];
 }
 
+//filter all for global search
+// ->tasks, dylibs, files, & connections
+-(void)filterAll:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results
+{
+    //flag
+    BOOL isKeyword = NO;
+    
+    //matching tasks
+    NSMutableArray* matchingTasks = nil;
+    
+    //matching dylibs
+    NSMutableArray* matchingDylibs = nil;
+    
+    //matching files
+    NSMutableArray* matchingFiles = nil;
+    
+    //matching connections
+    NSMutableArray* matchingConnections = nil;
+    
+    //alloc array for matching tasks
+    matchingTasks = [NSMutableArray array];
+    
+    //alloc array for matching dylibs
+    matchingDylibs = [NSMutableArray array];
+    
+    //alloc dictionary for matching files
+    matchingFiles = [NSMutableArray array];
+    
+    //alloc dictionary for matching connections
+    matchingConnections = [NSMutableArray array];
+    
+    //set flag
+    isKeyword = [self isKeyword:filterText];
+    
+    //filter all tasks
+    [self filterTasks:filterText items:items results:matchingTasks pane:PANE_SEARCH];
+    
+    //iterate over all tasks
+    // ->for each, filter their dylib, files, etc
+    for(Task* task in items.allValues)
+    {
+        //filter dylibs
+        [self filterFiles:filterText items:task.dylibs results:matchingDylibs pane:PANE_SEARCH];
+        
+        //when keyword search
+        // ->skip files/connections
+        if(YES == isKeyword)
+        {
+            //skip
+            continue;
+        }
+        
+        //filter files
+        [self filterFiles:filterText items:task.files results:matchingFiles pane:PANE_SEARCH];
+        
+        //filter connections
+        [self filterFiles:filterText items:task.connections results:matchingConnections pane:PANE_SEARCH];
+    }
+    
+    //remove duplicate dylibs
+    [results setArray:[[[NSSet setWithArray:results] allObjects] mutableCopy]];
+    
+    //call back into search object to refresh it's UI and show results
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        //search done!
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).searchWindowController completeSearch];
+        
+    });
+    
+    return;
+}
+
 //filter tasks
 // ->name, path, pid
--(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results
+-(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results pane:(NSUInteger)pane
 {
     //task
     Task* task = nil;
-    
-    //first reset any previous filter'd items
-    [results removeAllObjects];
     
     //process #keyword filtering
     // ->note: already checked its a full/matching keyword
@@ -69,19 +136,35 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     {
         //prep UI for filtering
         // ->config/show overlay, etc
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:PANE_TOP];
+        if(PANE_SEARCH != pane)
+        {
+            //prep UI
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:pane];
+        }
         
-        //in background filter by keyword
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            
-            //nap a 1/2second to let message show up
-            [NSThread sleepForTimeInterval:0.5];
-            
+        //when main thread
+        // ->do #keyword in background
+        if(YES == [NSThread isMainThread])
+        {
+            //in background filter by keyword
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                
+                //nap a 1/2second to let message show up
+                [NSThread sleepForTimeInterval:0.5];
+                
+                //filter
+                // ->calls back in UI to refresh when done!
+                [self filterByKeyword:(NSString*)filterText items:items.allValues results:(NSMutableArray*)results pane:pane];
+                
+            });
+        }
+        //already in background
+        // ->just run on current thread
+        else
+        {
             //filter
-            // ->calls back in UI to refresh when done!
-            [self filterByKeyword:(NSString*)filterText items:items.allValues results:(NSMutableArray*)results];
-            
-        });
+            [self filterByKeyword:(NSString*)filterText items:items.allValues results:(NSMutableArray*)results pane:pane];
+        }
     }
     
     //not keyword
@@ -142,11 +225,8 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 
 //filter tasks
 // ->name, path, pid
--(void)filterByKeyword:(NSString*)filterText items:(NSArray*)items results:(NSMutableArray*)results
+-(void)filterByKeyword:(NSString*)filterText items:(NSArray*)items results:(NSMutableArray*)results pane:(NSUInteger)pane
 {
-    //pane
-    NSUInteger pane = PANE_TOP;
-
     //sync
     @synchronized(items)
     {
@@ -160,9 +240,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         //handle tasks
         if(YES == [items.firstObject isKindOfClass:[Task class]])
         {
-            //set pane
-            pane = PANE_TOP;
-            
             //iterate over all items
             for(id item in items)
             {
@@ -177,9 +254,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         //handle dylibs
         else if(YES == [items.firstObject isKindOfClass:[Binary class]])
         {
-            //set pane
-            pane = PANE_BOTTOM;
-            
             //iterate over all items
             for(id item in items)
             {
@@ -195,12 +269,16 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     } //sync
     
     //tell the UI we are done
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        //finalize UI
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) finalizeFiltration:pane];
-        
-    });
+    if(PANE_SEARCH != pane)
+    {
+        //on main thread, update UI
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            //finalize UI
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) finalizeFiltration:pane];
+            
+        });
+    }
     
 //bail
 bail:
@@ -210,11 +288,8 @@ bail:
 
 //filter dylibs and files
 // ->name and path
--(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
+-(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results pane:(NSUInteger)pane
 {
-    //first reset filter'd items
-    [results removeAllObjects];
-    
     //process #keyword filtering for dylibs
     // ->note: already checked its a full/matching keyword
     if( (YES == [filterText hasPrefix:@"#"]) &&
@@ -222,19 +297,35 @@ bail:
     {
         //prep UI for filtering
         // ->config/show overlay, etc
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:PANE_BOTTOM];
+        if(PANE_SEARCH != pane)
+        {
+            //prep UI
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) prepUIForFiltering:pane];
+        }
         
-        //in background filter by keyword
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            
-            //nap a 1/2second to let message show up
-            [NSThread sleepForTimeInterval:0.5];
-            
+        //when main thread
+        // ->do #keyword search in background
+        if(YES == [NSThread isMainThread])
+        {
+            //in background filter by keyword
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                
+                //nap a 1/2second to let message show up
+                [NSThread sleepForTimeInterval:0.5];
+                
+                //filter
+                // ->calls back in UI to refresh when done!
+                [self filterByKeyword:(NSString*)filterText items:items results:(NSMutableArray*)results pane:pane];
+                
+            });
+        }
+        //already in background
+        // ->just run on current thread
+        else
+        {
             //filter
-            // ->calls back in UI to refresh when done!
-            [self filterByKeyword:(NSString*)filterText items:items results:(NSMutableArray*)results];
-            
-        });
+            [self filterByKeyword:(NSString*)filterText items:items results:(NSMutableArray*)results pane:pane];
+        }
     }
 
     //not keyword
@@ -283,9 +374,6 @@ bail:
 //filter network connections
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results
 {
-    //first reset filter'd items
-    [results removeAllObjects];
-    
     //sync
     @synchronized(items)
     {

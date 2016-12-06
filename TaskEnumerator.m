@@ -23,7 +23,6 @@
 
 @implementation TaskEnumerator
 
-//@synthesize files;
 @synthesize tasks;
 @synthesize dylibs;
 @synthesize binaryQueue;

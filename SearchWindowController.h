@@ -69,5 +69,8 @@
 //search
 -(void)search;
 
+//callback for when searching is done
+// ->update UI by removing overlay and reloading table
+-(void)completeSearch;
 
 @end

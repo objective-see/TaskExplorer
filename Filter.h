@@ -46,11 +46,15 @@
 //keyword filter '#notfound'
 -(BOOL)notFound:(Binary*)item;
 
+//filter all for global search
+// ->tasks, dylibs, files, & connections
+-(void)filterAll:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
+
 //filter tasks
--(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results;
+-(void)filterTasks:(NSString*)filterText items:(NSMutableDictionary*)items results:(NSMutableArray*)results pane:(NSUInteger)pane;
 
 //filter dylibs and files
--(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
+-(void)filterFiles:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results pane:(NSUInteger)pane;
 
 //filter network connections
 -(void)filterConnections:(NSString*)filterText items:(NSMutableArray*)items results:(NSMutableArray*)results;
