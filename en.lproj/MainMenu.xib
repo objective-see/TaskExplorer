@@ -281,9 +281,9 @@
                     <toolbarItem implicitItemIdentifier="F54A1AEB-291E-4556-8B7E-D1C677012ABF" label="" paletteLabel="" image="teText" id="UwA-pW-Mg8">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="48"/>
-                        <size key="maxSize" width="330" height="48"/>
+                        <size key="maxSize" width="330" height="62"/>
                         <imageView key="view" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aNo-Uq-I0N">
-                            <rect key="frame" x="0.0" y="14" width="330" height="48"/>
+                            <rect key="frame" x="0.0" y="14" width="330" height="62"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="teText" id="hwQ-Gs-JPJ"/>
                         </imageView>
@@ -336,6 +336,6 @@
         <image name="saveIconBG" width="256" height="256"/>
         <image name="search" width="256" height="256"/>
         <image name="searchBG" width="256" height="256"/>
-        <image name="teText" width="460.55999755859375" height="85.919998168945312"/>
+        <image name="teText" width="79.199996948242188" height="14.880000114440918"/>
     </resources>
 </document>

@@ -314,7 +314,6 @@
 //delta for pid tag
 #define PID_TAG_DELTA 1000
 
-//TODO: change back
 //search wait time (from app's launch)
 #define SEARCH_WAIT_TIME 30
 

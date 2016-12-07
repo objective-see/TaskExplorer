@@ -78,10 +78,8 @@
 		CDA81D5C1A95B4B4009790E2 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D561A95B4B4009790E2 /* MainMenu.xib */; };
 		CDA81D5E1A95B4B4009790E2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA81D5A1A95B4B4009790E2 /* main.m */; };
 		CDA81D691A95B4E9009790E2 /* bug.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D5F1A95B4E9009790E2 /* bug.png */; };
-		CDA81D6A1A95B4E9009790E2 /* mainIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D601A95B4E9009790E2 /* mainIcon.png */; };
 		CDA81D6B1A95B4E9009790E2 /* show.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D611A95B4E9009790E2 /* show.png */; };
 		CDA81D6C1A95B4E9009790E2 /* showBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D621A95B4E9009790E2 /* showBG.png */; };
-		CDA81D6D1A95B4E9009790E2 /* scanIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D631A95B4E9009790E2 /* scanIcon.png */; };
 		CDA81D6E1A95B4E9009790E2 /* startScan.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D641A95B4E9009790E2 /* startScan.png */; };
 		CDA81D6F1A95B4E9009790E2 /* startScanBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D651A95B4E9009790E2 /* startScanBG.png */; };
 		CDA81D701A95B4E9009790E2 /* stopScan.png in Resources */ = {isa = PBXBuildFile; fileRef = CDA81D661A95B4E9009790E2 /* stopScan.png */; };
@@ -257,10 +255,8 @@
 		CDA81D591A95B4B4009790E2 /* TaskExplorer-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TaskExplorer-Prefix.pch"; sourceTree = SOURCE_ROOT; };
 		CDA81D5A1A95B4B4009790E2 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = SOURCE_ROOT; };
 		CDA81D5F1A95B4E9009790E2 /* bug.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bug.png; path = images/bug.png; sourceTree = SOURCE_ROOT; };
-		CDA81D601A95B4E9009790E2 /* mainIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mainIcon.png; path = images/mainIcon.png; sourceTree = SOURCE_ROOT; };
 		CDA81D611A95B4E9009790E2 /* show.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = show.png; path = images/show.png; sourceTree = SOURCE_ROOT; };
 		CDA81D621A95B4E9009790E2 /* showBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = showBG.png; path = images/showBG.png; sourceTree = SOURCE_ROOT; };
-		CDA81D631A95B4E9009790E2 /* scanIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scanIcon.png; path = images/scanIcon.png; sourceTree = SOURCE_ROOT; };
 		CDA81D641A95B4E9009790E2 /* startScan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startScan.png; path = images/startScan.png; sourceTree = SOURCE_ROOT; };
 		CDA81D651A95B4E9009790E2 /* startScanBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startScanBG.png; path = images/startScanBG.png; sourceTree = SOURCE_ROOT; };
 		CDA81D661A95B4E9009790E2 /* stopScan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = stopScan.png; path = images/stopScan.png; sourceTree = SOURCE_ROOT; };
@@ -512,10 +508,8 @@
 				CDA81DC71A9960A3009790E2 /* virusTotal.png */,
 				CDA81DC81A9960A3009790E2 /* virusTotalBG.png */,
 				CDA81D5F1A95B4E9009790E2 /* bug.png */,
-				CDA81D601A95B4E9009790E2 /* mainIcon.png */,
 				CDA81D611A95B4E9009790E2 /* show.png */,
 				CDA81D621A95B4E9009790E2 /* showBG.png */,
-				CDA81D631A95B4E9009790E2 /* scanIcon.png */,
 				CDA81D641A95B4E9009790E2 /* startScan.png */,
 				CDA81D651A95B4E9009790E2 /* startScanBG.png */,
 				CDA81D661A95B4E9009790E2 /* stopScan.png */,
@@ -752,7 +746,6 @@
 				CDA81DCC1A9960A3009790E2 /* virusTotalBG.png in Resources */,
 				CD74A06E1B7DA71200A8AAD3 /* flaggedOver.png in Resources */,
 				CD001B381AB903040089014A /* logo.png in Resources */,
-				CDA81D6D1A95B4E9009790E2 /* scanIcon.png in Resources */,
 				CDF08CCF1AC4C6E8009B3423 /* settingsOver.png in Resources */,
 				CDAB98A31AEB413C00C75B4B /* dylibIcon.png in Resources */,
 				CDF08CC31AC3E98D009B3423 /* infoOver.png in Resources */,
@@ -765,7 +758,6 @@
 				CDA81D6C1A95B4E9009790E2 /* showBG.png in Resources */,
 				CD3F4CFF1AF72BC4002A2647 /* TaskInfoWindow.xib in Resources */,
 				CDEE77001B3FD4B000763826 /* saveIconOver.png in Resources */,
-				CDA81D6A1A95B4E9009790E2 /* mainIcon.png in Resources */,
 				CDA81D711A95B4E9009790E2 /* stopScanBG.png in Resources */,
 				CDF08CBF1AC3DE25009B3423 /* logoAppleBG.png in Resources */,
 				CDF08CE21AC88E0F009B3423 /* VTInfoWindow.xib in Resources */,
