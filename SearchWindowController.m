@@ -129,6 +129,15 @@
     //reset search string
     [self.searchBox setStringValue:@""];
     
+    //hide 'searching' overlay
+    self.overlayView.hidden = YES;
+    
+    //hide activity indicator
+    self.activityIndicator.hidden = YES;
+    
+    //hide activity indicator label
+    self.activityIndicatorLabel.hidden = YES;
+    
     //grab current time
     currentTime = [NSDate timeIntervalSinceReferenceDate];
     
@@ -212,6 +221,17 @@
     
     //reload table
     [self.searchTable reloadData];
+    
+    //when nothing was found
+    // ->display label with this fact
+    if(0 == self.searchResults.count)
+    {
+        //set msg
+        self.activityIndicatorLabel.stringValue = @"nothing found";
+        
+        //show
+        self.activityIndicatorLabel.hidden = NO;
+    }
     
     return;
 }

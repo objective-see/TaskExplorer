@@ -92,6 +92,55 @@ bail:
     return;
 }
 
+//override method
+// ->hash
+-(NSUInteger)hash
+{
+    return [self.path hash];
+}
+
+//override method
+// ->equality check
+-(BOOL)isEqual:(id)object
+{
+    //flag
+    BOOL objEqual = NO;
+    
+    //check self
+    if(self == object)
+    {
+        //match
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+    //check for type
+    if(YES != [object isKindOfClass:[File class]])
+    {
+        //no match
+        objEqual = NO;
+        
+        //bail
+        goto bail;
+    }
+    
+    //do check
+    if(YES == [((File*)object).path isEqualToString:self.path])
+    {
+        //happy
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+//bail
+bail:
+    
+    return objEqual;
+}
 
 //convert object to JSON string
 -(NSString*)toJSON

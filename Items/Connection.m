@@ -275,6 +275,58 @@ bail:
     return;
 }
 
+//override method
+// ->hash
+-(NSUInteger)hash
+{
+    return [self.endpoints hash];
+}
+
+//override method
+// ->equality check
+-(BOOL)isEqual:(id)object
+{
+    //flag
+    BOOL objEqual = NO;
+    
+    //check self
+    if(self == object)
+    {
+        //match
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+    //check for type
+    if(YES != [object isKindOfClass:[Connection class]])
+    {
+        //no match
+        objEqual = NO;
+        
+        //bail
+        goto bail;
+    }
+    
+    //do check
+    if(YES == [((Connection*)object).endpoints isEqualToString:self.endpoints])
+    {
+        //happy
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+//bail
+bail:
+    
+    return objEqual;
+}
+
+
+
 //convert Connection object to a JSON string
 -(NSString*)toJSON
 {

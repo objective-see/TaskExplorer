@@ -316,7 +316,7 @@
 
 //TODO: change back
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 10
+#define SEARCH_WAIT_TIME 30
 
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (initial) task/dylib/file enumeration please wait"

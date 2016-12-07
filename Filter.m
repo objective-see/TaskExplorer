@@ -19,7 +19,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
 
 @implementation Filter
 
-//@synthesize fileFilters;
 @synthesize binaryFilters;
 
 //init
@@ -69,23 +68,27 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //matching connections
     NSMutableArray* matchingConnections = nil;
     
-    //alloc array for matching tasks
+    //alloc for matching tasks
     matchingTasks = [NSMutableArray array];
     
-    //alloc array for matching dylibs
+    //alloc for matching dylibs
     matchingDylibs = [NSMutableArray array];
     
-    //alloc dictionary for matching files
+    //alloc for matching files
     matchingFiles = [NSMutableArray array];
     
-    //alloc dictionary for matching connections
+    //alloc for matching connections
     matchingConnections = [NSMutableArray array];
     
+
     //set flag
     isKeyword = [self isKeyword:filterText];
     
     //filter all tasks
     [self filterTasks:filterText items:items results:matchingTasks pane:PANE_SEARCH];
+    
+    //add all to cumulative results
+    [results addObjectsFromArray:matchingTasks];
     
     //iterate over all tasks
     // ->for each, filter their dylib, files, etc
@@ -109,9 +112,28 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         [self filterFiles:filterText items:task.connections results:matchingConnections pane:PANE_SEARCH];
     }
     
-    //remove duplicate dylibs
-    [results setArray:[[[NSSet setWithArray:results] allObjects] mutableCopy]];
+    //remove dups dylibs
+    [matchingDylibs setArray:[[[NSSet setWithArray:matchingDylibs] allObjects] mutableCopy]];
     
+    //add to cumulative search results
+    [results addObjectsFromArray:matchingDylibs];
+    
+    //remove dups files
+    [matchingFiles setArray:[[[NSSet setWithArray:matchingFiles] allObjects] mutableCopy]];
+    
+    //add to cumulative search results
+    [results addObjectsFromArray:matchingFiles];
+    
+    //remove dups dylibs
+    [matchingConnections setArray:[[[NSSet setWithArray:matchingConnections] allObjects] mutableCopy]];
+    
+    //add to cumulative search results
+    [results addObjectsFromArray:matchingConnections];
+    
+
+    
+    
+
     //call back into search object to refresh it's UI and show results
     dispatch_async(dispatch_get_main_queue(), ^{
         

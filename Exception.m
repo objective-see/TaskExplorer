@@ -78,7 +78,7 @@ void exceptionHandler(NSException *exception)
 	syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s", [errMsg UTF8String]);
     
     //err msg
-    syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s", [[[NSThread callStackSymbols] description] UTF8String]);
+    syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: %s/%s", [[exception.callStackSymbols description] UTF8String], [[exception.callStackReturnAddresses description] UTF8String]);
     
     //try print any objective-c objects in exception's 'reason'
     displayObject(exception);

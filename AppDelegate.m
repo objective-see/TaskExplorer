@@ -553,7 +553,11 @@ bail:
         if(YES != self.bottomViewController.isFiltered)
         {
             //get row
-            row = [self.bottomViewController.tableItems indexOfObject:item];
+            @synchronized(self.bottomViewController.tableItems)
+            {
+                //get
+                row = [self.bottomViewController.tableItems indexOfObject:item];
+            }
         }
         //filtering
         // ->grab row from filtered item
@@ -627,7 +631,11 @@ bail:
         case DYLIBS_VIEW:
             
             //set table items
-            self.bottomViewController.tableItems = self.currentTask.dylibs;
+            @synchronized(self.bottomViewController.tableItems)
+            {
+                //set
+                self.bottomViewController.tableItems = self.currentTask.dylibs;
+            }
             
             //if there is none
             noItemsMsg = @"no dylibs found";
@@ -637,8 +645,12 @@ bail:
         //files
         case FILES_VIEW:
             
-            ///set table items
-            self.bottomViewController.tableItems = self.currentTask.files;
+            //set table items
+            @synchronized(self.bottomViewController.tableItems)
+            {
+                //set
+                self.bottomViewController.tableItems = self.currentTask.files;
+            }
             
             //if there is none
             noItemsMsg = @"no files found";
@@ -649,7 +661,11 @@ bail:
         case NETWORKING_VIEW:
             
             //set table items
-            self.bottomViewController.tableItems = self.currentTask.connections;
+            @synchronized(self.bottomViewController.tableItems)
+            {
+                //set
+                self.bottomViewController.tableItems = self.currentTask.connections;
+            }
             
             //if there is none
             noItemsMsg = @"no network connections found";
@@ -1435,7 +1451,11 @@ bail:
     self.noItemsLabel.hidden = YES;
     
     //unset existing items
-    self.bottomViewController.tableItems = nil;
+    @synchronized(self.bottomViewController.tableItems)
+    {
+        //unset
+        self.bottomViewController.tableItems = nil;
+    }
     
     //when in a background thread
     // ->perform UI stuff on main thread
@@ -1875,7 +1895,11 @@ bail:
             (0 == self.taskTableController.filteredItems.count) )
         {
             //unset bottom pane's items
-            self.bottomViewController.tableItems = nil;
+            @synchronized(self.bottomViewController.tableItems)
+            {
+                //unset
+                self.bottomViewController.tableItems = nil;
+            }
             
             //reset current task
             self.currentTask = nil;

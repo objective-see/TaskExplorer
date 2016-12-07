@@ -50,9 +50,7 @@
         
         //determine if its on disk
         self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
-        
-        //grab attributes
-        //self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];        
+    
     }
            
 //bail
@@ -301,6 +299,56 @@ bail:
 bail:
     
     return prettyPrint;
+}
+
+//override method
+// ->hash
+-(NSUInteger)hash
+{
+    return [self.path hash];
+}
+
+//override method
+// ->equality check
+-(BOOL)isEqual:(id)object
+{
+    //flag
+    BOOL objEqual = NO;
+    
+    //check self
+    if(self == object)
+    {
+        //match
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+    //check for type
+    if(YES != [object isKindOfClass:[Binary class]])
+    {
+        //no match
+        objEqual = NO;
+        
+        //bail
+        goto bail;
+    }
+    
+    //do check
+    if(YES == [((Binary*)object).path isEqualToString:self.path])
+    {
+        //happy
+        objEqual = YES;
+        
+        //bail
+        goto bail;
+    }
+    
+//bail
+bail:
+    
+    return objEqual;
 }
 
 //convert object to JSON string
