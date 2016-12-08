@@ -69,6 +69,12 @@
 //path to file
 #define FILE @"/usr/bin/file"
 
+//path to xattr
+#define XATTR @"/usr/bin/xattr"
+
+//path to open
+#define OPEN @"/usr/bin/open"
+
 //hash key, SHA1
 #define KEY_HASH_SHA1 @"sha1"
 
@@ -337,5 +343,8 @@
 
 //unknown task
 #define TASK_PATH_UNKNOWN @"<unknown>"
+
+//app kit version for OS X 10.11
+#define APPKIT_VERSION_10_11 1404
 
 #endif

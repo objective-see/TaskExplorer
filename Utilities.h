@@ -80,4 +80,8 @@ void buttonAppearance(NSTableView* table, NSEvent* event, BOOL shouldReset);
 //check	if remote process is i386
 BOOL Is32Bit(pid_t targetPID);
 
+//check if app is translocated
+// ->based on http://lapcatsoftware.com/articles/detect-app-translocation.html
+NSURL* getUnTranslocatedURL();
+
 #endif

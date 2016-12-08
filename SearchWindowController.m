@@ -661,7 +661,7 @@ bail:
     //sanity check(s)
     // ->make sure row is decent
     if( (-1 == itemRow) ||
-       (itemRow >= self.searchResults.count) )
+        (itemRow >= self.searchResults.count) )
     {
         //bail
         goto bail;

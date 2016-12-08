@@ -9,6 +9,7 @@
 #import "Consts.h"
 #import "Utilities.h"
 
+#import <dlfcn.h>
 #import <signal.h>
 #import <unistd.h>
 #import <syslog.h>
@@ -944,5 +945,95 @@ bail:
     
     return isI386;    
 }
+
+//check if app is translocated
+// ->based on http://lapcatsoftware.com/articles/detect-app-translocation.html
+NSURL* getUnTranslocatedURL()
+{
+    //orignal URL
+    NSURL* untranslocatedURL = nil;
+    
+    //function def for 'SecTranslocateIsTranslocatedURL'
+    Boolean (*mySecTranslocateIsTranslocatedURL)(CFURLRef path, bool *isTranslocated, CFErrorRef * __nullable error);
+    
+    //function def for 'SecTranslocateCreateOriginalPathForURL'
+    CFURLRef __nullable (*mySecTranslocateCreateOriginalPathForURL)(CFURLRef translocatedPath, CFErrorRef * __nullable error);
+    
+    //flag for API request
+    bool isTranslocated = false;
+    
+    //handle for security framework
+    void *handle = NULL;
+    
+    //app path
+    NSURL* appPath = nil;
+    
+    //init app's path
+    appPath = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+    
+    //check ignore pre-macOS Sierra
+    if (floor(NSAppKitVersionNumber) <= APPKIT_VERSION_10_11)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //open security framework
+    handle = dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY);
+    if(NULL == handle)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get 'SecTranslocateIsTranslocatedURL' API
+    mySecTranslocateIsTranslocatedURL = dlsym(handle, "SecTranslocateIsTranslocatedURL");
+    if(NULL == mySecTranslocateIsTranslocatedURL)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get
+    mySecTranslocateCreateOriginalPathForURL = dlsym(handle, "SecTranslocateCreateOriginalPathForURL");
+    if(NULL == mySecTranslocateCreateOriginalPathForURL)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //invoke it
+    if(true != mySecTranslocateIsTranslocatedURL((__bridge CFURLRef)appPath, &isTranslocated, NULL))
+    {
+        //bail
+        goto bail;
+    }
+   
+    //bail if app isn't translocated
+    if(true != isTranslocated)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get original URL
+    untranslocatedURL = (__bridge NSURL*)mySecTranslocateCreateOriginalPathForURL((__bridge CFURLRef)appPath, NULL);
+
+//bail
+bail:
+    
+    //close handle
+    if(NULL != handle)
+    {
+        //close
+        dlclose(handle);
+    }
+    
+    return untranslocatedURL;
+    
+}
+
+
+
 
 

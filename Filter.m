@@ -109,7 +109,7 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
         [self filterFiles:filterText items:task.files results:matchingFiles pane:PANE_SEARCH];
         
         //filter connections
-        [self filterFiles:filterText items:task.connections results:matchingConnections pane:PANE_SEARCH];
+        [self filterConnections:filterText items:task.connections results:matchingConnections];
     }
     
     //remove dups dylibs
@@ -124,16 +124,12 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //add to cumulative search results
     [results addObjectsFromArray:matchingFiles];
     
-    //remove dups dylibs
+    //remove dups connections
     [matchingConnections setArray:[[[NSSet setWithArray:matchingConnections] allObjects] mutableCopy]];
     
     //add to cumulative search results
     [results addObjectsFromArray:matchingConnections];
     
-
-    
-    
-
     //call back into search object to refresh it's UI and show results
     dispatch_async(dispatch_get_main_queue(), ^{
         
