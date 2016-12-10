@@ -735,7 +735,7 @@ bail:
     }
     
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", self.binary.name, self.binary.path, self.pid, fileHashes, fileSigs, vtDetectionRatio, dylibsJSON, filesJSON, connectionsJSON];
+    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d, \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", self.binary.name, self.binary.path, self.pid, taskCommandLine, fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound, dylibsJSON, filesJSON, connectionsJSON];
     
     return json;
 }

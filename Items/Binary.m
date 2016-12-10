@@ -428,7 +428,7 @@ bail:
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\"", self.name, self.path, fileHashes, fileSigs, vtDetectionRatio];
+    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d", self.name, self.path, fileHashes, fileSigs, vtDetectionRatio, self.isEncrypted, self.isPacked, self.notFound];
     
     return json;
 }
