@@ -80,7 +80,6 @@ NSString * const BINARY_KEYWORDS[] = {@"#apple", @"#nonapple", @"#signed", @"#un
     //alloc for matching connections
     matchingConnections = [NSMutableArray array];
     
-
     //set flag
     isKeyword = [self isKeyword:filterText];
     
@@ -502,7 +501,8 @@ bail:
     //handle '#apple'
     // ->signed by apple
     if( (YES == [keyword isEqualToString:@"#apple"]) &&
-        (YES == [self isApple:binary]) )
+        ( (YES == [self isApple:binary]) ||
+          (YES == [binary.path isEqualToString:KERNEL_YOSEMITE]) ))
     {
         //happy
         fulfills = YES;
@@ -512,9 +512,10 @@ bail:
     }
     
     //handle '#nonapple'
-    // ->not signed by apple
+    // ->not signed by apple, and not kernel
     else if( (YES == [keyword isEqualToString:@"#nonapple"]) &&
-        (YES != [self isApple:binary]) )
+             (YES != [self isApple:binary]) &&
+             (YES != [binary.path isEqualToString:KERNEL_YOSEMITE]) )
     {
         //happy
         fulfills = YES;
@@ -696,6 +697,14 @@ bail:
     //make sure item was parsed
     if(nil == item.parser)
     {
+        //make sure we have signing info
+        // ->packer checks ('parse') ingores Apple signed files
+        if(nil == item.signingInfo)
+        {
+            //generate
+            [item generatedSigningInfo];
+        }
+        
         //parse
         [item parse];
         

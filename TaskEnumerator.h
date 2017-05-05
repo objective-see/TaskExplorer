@@ -25,15 +25,16 @@
 //all task binaries (main executables)
 @property(nonatomic, retain)NSMutableDictionary* executables;
 
-//all (opened) files
-//@property(nonatomic, retain)NSMutableDictionary* files;
-
 //all dylibs
 @property(nonatomic, retain)NSMutableDictionary* dylibs;
 
 //queue
 // ->contains binaries that should be processed
-@property (nonatomic, retain) Queue* binaryQueue;
+@property (nonatomic, retain)Queue* binaryQueue;
+
+//state
+// ->enum'ing tasks, dylibs, file, etc...
+@property NSUInteger state;
 
 /* METHODS */
 

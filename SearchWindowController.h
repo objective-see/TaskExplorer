@@ -20,6 +20,9 @@
 //flag for first time init's
 @property BOOL didInit;
 
+//enumeration state thread
+@property (nonatomic, retain) NSThread* stateMonitor;
+
 //search box
 @property (weak) IBOutlet NSTextField *searchBox;
 
@@ -27,7 +30,7 @@
 @property (weak) IBOutlet NSTableView *searchTable;
 
 //table items
-@property(nonatomic, retain)NSMutableArray* searchResults;
+@property (nonatomic, retain) NSMutableArray* searchResults;
 
 //activity indicator
 @property (weak) IBOutlet NSProgressIndicator *activityIndicator;
@@ -36,16 +39,25 @@
 @property (weak) IBOutlet NSTextField *activityIndicatorLabel;
 
 //filter object
-@property(nonatomic, retain)Filter* filterObj;
+@property (nonatomic, retain) Filter* filterObj;
+
+//search status message
+@property (weak) IBOutlet NSTextField *searchResultsMessage;
+
+//overlay for serach
+@property (weak) IBOutlet NSView *overlay;
+
+//activity indicator for overlay
+@property (weak) IBOutlet NSProgressIndicator *overlaySpinner;
+
+//mesasge for overlay
+@property (weak) IBOutlet NSTextField *overlayMessage;
 
 //vt window controller
-@property (nonatomic, retain)VTInfoWindowController* vtWindowController;
+@property (nonatomic, retain) VTInfoWindowController* vtWindowController;
 
 //info window controller
-@property(nonatomic, retain)InfoWindowController* infoWindowController;
-
-//'pls wait' label
-@property(nonatomic, retain)NSString* plsWaitMessage;
+@property (nonatomic, retain) InfoWindowController* infoWindowController;
 
 //overlay view
 @property (weak) IBOutlet NSView *overlayView;

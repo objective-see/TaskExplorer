@@ -53,7 +53,7 @@ BOOL isApple(NSString* path);
 NSMutableAttributedString* setStringColor(NSAttributedString* string, NSColor* color);
 
 //exec a process and grab it's output
-NSData* execTask(NSString* binaryPath, NSArray* arguments);
+NSData* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait);
 
 //wait until a window is non nil
 // ->then make it modal

@@ -1,20 +1,18 @@
 //
-//  PrefsWindowController.m
+//  AboutWindowController.m
 //  TaskExplorer
 //
-//  Created by Patrick Wardle on 2/6/15.
-//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
+//  Created by Patrick Wardle on 7/15/16.
+//  Copyright (c) 2016 Objective-See. All rights reserved.
 //
 
-
+#import "Consts.h"
 #import "Utilities.h"
-#import "AppDelegate.h"
-
 #import "AboutWindowController.h"
-
 
 @implementation AboutWindowController
 
+@synthesize patrons;
 @synthesize versionLabel;
 
 //automatically called when nib is loaded
@@ -36,19 +34,44 @@
     [self.window setBackgroundColor: NSColor.whiteColor];
     
     //set version sting
-    [self.versionLabel setStringValue:[NSString stringWithFormat:@"version: %@", getAppVersion()]];
+    self.versionLabel.stringValue =  [NSString stringWithFormat:@"Version: %@", getAppVersion()];
+    
+    //load patrons
+    self.patrons.string = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"patrons" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL];
 
     return;
 }
 
-//automatically invoked when user clicks 'more info'
-// ->load task explorer's html page
-- (IBAction)moreInfo:(id)sender
+//automatically invoked when window is closing
+// ->make ourselves unmodal
+-(void)windowWillClose:(NSNotification *)notification
 {
-    //open URL
-    // ->invokes user's default browser
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://objective-see.com/products/taskexplorer.html"]];
-        
+    //make un-modal
+    [[NSApplication sharedApplication] stopModal];
+    
+    return;
+}
+
+//automatically invoked when user clicks any of the buttons
+// ->load patreon or products webpage in user's default browser
+-(IBAction)buttonHandler:(id)sender
+{
+    //support us button
+    if(((NSButton*)sender).tag == BUTTON_SUPPORT_US)
+    {
+        //open URL
+        // ->invokes user's default browser
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:PATREON_URL]];
+    }
+    
+    //more info button
+    else if(((NSButton*)sender).tag == BUTTON_MORE_INFO)
+    {
+        //open URL
+        // ->invokes user's default browser
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:PRODUCT_URL]];
+    }
+
     return;
 }
 @end

@@ -22,16 +22,15 @@
 @synthesize didInit;
 @synthesize filterObj;
 @synthesize searchBox;
-@synthesize overlayView;
 @synthesize searchTable;
+@synthesize stateMonitor;
 @synthesize searchResults;
-@synthesize plsWaitMessage;
 @synthesize commandHandling;
 @synthesize completePosting;
 @synthesize customSearchField;
 @synthesize vtWindowController;
 @synthesize infoWindowController;
-
+@synthesize searchResultsMessage;
 
 //automatically called when nib is loaded
 // ->first time (when outlets aren't nil), init UI
@@ -84,41 +83,21 @@
 // since the progress indicator is stopped/hidden (bug?), restart it
 -(void)windowDidDeminiaturize:(NSNotification *)notification
 {
-    //current time
-    NSTimeInterval currentTime = 0.0f;
-    
-    //grab current time
-    currentTime = [NSDate timeIntervalSinceReferenceDate];
-    
-    //make sure search is still waiting...
-    // ->and then restart spinner
-    if((currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime) < SEARCH_WAIT_TIME)
+    //not done?
+    // ->make spinner keep spinning
+    if(ENUMERATION_STATE_COMPLETE != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
     {
-        //update UI on main thread
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            //show
-            self.activityIndicator.hidden = NO;
-            
-            //start spinner
-            [self.activityIndicator startAnimation:nil];
-            
-        });
+        //(re)start
+        [self.activityIndicator startAnimation:nil];
     }
     
     return;
 }
 
 //init the UI
-// ->each time window is shown, reset, show spinner if needed, etc
+// ->each time window is shown, reset, show enumeration status, etc
 -(void)initUI
 {
-    //current time
-    NSTimeInterval currentTime = 0.0f;
-    
-    //time left
-    NSTimeInterval timeRemaining = 0.0f;
-    
     //center
     [self.window center];
     
@@ -128,93 +107,119 @@
     
     //reset search string
     [self.searchBox setStringValue:@""];
+
+    //make search box first responder
+    [self.window makeFirstResponder:self.searchBox];
     
-    //hide 'searching' overlay
-    self.overlayView.hidden = YES;
+    //hide search results
+    self.searchResultsMessage.hidden = YES;
     
-    //hide activity indicator
-    self.activityIndicator.hidden = YES;
-    
-    //hide activity indicator label
-    self.activityIndicatorLabel.hidden = YES;
-    
-    //grab current time
-    currentTime = [NSDate timeIntervalSinceReferenceDate];
-    
-    //check if search timeout has been hit
-    // ->when this occur, no need to show activity indicator, etc
-    if((currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime) > SEARCH_WAIT_TIME)
+    //still enumerating?
+    // ->show the spinner
+    if(ENUMERATION_STATE_COMPLETE != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
     {
-        //make search box first responder
-        [self.window makeFirstResponder:self.searchBox];
+        //show
+        self.activityIndicator.hidden = NO;
+        
+        //start
+        [self.activityIndicator startAnimation:nil];
     }
-    //show activity indicator while tasks are still being enumerated
+    
+    //complete?
+    // ->stop spinner
     else
     {
-        //calc time remaining
-        timeRemaining = SEARCH_WAIT_TIME - (currentTime - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
-        
-        //show overlay
-        [self showOverlay];
+        //stop
+        [self.activityIndicator stopAnimation:nil];
+    }
     
-        //update w/ time
-        self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
+    //set enumeration message
+    [self showEnumerationState];
 
-        //spin up thread to watch/wait until task enumeration is pau
-        [NSThread detachNewThreadSelector:@selector(waitTillPau) toTarget:self withObject:nil];
+    //spin up thread to monitor update enumeration state
+    [NSThread detachNewThreadSelector:@selector(updateEnumerationState) toTarget:self withObject:nil];
+    
+    return;
+}
+
+//monitor enumeration state to update status message
+-(void)updateEnumerationState
+{
+    //save thread into iVar
+    self.stateMonitor = [NSThread currentThread];
+    
+    //go until canceled or state is complete
+    while(YES != [[NSThread currentThread] isCancelled])
+    {
+        //nap
+        [NSThread sleepForTimeInterval:1.0];
+        
+        //update on main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            //update
+            [self showEnumerationState];
+        });
+        
+        //done?
+        if(ENUMERATION_STATE_COMPLETE == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
+        {
+            //stop spinner
+            [self.activityIndicator stopAnimation:nil];
+            
+            //done
+            break;
+        }
     }
     
     return;
 }
 
-//display the overlay
--(void)showOverlay
+//set the status message/enumeration state
+-(void)showEnumerationState
 {
-    //pre-req
-    [self.overlayView setWantsLayer:YES];
-    
-    //rounded corners
-    self.overlayView.layer.cornerRadius = 20.0;
-    
-    //maks
-    self.overlayView.layer.masksToBounds = YES;
-    
-    //set overlay's view color to black
-    self.overlayView.layer.backgroundColor = [NSColor blackColor].CGColor;
-    
-    //make it semi-transparent
-    self.overlayView.alphaValue = 0.20;
-    
-    //show overlay
-    self.overlayView.hidden = NO;
-    
-    //disable search box
-    self.searchBox.enabled = NO;
-    
-    //show activity indicator
-    [self.activityIndicator setHidden:NO];
-    
-    //show activity indicator label
-    self.activityIndicatorLabel.hidden = NO;
-    
-    //start spinner
-    [self.activityIndicator startAnimation:nil];
-    
-    return;
+    //set status
+    switch(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state) {
+            
+        //tasks
+        case ENUMERATION_STATE_TASKS:
+            self.activityIndicatorLabel.stringValue = @"enumerating tasks...";
+            break;
+            
+        //dylibs
+        case ENUMERATION_STATE_DYLIBS:
+            self.activityIndicatorLabel.stringValue = @"enumerating dylibs...";
+            break;
+            
+        //files
+        case ENUMERATION_STATE_FILES:
+            self.activityIndicatorLabel.stringValue = @"enumerating files...";
+            break;
+            
+        //network
+        case ENUMERATION_STATE_NETWORK:
+            self.activityIndicatorLabel.stringValue = @"enumerating network...";
+            break;
+            
+        //done
+        case ENUMERATION_STATE_COMPLETE:
+            self.activityIndicatorLabel.stringValue = @"enumeration complete!";
+            break;
+            
+        default:
+            break;
+    }
 }
 
 //callback for when searching is done
 // ->update UI by removing overlay and reloading table
 -(void)completeSearch
 {
-    //hide overlay
-    self.overlayView.hidden = YES;
-
-    //hide activity indicator
-    self.activityIndicator.hidden = YES;
+    //always (attempt to) hide overlay
+    self.overlay.hidden = YES;
     
-    //hide activity indicator label
-    self.activityIndicatorLabel.hidden = YES;
+    //stop spinner
+    [self.overlaySpinner stopAnimation:nil];
     
     //enable search box
     self.searchBox.enabled = YES;
@@ -222,69 +227,31 @@
     //reload table
     [self.searchTable reloadData];
     
-    //when nothing was found
-    // ->display label with this fact
-    if(0 == self.searchResults.count)
+    //search was performed?
+    if(0 != [self.searchBox stringValue].length)
     {
-        //set msg
-        self.activityIndicatorLabel.stringValue = @"nothing found";
+        //nothing found
+        if(0 == self.searchResults.count)
+        {
+            //set msg
+            self.searchResultsMessage.stringValue = @"nothing found";
+        }
         
-        //show
-        self.activityIndicatorLabel.hidden = NO;
+        //update status mesasge with count
+        else
+        {
+            //set msg
+            self.searchResultsMessage.stringValue = [NSString stringWithFormat:@"found %lu items\n", (unsigned long)self.searchResults.count];
+        }
     }
-    
-    return;
-}
-
-//thread function
-// ->wait until task enumeration is done, then allow user to search
--(void)waitTillPau
-{
-    //time left
-    NSTimeInterval timeRemaining = 0.0f;
-    
-    //calc time remaining
-    timeRemaining = SEARCH_WAIT_TIME - ([NSDate timeIntervalSinceReferenceDate] - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
-    
-    //nap/check/etc
-    while(timeRemaining > 0.0f)
+    else
     {
-        //nap
-        [NSThread sleepForTimeInterval:1.0f];
-        
-        //calc time remaining
-        timeRemaining = SEARCH_WAIT_TIME - ([NSDate timeIntervalSinceReferenceDate] - ((AppDelegate*)[[NSApplication sharedApplication] delegate]).startTime);
-        
-        //update UI on main thread
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            //update w/ time
-            self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"%@ (%d)", PLS_WAIT_MESSAGE, (int)timeRemaining];
-        
-        });
+        //reset
+        self.searchResultsMessage.stringValue = @"";
     }
-    
-    //timeout hit
-    // ->update UI on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        //hide overlay
-        self.overlayView.hidden = YES;
 
-        //yay all done
-        // ->hide activity indicator
-        self.activityIndicator.hidden = YES;
-        
-        //hide activity indicator label
-        self.activityIndicatorLabel.hidden = YES;
-        
-        //enable search box
-        self.searchBox.enabled = YES;
-        
-        //make search box first responder
-        [self.window makeFirstResponder:self.searchBox];
-        
-    });
+    //show
+    self.searchResultsMessage.hidden = NO;
     
     return;
 }
@@ -354,7 +321,7 @@ bail:
 
 //delegate method, automatically invoked
 // ->handle invocations for text view
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+-(BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
 {
     //flag
     BOOL didPerformRequestedSelectorOnTextView = NO;
@@ -549,11 +516,36 @@ bail:
     //grab search string
     searchString = [self.searchBox stringValue];
     
-    //show overlay
-    [self showOverlay];
+    //update search message
+    if(0 != searchString.length)
+    {
+        //update
+        self.searchResultsMessage.stringValue = [NSString stringWithFormat:@"searching (%@)", searchString];
+    }
     
-    //config it
-    self.activityIndicatorLabel.stringValue = [NSString stringWithFormat:@"searching (%@)", searchString];
+    //pre-req
+    [self.overlay setWantsLayer:YES];
+    
+    //rounded corners
+    self.overlay.layer.cornerRadius = 20.0;
+    
+    //maks
+    self.overlay.layer.masksToBounds = YES;
+    
+    //set overlay's view color to black
+    self.overlay.layer.backgroundColor = [NSColor grayColor].CGColor;
+    
+    //make it semi-transparent
+    self.overlay.alphaValue = 0.95;
+    
+    //show overlay
+    self.overlay.hidden = NO;
+    
+    //start spinner
+    [self.overlaySpinner startAnimation:nil];
+
+    //show
+    self.searchResultsMessage.hidden = NO;
     
     //disable search input box
     self.searchBox.enabled = NO;
@@ -740,6 +732,18 @@ bail:
     
     return;
 }
+
+//automatically invoked when window is closing
+// ->cancel enumeration state monitoring thread
+-(void)windowWillClose:(NSNotification *)notification
+{
+    //cancel
+    [self.stateMonitor cancel];
+    
+    return;
+}
+
+
 
 
 @end

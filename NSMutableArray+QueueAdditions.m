@@ -17,7 +17,7 @@
     @synchronized(self)
     {
         //add object
-        [self addObject: anObject];
+        [self addObject:anObject];
     }
 }
 

@@ -1,9 +1,9 @@
 //
-//  PrefsWindowController.h
-//  DHS
+//  AboutWindowController.h
+//  TaskExplorer
 //
-//  Created by Patrick Wardle on 2/6/15.
-//  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
+//  Created by Patrick Wardle on 7/15/16.
+//  Copyright (c) 2016 Objective-See. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -18,10 +18,11 @@
 //version label/string
 @property (weak) IBOutlet NSTextField *versionLabel;
 
+//patrons
+@property (unsafe_unretained) IBOutlet NSTextView *patrons;
+
+
 /* METHODS */
 
-//invoked when user clicks 'more info' button
-// ->open KK's webpage
-- (IBAction)moreInfo:(id)sender;
 
 @end

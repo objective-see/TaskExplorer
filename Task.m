@@ -250,7 +250,7 @@ bail:
 
 //enumerate all dylibs
 // ->new ones are added to 'existingDylibs' (global) dictionary
--(void)enumerateDylibs:(NSMutableDictionary*)allDylibs
+-(void)enumerateDylibs:(NSMutableDictionary*)allDylibs shouldWait:(BOOL)shouldWait
 {
     //xpc connection
     __block NSXPCConnection* xpcConnection = nil;
@@ -261,6 +261,9 @@ bail:
     //new dylibs
     // ->ones that should be hashed/processed
     __block NSMutableArray* newDylibs = nil;
+    
+    //wait semaphore
+    dispatch_semaphore_t waitSema = nil;
     
     //alloc array for new dylibs
     newDylibs = [NSMutableArray array];
@@ -283,6 +286,9 @@ bail:
     //resume
     [xpcConnection resume];
     
+    //init wait semaphore
+    waitSema = dispatch_semaphore_create(0);
+
     //invoke XPC service (running as r00t)
     // ->will enumerate dylibs, then invoke reply block to save into iVar
     [[xpcConnection remoteObjectProxy] enumerateDylibs:self.pid withReply:^(NSMutableArray* dylibPaths) {
@@ -403,13 +409,22 @@ bail:
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newDylib];
         }
         
+        //signal sema
+        dispatch_semaphore_signal(waitSema);
     }];
     
+    //wait until XPC is done?
+    if(YES == shouldWait)
+    {
+        //wait
+        dispatch_semaphore_wait(waitSema, DISPATCH_TIME_FOREVER);
+    }
+
     return;
 }
 
 //enumerate all file descriptors
--(void)enumerateFiles
+-(void)enumerateFiles:(BOOL)shouldWait
 {
     //xpc connection
     __block NSXPCConnection* xpcConnection = nil;
@@ -417,14 +432,11 @@ bail:
     //File object
     __block File* file = nil;
     
-    //new files
-    //NSMutableArray* newFiles = nil;
+    //wait semaphore
+    dispatch_semaphore_t waitSema = nil;
     
     //file path
     __block NSString* filePath = nil;
-    
-    //alloc array for new files
-    //newFiles = [NSMutableArray array];
     
     //alloc XPC connection
     xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
@@ -443,6 +455,9 @@ bail:
     
     //resume
     [xpcConnection resume];
+    
+    //init wait semaphore
+    waitSema = dispatch_semaphore_create(0);
     
     //invoke XPC service (running as r00t)
     // ->will enumerate files, then invoke reply block so can save into iVar
@@ -491,19 +506,32 @@ bail:
             
         }//sync
         
+        //signal sema
+        dispatch_semaphore_signal(waitSema);
+        
     }];
+    
+    //wait until XPC is done?
+    if(YES == shouldWait)
+    {
+        //wait
+        dispatch_semaphore_wait(waitSema, DISPATCH_TIME_FOREVER);
+    }
     
    return;
 }
 
 //enumerate network sockets/connections
--(void)enumerateNetworking
+-(void)enumerateNetworking:(BOOL)shouldWait
 {
     //xpc connection
     __block NSXPCConnection* xpcConnection = nil;
     
     //Connection object
     __block Connection* connection = nil;
+    
+    //wait semaphore
+    dispatch_semaphore_t waitSema = nil;
     
     //alloc XPC connection
     xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
@@ -522,6 +550,9 @@ bail:
     
     //resume
     [xpcConnection resume];
+    
+    //init wait semaphore
+    waitSema = dispatch_semaphore_create(0);
     
     //invoke XPC service (running as r00t)
     // ->will enumerate network sockets/connections, then invoke reply block so can save into iVar
@@ -559,7 +590,17 @@ bail:
             
         }//sync
         
+        //signal sema
+        dispatch_semaphore_signal(waitSema);
+        
     }];
+    
+    //wait until XPC is done?
+    if(YES == shouldWait)
+    {
+        //wait
+        dispatch_semaphore_wait(waitSema, DISPATCH_TIME_FOREVER);
+    }
     
     return;
 }

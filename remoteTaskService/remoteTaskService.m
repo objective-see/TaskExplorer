@@ -482,14 +482,14 @@ bail:
         if(YES == [[NSFileManager defaultManager] fileExistsAtPath:VMMAP_32])
         {
             //exec vmmap32
-            results = [[NSString alloc] initWithData:execTask(VMMAP_32, @[@"-w", [pid stringValue]]) encoding:NSUTF8StringEncoding];
+            results = [[NSString alloc] initWithData:execTask(VMMAP_32, @[@"-w", [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
         }
         //otherwise
         // ->assume vmmap is 'fat', and exec 32bit version (pre El Capitan)
         else
         {
             //exec vmmap, but it's i386 version
-            results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]]) encoding:NSUTF8StringEncoding];
+            results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
         }
     }
     //for 64bit procs
@@ -497,7 +497,7 @@ bail:
     else
     {
         //exec vmmap
-        results = [[NSString alloc] initWithData:execTask(VMMAP, @[@"-w", [pid stringValue]]) encoding:NSUTF8StringEncoding];
+        results = [[NSString alloc] initWithData:execTask(VMMAP, @[@"-w", [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
     }
     
     //sanity check
@@ -586,7 +586,7 @@ bail:
     files = [NSMutableArray array];
    
     //exec 'file' to get file type
-    results = execTask(LSOF, @[@"-Fn", @"-p", taskPID.stringValue]);
+    results = execTask(LSOF, @[@"-Fn", @"-p", taskPID.stringValue], YES);
     
     //sanity check(s)
     if( (nil == results) ||

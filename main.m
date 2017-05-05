@@ -27,11 +27,11 @@ int main(int argc, char *argv[])
     if(nil != untranslocatedURL)
     {
         //remove quarantine attributes of original
-        execTask(XATTR, @[@"-cr", untranslocatedURL.path]);
+        execTask(XATTR, @[@"-cr", untranslocatedURL.path], NO);
         
         //relaunch
         // ->use 'open' since allows two instances of app to be run
-        execTask(OPEN, @[@"-n", @"-a", untranslocatedURL.path]);
+        execTask(OPEN, @[@"-n", @"-a", untranslocatedURL.path], NO);
     
         //happy
         status = 0;

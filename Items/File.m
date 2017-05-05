@@ -52,7 +52,7 @@ bail:
     NSArray* parsedResults = nil;
     
     //exec 'file' to get file type
-    results = [[NSString alloc] initWithData:execTask(FILE, @[self.path]) encoding:NSUTF8StringEncoding];
+    results = [[NSString alloc] initWithData:execTask(FILE, @[self.path], YES) encoding:NSUTF8StringEncoding];
     if(nil == results)
     {
         //bail

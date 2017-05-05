@@ -23,6 +23,7 @@
 
 @implementation TaskEnumerator
 
+@synthesize state;
 @synthesize tasks;
 @synthesize dylibs;
 @synthesize binaryQueue;
@@ -65,9 +66,12 @@
     //new tasks
     OrderedDictionary* newTasks = nil;
     
-    //thread priority
-    double threadPriority = 0;
-
+    //counter
+    int count = 0;
+    
+    //set state
+    self.state = ENUMERATION_STATE_TASKS;
+    
     //determine if network is connected
     // ->sets 'isConnected' flag
     ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
@@ -182,11 +186,8 @@
       ->this is for global search, as otherwise, each is re-gen'd per task on each bottom-pane click
     */
     
-    //get current thread priority
-    threadPriority = [NSThread threadPriority];
-    
-    //reduce thread priorty
-    [NSThread setThreadPriority:0.0f];
+    //set state
+    self.state = ENUMERATION_STATE_DYLIBS;
     
     //begin dylib enumeration
     for(NSNumber* key in newTasks)
@@ -202,12 +203,28 @@
         }
         
         //enumerate
-        [newTask enumerateDylibs:self.dylibs];
+        // ->wait every x times
+        if(0 == count++ % 10)
+        {
+            //enumerate
+            [newTask enumerateDylibs:self.dylibs shouldWait:YES];
+        }
+        //enumerate
+        else
+        {
+            //enumerate
+            [newTask enumerateDylibs:self.dylibs shouldWait:NO];
+        }
         
         //nap
-        // ->helps with UI
-        [NSThread sleepForTimeInterval:0.1f];
+        [NSThread sleepForTimeInterval:0.01];
     }
+    
+    //set state
+    self.state = ENUMERATION_STATE_FILES;
+    
+    //reset
+    count = 0;
     
     //begin file enumeration
     // ->for search view
@@ -224,12 +241,28 @@
         }
         
         //enumerate
-        [newTask enumerateFiles];
-        
+        // ->wait every x times
+        if(0 == count++ % 10)
+        {
+            //enumerate
+            [newTask enumerateFiles:YES];
+        }
+        //enumerate
+        else
+        {
+            //enumerate
+            [newTask enumerateFiles:NO];
+        }
+            
         //nap
-        // ->helps with UI
-        [NSThread sleepForTimeInterval:0.1f];
+        [NSThread sleepForTimeInterval:0.01];
     }
+    
+    //set state
+    self.state = ENUMERATION_STATE_NETWORK;
+    
+    //reset
+    count = 0;
     
     //begin network enumeration
     // ->for search view
@@ -246,15 +279,25 @@
         }
         
         //enumerate
-        [newTask enumerateNetworking];
+        // ->wait every x times
+        if(0 == count++ % 10)
+        {
+            //enumerate
+            [newTask enumerateNetworking:YES];
+        }
+        //enumerate
+        else
+        {
+            //enumerate
+            [newTask enumerateNetworking:NO];
+        }
         
         //nap
-        // ->helps with UI
-        [NSThread sleepForTimeInterval:0.1f];
+        [NSThread sleepForTimeInterval:0.01];
     }
     
-    //reset thread priority
-    [NSThread setThreadPriority:threadPriority];
+    //set state
+    self.state = ENUMERATION_STATE_COMPLETE;
     
     return;
 }

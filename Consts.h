@@ -174,9 +174,9 @@
 #define XPC_SERVICE @"remoteTaskService.xpc"
 
 //location of kernel in pre-Yosemite
-#define KERNEL_PRE_YOSEMITE @"/System/Library/Kernels/kernel"
+#define KERNEL_PRE_YOSEMITE @"/mach_kernel"
 
-//location of kernel in Yosemite
+//location of kernel in Yosemite+
 #define KERNEL_YOSEMITE @"/System/Library/Kernels/kernel"
 
 //top pane
@@ -321,7 +321,7 @@
 #define PID_TAG_DELTA 1000
 
 //search wait time (from app's launch)
-#define SEARCH_WAIT_TIME 30
+#define SEARCH_WAIT_TIME 60
 
 //pls wait (search) message
 #define PLS_WAIT_MESSAGE @"completing (initial) task/dylib/file enumeration please wait"
@@ -346,5 +346,32 @@
 
 //app kit version for OS X 10.11
 #define APPKIT_VERSION_10_11 1404
+
+//state of enumeration; tasks
+#define ENUMERATION_STATE_TASKS 0x1
+
+//state of enumeration; dylibs
+#define ENUMERATION_STATE_DYLIBS 0x2
+
+//state of enumeration; files
+#define ENUMERATION_STATE_FILES 0x3
+
+//state of enumeration; network
+#define ENUMERATION_STATE_NETWORK 0x4
+
+//state of enumeration; done
+#define ENUMERATION_STATE_COMPLETE 0x5
+
+//support us button tag
+#define BUTTON_SUPPORT_US 100
+
+//more info button tag
+#define BUTTON_MORE_INFO 101
+
+//patreon url
+#define PATREON_URL @"https://www.patreon.com/objective_see"
+
+//product url
+#define PRODUCT_URL @"https://objective-see.com/products/taskexplorer.html"
 
 #endif

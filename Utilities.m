@@ -509,7 +509,7 @@ NSMutableAttributedString* setStringColor(NSAttributedString* string, NSColor* c
 }
 
 //exec a process and grab it's output
-NSData* execTask(NSString* binaryPath, NSArray* arguments)
+NSData* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait)
 {
     //task
     NSTask *task = nil;
@@ -517,59 +517,55 @@ NSData* execTask(NSString* binaryPath, NSArray* arguments)
     //output pipe
     NSPipe *outPipe = nil;
     
-    //read handle
-    NSFileHandle* readHandle = nil;
-    
     //output
-    NSMutableData *output = nil;
+    NSData *output = nil;
     
     //init task
     task = [NSTask new];
     
-    //init output pipe
+    //init pipe
     outPipe = [NSPipe pipe];
     
-    //init read handle
-    readHandle = [outPipe fileHandleForReading];
-    
-    //init output buffer
-    output = [NSMutableData data];
-    
     //set task's path
-    [task setLaunchPath:binaryPath];
+    task.launchPath = binaryPath;
     
     //set task's args
-    [task setArguments:arguments];
+    task.arguments = arguments;
     
-    //set task's output
-    [task setStandardOutput:outPipe];
+    //set task's output to pipe
+    // ->but only if we're waiting for exit
+    if(YES == shouldWait)
+    {
+        //redirect
+        task.standardOutput = outPipe;
+    }
 
     //wrap task launch
-    @try {
-        
+    @try
+    {
         //launch
         [task launch];
     }
-    @catch(NSException *exception)
+    @catch(NSException* exception)
     {
-        //err msg
-        //syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: taskExec(%s) failed with %s", [binaryPath UTF8String], [[exception description] UTF8String]);
-        
         //bail
         goto bail;
     }
     
-    //read in output
-    while(YES == [task isRunning])
+    //when waiting
+    // ->grab data
+    if(YES == shouldWait)
     {
-        //accumulate output
-        [output appendData:[readHandle readDataToEndOfFile]];
-    }
-    
-    //grab any left over data
-    [output appendData:[readHandle readDataToEndOfFile]];
-    
-    //syslog(LOG_ERR, "OBJECTIVE-SEE: results here: %s", [[output description] UTF8String]);
+        //read until file is closed
+        output = [outPipe.fileHandleForReading readDataToEndOfFile];
+        
+        //wait till exit
+        [task waitUntilExit];
+        
+        //really kill
+        kill(task.processIdentifier, SIGKILL);
+
+    }//wait
     
 //bail
 bail:
@@ -972,7 +968,7 @@ NSURL* getUnTranslocatedURL()
     appPath = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
     
     //check ignore pre-macOS Sierra
-    if (floor(NSAppKitVersionNumber) <= APPKIT_VERSION_10_11)
+    if(floor(NSAppKitVersionNumber) <= APPKIT_VERSION_10_11)
     {
         //bail
         goto bail;

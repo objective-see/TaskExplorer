@@ -204,8 +204,8 @@
         
         //exec UI actions etc on main thread
         dispatch_async(dispatch_get_main_queue(), ^{
-            
-            //make sure app's key window is (still) font
+
+            //make sure app's key window is (still) front
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).window makeKeyAndOrderFront:self];
             
             //make sure app is (still) front

@@ -18,11 +18,8 @@
 
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: autolayout vertically
-//TODO: show 'from where' via quarantine attrz or database!! (simon email)
-//TODO: detect as procs die via GCD (simon blog post)
 
 @implementation AppDelegate
-
 
 @synthesize topPane;
 @synthesize filterObj;
@@ -184,19 +181,6 @@
     //set delegate
     // ->ensures our 'windowWillClose' method, which has logic to fully exit app
     self.window.delegate = self;
-    
-    /*
-    //init list of keyword strings for our type completion dropdown list in NSSearchField
-    self.builtInKeywords = [NSMutableArray array];
-    
-    //iterate over all const keywords
-    // ->add to array
-    for(NSUInteger i=0; i<sizeof(KEYWORDS)/sizeof(KEYWORDS[0]); i++)
-    {
-        //add
-        [self.builtInKeywords addObject:KEYWORDS[i]];
-    }
-    */
     
     return;
 }
@@ -481,7 +465,7 @@ bail:
 
 //smartly reload a specific row in table
 // ->arg determines pane (top/bottom) and for bottom pane, the active view the item belongs to
--(void)reloadRow:(id)item;
+-(void)reloadRow:(id)item
 {
     //table view
     __block NSTableView* tableView = nil;
@@ -553,7 +537,7 @@ bail:
         if(YES != self.bottomViewController.isFiltered)
         {
             //get row
-            @synchronized(self.bottomViewController.tableItems)
+            @synchronized(self.bottomViewController)
             {
                 //get
                 row = [self.bottomViewController.tableItems indexOfObject:item];
@@ -631,7 +615,7 @@ bail:
         case DYLIBS_VIEW:
             
             //set table items
-            @synchronized(self.bottomViewController.tableItems)
+            @synchronized(self.bottomViewController)
             {
                 //set
                 self.bottomViewController.tableItems = self.currentTask.dylibs;
@@ -646,7 +630,7 @@ bail:
         case FILES_VIEW:
             
             //set table items
-            @synchronized(self.bottomViewController.tableItems)
+            @synchronized(self.bottomViewController)
             {
                 //set
                 self.bottomViewController.tableItems = self.currentTask.files;
@@ -661,7 +645,7 @@ bail:
         case NETWORKING_VIEW:
             
             //set table items
-            @synchronized(self.bottomViewController.tableItems)
+            @synchronized(self.bottomViewController)
             {
                 //set
                 self.bottomViewController.tableItems = self.currentTask.connections;
@@ -1451,7 +1435,7 @@ bail:
     self.noItemsLabel.hidden = YES;
     
     //unset existing items
-    @synchronized(self.bottomViewController.tableItems)
+    @synchronized(self.bottomViewController)
     {
         //unset
         self.bottomViewController.tableItems = nil;
@@ -1510,7 +1494,7 @@ bail:
 
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateDylibs:self.taskEnumerator.dylibs];
+            [self.currentTask enumerateDylibs:self.taskEnumerator.dylibs shouldWait:NO];
             
             break;
             
@@ -1532,7 +1516,7 @@ bail:
             
             //(re)enumerate files via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateFiles];
+            [self.currentTask enumerateFiles:NO];
 
             break;
             
@@ -1551,7 +1535,7 @@ bail:
             
             //(re)enumerate network connections via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateNetworking];
+            [self.currentTask enumerateNetworking:NO];
             
             break;
             
@@ -1667,7 +1651,7 @@ bail:
             //normal filter
             [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
             
-            }
+            }//sync
                 
             //set flag
             self.taskTableController.isFiltered = YES;
@@ -1895,7 +1879,7 @@ bail:
             (0 == self.taskTableController.filteredItems.count) )
         {
             //unset bottom pane's items
-            @synchronized(self.bottomViewController.tableItems)
+            @synchronized(self.bottomViewController)
             {
                 //unset
                 self.bottomViewController.tableItems = nil;
