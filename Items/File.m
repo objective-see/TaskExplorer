@@ -46,22 +46,29 @@ bail:
 -(void)setFileType
 {
     //results from 'file' cmd
-    NSString* results = nil;
+    NSMutableDictionary* results = nil;
+    
+    //output
+    NSString* output = nil;
     
     //array of parsed results
     NSArray* parsedResults = nil;
     
     //exec 'file' to get file type
-    results = [[NSString alloc] initWithData:execTask(FILE, @[self.path], YES) encoding:NSUTF8StringEncoding];
-    if(nil == results)
+    results = execTask(FILE, @[self.path], YES);
+    if( (nil == results[EXIT_CODE]) ||
+        (0 != [results[EXIT_CODE] integerValue]) )
     {
         //bail
         goto bail;
     }
     
+    //convert stdout data to string
+    output = [[NSString alloc] initWithData:results[STDOUT] encoding:NSUTF8StringEncoding];
+    
     //parse results
     // ->format: <file path>: <file types>
-    parsedResults = [results componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":\n"]];
+    parsedResults = [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
     
     //sanity check
     // ->should be two items in array, <file path> and <file type>

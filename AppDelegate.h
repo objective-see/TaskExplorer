@@ -19,6 +19,7 @@
 #import "AboutWindowController.h"
 #import "PrefsWindowController.h"
 #import "SearchWindowController.h"
+#import "UpdateWindowController.h"
 #import "ResultsWindowController.h"
 #import "FlaggedItemWindowController.h"
 #import "RequestRootWindowController.h"
@@ -28,6 +29,9 @@
 {
 
 }
+
+//friends
+@property (weak) IBOutlet NSWindow *friends;
 
 //start time
 @property NSTimeInterval startTime;
@@ -171,6 +175,9 @@
 
 //message for filtering
 @property (weak) IBOutlet NSTextField *filteringMessage;
+
+//update window controller
+@property(nonatomic, retain)UpdateWindowController* updateWindowController;
 
 /* METHODS */
 

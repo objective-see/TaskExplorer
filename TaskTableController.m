@@ -894,8 +894,7 @@ bail:
     //reload bottom pane
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
     
-    
-//bail
+
 bail:
     ;
     

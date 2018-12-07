@@ -1,13 +1,16 @@
 //
 //  Consts.h
-//  DHS
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/4/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-#ifndef KK_Consts_h
-#define KK_Consts_h
+#ifndef TE_Consts_h
+#define TE_Consts_h
+
+//not first run
+#define NOT_FIRST_TIME @"notFirstTime"
 
 //button text, start scan
 #define START_SCAN @"Start Scan"
@@ -74,6 +77,15 @@
 
 //path to open
 #define OPEN @"/usr/bin/open"
+
+//key for stdout output
+#define STDOUT @"stdOutput"
+
+//key for stderr output
+#define STDERR @"stdError"
+
+//key for exit code
+#define EXIT_CODE @"exitCode"
 
 //hash key, SHA1
 #define KEY_HASH_SHA1 @"sha1"
@@ -373,5 +385,15 @@
 
 //product url
 #define PRODUCT_URL @"https://objective-see.com/products/taskexplorer.html"
+
+//crash reporting URL
+#define CRASH_REPORTING_URL @"https://c48b6be026d34bf5938a9167d5d5ee77@sentry.io/1337533"
+
+//product name
+// ...for version check
+#define PRODUCT_NAME @"TaskExplorer"
+
+//product version url
+#define PRODUCT_VERSIONS_URL @"https://objective-see.com/products.json"
 
 #endif

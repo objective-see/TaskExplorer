@@ -6,9 +6,10 @@
 //  Copyright (c) 2015 Objective-See, LLC. All rights reserved.
 //
 
+#import "../Utilities.h"
 #import "serviceInterface.h"
 #import "remoteTaskService.h"
-#import "../Exception.h"
+
 
 #import <syslog.h>
 #import <libproc.h>
@@ -125,9 +126,8 @@ int main(int argc, const char *argv[])
     //listener
     NSXPCListener* listener = nil;
     
-    //first thing...
-    // ->install exception handlers!
-    installExceptionHandlers();
+    //init crash reporting
+    initCrashReporting();
     
     //make really r00t
     // ->needed for exec'ing vmmap, etc

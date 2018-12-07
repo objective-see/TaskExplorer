@@ -374,7 +374,7 @@ bail:
         }] mutableCopy];
         
         //reload bottom pane now
-        // ->this will only reload if new task is the currently selected one, etc
+        // note: this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
             
         }//sync

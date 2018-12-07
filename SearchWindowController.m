@@ -532,8 +532,8 @@ bail:
     //maks
     self.overlay.layer.masksToBounds = YES;
     
-    //set overlay's view color to black
-    self.overlay.layer.backgroundColor = [NSColor grayColor].CGColor;
+    //set overlay's view color to gray
+    self.overlay.layer.backgroundColor = NSColor.grayColor.CGColor;
     
     //make it semi-transparent
     self.overlay.alphaValue = 0.95;

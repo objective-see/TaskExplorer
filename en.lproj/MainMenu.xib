@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2555" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
-        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -19,10 +18,16 @@
                 <menuItem title="TaskExplorer" id="56" userLabel="TaskExplorer">
                     <menu key="submenu" title="TaskExplorer" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About" id="134">
+                            <menuItem title="About TaskExplorer" id="134">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="about:" target="494" id="1Av-a0-4RW"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Check for update..." tag="1" id="sx3-3V-esp">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="check4Update:" target="494" id="wDZ-Nd-MOD"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="149">
@@ -39,15 +44,15 @@
             </items>
             <point key="canvasLocation" x="-153" y="-83"/>
         </menu>
-        <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
+        <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="371">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="0.0" y="0.0" width="1354" height="656"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <value key="minSize" type="size" width="1000" height="656"/>
             <value key="maxSize" type="size" width="2000" height="656"/>
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="1354" height="656"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
                     <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="839">
                         <rect key="frame" x="1157" y="-140" width="32" height="32"/>
@@ -167,7 +172,7 @@
                         </connections>
                     </button>
                     <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtq-gn-VPL">
-                        <rect key="frame" x="566" y="326" width="222" height="24"/>
+                        <rect key="frame" x="566" y="326" width="226" height="24"/>
                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="DHY-0u-YD7">
                             <font key="font" metaFont="system"/>
                             <segments>
@@ -311,6 +316,7 @@
                 <outlet property="filteringMessage" destination="fCX-ky-Lk5" id="3Yt-4t-Bxv"/>
                 <outlet property="filteringOverlay" destination="joB-SY-vJU" id="Q7O-sD-FpJ"/>
                 <outlet property="flaggedButton" destination="urJ-dW-Pfr" id="SvI-vh-Khd"/>
+                <outlet property="friends" destination="nKo-pR-DT7" id="d2E-Bk-v5g"/>
                 <outlet property="logoButton" destination="HoI-FQ-vTI" id="bzc-wu-4Hv"/>
                 <outlet property="noItemsLabel" destination="kIC-ZZ-ldy" id="nOm-8E-tZA"/>
                 <outlet property="progressIndicator" destination="839" id="870"/>
@@ -324,8 +330,85 @@
         </customObject>
         <customObject id="420" customClass="NSFontManager"/>
         <customObject id="8VH-uv-w4O" customClass="TaskTableController"/>
+        <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="nKo-pR-DT7" userLabel="Friends">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
+            <rect key="contentRect" x="2843" y="305" width="801" height="384"/>
+            <rect key="screenRect" x="2560" y="0.0" width="2560" height="1417"/>
+            <view key="contentView" id="4IB-8n-m2r">
+                <rect key="frame" x="0.0" y="0.0" width="801" height="384"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5EF-zU-Rbo">
+                        <rect key="frame" x="18" y="304" width="765" height="60"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="💕 Mahalo to the &quot;Friends of Objective-See&quot; 💕" id="EIz-yr-5f1">
+                            <font key="font" size="20" name="Menlo-Bold"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0IA-oe-oLD">
+                        <rect key="frame" x="81" y="107" width="135" height="19"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Digita Security" id="rNy-1f-EHm">
+                            <font key="font" size="13" name="Menlo-Regular"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ecY-gG-DcW">
+                        <rect key="frame" x="103" y="134" width="91" height="115"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsDigita" id="gun-aw-mOP"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="emP-YF-Kpy">
+                        <rect key="frame" x="344" y="148" width="114" height="88"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsSophos" id="Ymb-NA-UdU"/>
+                    </imageView>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bpm-F7-j5N">
+                        <rect key="frame" x="332" y="107" width="138" height="19"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Sophos" id="mr6-Y1-FJf">
+                            <font key="font" size="13" name="Menlo-Regular"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gf9-20-HgH">
+                        <rect key="frame" x="596" y="144" width="135" height="95"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsMalwarebytes" id="9p2-vf-3nJ"/>
+                    </imageView>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" tag="-1" translatesAutoresizingMaskIntoConstraints="NO" id="IKO-30-I6s">
+                        <rect key="frame" x="672" y="13" width="115" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="CZH-dF-XuC">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" size="13" name="Menlo-Regular"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="hideFriends:" target="494" id="Rdc-sS-5Z0"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wbc-pS-ZlX">
+                        <rect key="frame" x="609" y="107" width="108" height="19"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Malwarebytes" id="gPK-PB-5UI">
+                            <font key="font" size="13" name="Menlo-Regular"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+            </view>
+            <point key="canvasLocation" x="706.5" y="-545"/>
+        </window>
     </objects>
     <resources>
+        <image name="FriendsDigita" width="450" height="460"/>
+        <image name="FriendsMalwarebytes" width="792" height="612"/>
+        <image name="FriendsSophos" width="188" height="190"/>
         <image name="flagged" width="256" height="256"/>
         <image name="flaggedBG" width="256" height="256"/>
         <image name="logoApple" width="194" height="236"/>

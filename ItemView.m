@@ -214,8 +214,8 @@ NSTableCellView* createLoadedItemView(NSTableView* tableView, id owner, id item)
     }
 
     //default
-    // ->(re)set main textfield's color to black
-    loadedItemCell.textField.textColor = [NSColor blackColor];
+    // ->(re)set main textfield's color
+    loadedItemCell.textField.textColor = NSColor.controlTextColor;
 
     //set main text
     loadedItemCell.textField.attributedStringValue = initLoadedInString(item);
@@ -297,9 +297,8 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
     //add name
     [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:binary.name]];
     
-    //init color for pid
-    // ->light gray
-    attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+    //init gray color for pid
+    attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
     
     //search window
     // ->only for tasks, since dylibs in search window are handled elsewhere ('loaded in')
@@ -327,7 +326,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
         {
             //init color for comma, etc
             // ->light gray
-            attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+            attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
             
             //tasks
             //add comma string
@@ -368,7 +367,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 (YES != binary.notFound))
             {
                 //init color for closing
-                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
                 
                 //close string
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -385,7 +384,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             {
                 //init color for comma,
                 // ->light gray
-                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
                 
                 //add
                 [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@", " attributes:attributes]];
@@ -395,7 +394,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             {
                 //init color for comma, etc
                 // ->light gray
-                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
                 
                 //tasks
                 //add comma string
@@ -426,7 +425,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             if(YES != [item isKindOfClass:[Task class]])
             {
                 //init color for closing
-                attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
                 
                 //close string
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -441,7 +440,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
     {
         //init color for closing
         // ->light gray
-        attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+        attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
         
         //close string
         [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -490,7 +489,7 @@ NSAttributedString* initLoadedInString(id item)
 
     //init color for 'loaded in...'
     // ->light gray
-    attributes = [NSDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+    attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
     
     //add dylib indicator
     //-> '(dylib, loaded in: ... '
@@ -583,8 +582,8 @@ NSTableCellView* createTaskView(NSTableView* tableView, id owner, Task* task)
     ((NSImageView*)[taskCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(task.binary);
     
     //default
-    // ->(re)set main textfield's color to black
-    taskCell.textField.textColor = [NSColor blackColor];
+    // ->(re)set main textfield's color
+    taskCell.textField.textColor = NSColor.controlTextColor;
     
     //set main text
     taskCell.textField.attributedStringValue = initBinaryString(task, [owner isKindOfClass:[SearchWindowController class]]);
@@ -636,8 +635,8 @@ NSTableCellView* createDylibView(NSTableView* tableView, id owner, Binary* dylib
     ((NSImageView*)[dylibCell viewWithTag:TABLE_ROW_SIGNATURE_ICON]).image = getCodeSigningIcon(dylib);
     
     //default
-    // ->(re)set main textfield's color to black
-    dylibCell.textField.textColor = [NSColor blackColor];
+    // ->(re)set main textfield's color
+    dylibCell.textField.textColor = NSColor.controlTextColor;
     
     //set main text
     // ->final arg is flag indicating normal or search window
@@ -691,8 +690,8 @@ NSTableCellView* createFileView(NSTableView* tableView, id owner, File* file)
     }
     
     //default
-    // ->(re)set main textfield's color to black
-    fileCell.textField.textColor = [NSColor blackColor];
+    // ->(re)set main textfield's color
+    fileCell.textField.textColor = NSColor.controlTextColor;
     
     //set main text
     // ->name
@@ -731,8 +730,8 @@ NSTableCellView* createNetworkView(NSTableView* tableView, id owner, Connection*
     connectionCell.imageView.image = connection.icon;
     
     //default
-    // ->(re)set main textfield's color to black
-    connectionCell.textField.textColor = [NSColor blackColor];
+    // ->(re)set main textfield's color
+    connectionCell.textField.textColor = NSColor.controlTextColor;
     
     //set main text
     // ->connection endpoints
@@ -834,17 +833,17 @@ void configVTButton(NSTableCellView *itemCell, id owner, Binary* binary)
                 //known 'good' files (0 positivies)
                 if(0 == [binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
                 {
-                    //(re)set title black
-                    itemCell.textField.textColor = [NSColor blackColor];
+                    //(re)set title
+                    itemCell.textField.textColor = NSColor.controlTextColor;
                     
-                    //set color (black)
-                    stringAttributes[NSForegroundColorAttributeName] = [NSColor blackColor];
+                    //set color
+                    stringAttributes[NSForegroundColorAttributeName] = NSColor.controlTextColor;
                     
                     //set string (vt ratio), with attributes
                     [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
                     
                     //set color (gray)
-                    stringAttributes[NSForegroundColorAttributeName] = [NSColor grayColor];
+                    stringAttributes[NSForegroundColorAttributeName] = NSColor.grayColor;
                     
                     //set selected text color
                     [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];

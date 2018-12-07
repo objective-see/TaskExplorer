@@ -6,6 +6,8 @@
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
+@import Sentry;
+
 #import "Consts.h"
 #import "Utilities.h"
 
@@ -19,6 +21,92 @@
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+
+//init crash reporting
+void initCrashReporting()
+{
+    //sentry
+    NSBundle *sentry = nil;
+    
+    //error
+    NSError* error = nil;
+    
+    //class
+    Class SentryClient = nil;
+    
+    //load senty
+    sentry = loadFramework(@"Sentry.framework");
+    if(nil == sentry)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get client class
+    SentryClient = NSClassFromString(@"SentryClient");
+    if(nil == SentryClient)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //set shared client
+    [SentryClient setSharedClient:[[SentryClient alloc] initWithDsn:CRASH_REPORTING_URL didFailWithError:&error]];
+    if(nil != error)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //start crash handler
+    [[SentryClient sharedClient] startCrashHandlerWithError:&error];
+    if(nil != error)
+    {
+        //bail
+        goto bail;
+    }
+    
+bail:
+    
+    return;
+}
+
+//loads a framework
+// note: assumes it is in 'Framework' dir
+NSBundle* loadFramework(NSString* name)
+{
+    //handle
+    NSBundle* framework = nil;
+    
+    //framework path
+    NSString* path = nil;
+    
+    //init path
+    path = [NSString stringWithFormat:@"%@/../Frameworks/%@", [NSProcessInfo.processInfo.arguments[0] stringByDeletingLastPathComponent], name];
+    
+    //standardize path
+    path = [path stringByStandardizingPath];
+    
+    //init framework (bundle)
+    framework = [NSBundle bundleWithPath:path];
+    if(NULL == framework)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //load framework
+    if(YES != [framework loadAndReturnError:nil])
+    {
+        //bail
+        goto bail;
+    }
+    
+bail:
+    
+    return framework;
+}
+
 
 //check if OS is supported
 // ->Lion and newer
@@ -508,70 +596,140 @@ NSMutableAttributedString* setStringColor(NSAttributedString* string, NSColor* c
     return coloredString;
 }
 
-//exec a process and grab it's output
-NSData* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait)
+//exec a process with args
+// if 'shouldWait' is set, wait and return stdout/in and termination status
+NSMutableDictionary* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait)
 {
     //task
-    NSTask *task = nil;
+    NSTask* task = nil;
     
-    //output pipe
-    NSPipe *outPipe = nil;
+    //output pipe for stdout
+    NSPipe* stdOutPipe = nil;
     
-    //output
-    NSData *output = nil;
+    //output pipe for stderr
+    NSPipe* stdErrPipe = nil;
+    
+    //read handle for stdout
+    NSFileHandle* stdOutReadHandle = nil;
+    
+    //read handle for stderr
+    NSFileHandle* stdErrReadHandle = nil;
+    
+    //results dictionary
+    NSMutableDictionary* results = nil;
+    
+    //output for stdout
+    NSMutableData *stdOutData = nil;
+    
+    //output for stderr
+    NSMutableData *stdErrData = nil;
+    
+    //init dictionary for results
+    results = [NSMutableDictionary dictionary];
     
     //init task
     task = [NSTask new];
     
-    //init pipe
-    outPipe = [NSPipe pipe];
+    //TODO:
+    NSLog(@"calling %@ / %@", binaryPath, arguments);
+    printf("calling %s / %s\n", binaryPath.UTF8String, arguments.description.UTF8String);
+    
+    //only setup pipes if wait flag is set
+    if(YES == shouldWait)
+    {
+        //init stdout pipe
+        stdOutPipe = [NSPipe pipe];
+        
+        //init stderr pipe
+        stdErrPipe = [NSPipe pipe];
+        
+        //init stdout read handle
+        stdOutReadHandle = [stdOutPipe fileHandleForReading];
+        
+        //init stderr read handle
+        stdErrReadHandle = [stdErrPipe fileHandleForReading];
+        
+        //init stdout output buffer
+        stdOutData = [NSMutableData data];
+        
+        //init stderr output buffer
+        stdErrData = [NSMutableData data];
+        
+        //set task's stdout
+        task.standardOutput = stdOutPipe;
+        
+        //set task's stderr
+        task.standardError = stdErrPipe;
+    }
     
     //set task's path
     task.launchPath = binaryPath;
     
     //set task's args
-    task.arguments = arguments;
-    
-    //set task's output to pipe
-    // ->but only if we're waiting for exit
-    if(YES == shouldWait)
+    if(nil != arguments)
     {
-        //redirect
-        task.standardOutput = outPipe;
+        //set
+        task.arguments = arguments;
     }
-
+    
     //wrap task launch
     @try
     {
         //launch
         [task launch];
     }
-    @catch(NSException* exception)
+    @catch(NSException *exception)
     {
         //bail
         goto bail;
     }
     
-    //when waiting
-    // ->grab data
-    if(YES == shouldWait)
+    //no need to wait
+    // can just bail w/ no output
+    if(YES != shouldWait)
     {
-        //read until file is closed
-        output = [outPipe.fileHandleForReading readDataToEndOfFile];
-        
-        //wait till exit
-        [task waitUntilExit];
-        
-        //really kill
-        kill(task.processIdentifier, SIGKILL);
-
-    }//wait
+        //bail
+        goto bail;
+    }
     
-//bail
+    //read in stdout/stderr
+    while(YES == [task isRunning])
+    {
+        //accumulate stdout
+        [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
+        
+        //accumulate stderr
+        [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
+    }
+    
+    //grab any leftover stdout
+    [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
+    
+    //grab any leftover stderr
+    [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
+    
+    //add stdout
+    if(0 != stdOutData.length)
+    {
+        //add
+        results[STDOUT] = stdOutData;
+    }
+    
+    //add stderr
+    if(0 != stdErrData.length)
+    {
+        //add
+        results[STDERR] = stdErrData;
+    }
+    
+    //add exit code
+    results[EXIT_CODE] = [NSNumber numberWithInteger:task.terminationStatus];
+    
 bail:
     
-    return output;
+    return results;
 }
+
 
 //wait until a window is non nil
 // ->then make it modal
@@ -1027,6 +1185,36 @@ bail:
     
     return untranslocatedURL;
     
+}
+
+//check if (full) dark mode
+// meaning, Mojave+ and dark mode enabled
+BOOL isDarkMode()
+{
+    //flag
+    BOOL darkMode = NO;
+    
+    //not mojave?
+    // bail, since not true dark mode
+    if(YES != [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 14, 0}])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //not dark mode?
+    if(YES != [[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqualToString:@"Dark"])
+    {
+        //bail
+        goto bail;
+    }
+    
+    //ok, mojave dark mode it is!
+    darkMode = YES;
+    
+bail:
+    
+    return darkMode;
 }
 
 

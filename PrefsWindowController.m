@@ -7,6 +7,7 @@
 //
 
 
+#import "Utilities.h"
 #import "AppDelegate.h"
 #import "PrefsWindowController.h"
 
@@ -30,20 +31,24 @@
 
 
 //automatically invoked when window is loaded
-// ->set to white
 -(void)windowDidLoad
 {
     //super
     [super windowDidLoad];
     
-    //make white
-    [self.window setBackgroundColor: NSColor.whiteColor];
+    //no dark mode?
+    // make window white
+    if(YES != isDarkMode())
+    {
+        //make white
+        self.window.backgroundColor = NSColor.whiteColor;
+    }
     
     //make button selected
     [self.window makeFirstResponder:self.okButton];
     
     //capture existing prefs
-    // ->needed to trigger re-saves
+    // needed to trigger re-saves
     [self captureExistingPrefs];
     
     return;

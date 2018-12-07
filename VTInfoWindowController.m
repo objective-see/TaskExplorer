@@ -55,11 +55,13 @@
     //super
     [super windowDidLoad];
     
-    //make it modal
-    //[[NSApplication sharedApplication] runModalForWindow:self.window];
-    
-    //make white
-    [self.window setBackgroundColor: NSColor.whiteColor];
+    //no dark mode?
+    // make window white
+    if(YES != isDarkMode())
+    {
+        //make white
+        self.window.backgroundColor = NSColor.whiteColor;
+    }
     
     //make close button selected
     [self.window makeFirstResponder:self.closeButton];
@@ -101,8 +103,8 @@
     //file status (known/unknown)
     if(YES == isKnown)
     {
-        //default color to black
-        textColor = [NSColor blackColor];
+        //default color
+        textColor = NSColor.controlTextColor;
         
         //set color to red if its flagged
         if(0 != [self.item.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue])
@@ -234,7 +236,7 @@
     //pre-req
     [self.overlayView setWantsLayer:YES];
     
-    //set overlay's view color to black
+    //set overlay's view color to white
     self.overlayView.layer.backgroundColor = [NSColor whiteColor].CGColor;
 
     //make it semi-transparent

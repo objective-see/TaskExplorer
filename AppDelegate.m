@@ -3,18 +3,19 @@
 //  TaskExplorer
 //
 
+
+#import <syslog.h>
+
+#import "Task.h"
 #import "Consts.h"
 #import "Binary.h"
+#import "Update.h"
 #import "Connection.h"
-#import "Exception.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
 #import "serviceInterface.h"
-
 #import "TaskTableController.h"
 #import "RequestRootWindowController.h"
-
-#import "Task.h"
 
 //TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: autolayout vertically
@@ -48,34 +49,14 @@
 @synthesize bottomViewController;
 @synthesize aboutWindowController;
 @synthesize searchWindowController;
+@synthesize updateWindowController;
 @synthesize resultsWindowController;
 @synthesize flagItemsWindowController;
 @synthesize requestRootWindowController;
 
-//center window
-// ->also make front
--(void)awakeFromNib
+//kick off main window/logic
+-(void)taskExplore
 {
-    //center
-    [self.window center];
-    
-    //make it key window
-    [self.window makeKeyAndOrderFront:self];
-    
-    //make window front
-    [NSApp activateIgnoringOtherApps:YES];
-    
-    return;
-}
-
-//automatically invoked by OS
-// ->main entry point
--(void)applicationDidFinishLaunching:(NSNotification *)notification
-{
-    //first thing...
-    // ->install exception handlers!
-    installExceptionHandlers();
-    
     //for autolayout
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
     
@@ -131,6 +112,11 @@
         exit(0);
     }
     
+    //check
+    [self check4Update:nil];
+    
+    return;
+    
     //register for hotkey presses
     [self registerKeypressHandler];
     
@@ -162,7 +148,7 @@
     
     //set flag
     self.bottomViewController.isBottomPane = YES;
-   
+    
     //disable autosize translations
     self.bottomViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     
@@ -177,10 +163,47 @@
     
     //add 'items' not found msg
     [self.bottomViewController.view addSubview:self.noItemsLabel];
-
+    
     //set delegate
     // ->ensures our 'windowWillClose' method, which has logic to fully exit app
     self.window.delegate = self;
+}
+
+//automatically invoked by OS
+// ->main entry point
+-(void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+    //init crash reporting
+    initCrashReporting();
+    
+    //first time run?
+    // show thanks to friends window!
+    // note: on close invokes method to show main window
+    if(YES != [[NSUserDefaults standardUserDefaults] boolForKey:NOT_FIRST_TIME])
+    {
+        //set key
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:NOT_FIRST_TIME];
+        
+        //front
+        [self.friends makeKeyAndOrderFront:self];
+        
+        //front
+        [NSApp activateIgnoringOtherApps:YES];
+        
+        //close after 3 seconds
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            
+            //hide
+            [self hideFriends:nil];
+            
+        });
+    }
+    //start task exploring
+    else
+    {
+        //show
+        [self taskExplore];
+    }
     
     return;
 }
@@ -201,6 +224,7 @@
     
     return;
 }
+
 
 //invoked for any (but only) key-down events
 -(NSEvent*)handleKeypress:(NSEvent*)event
@@ -291,8 +315,26 @@ bail:
     // the event from being dispatched, nil
     return event;
 
+}
 
+//hide friends view
+// also shows/kicks off main window
+- (IBAction)hideFriends:(id)sender
+{
+    //once
+    static dispatch_once_t onceToken;
+    
+    //close and launch main window
+    dispatch_once (&onceToken, ^{
+        
+        //close
+        [self.friends close];
+        
+        //start task exploring
+        [self taskExplore];
+    });
 
+    return;
 }
 
 //complete a few inits
@@ -583,13 +625,31 @@ bail:
 -(void)reloadBottomPane:(Task*)task itemView:(NSUInteger)itemView
 {
     //tag
-    NSUInteger segmentTag = 0;
+    __block NSUInteger segmentTag = 0;
     
     //not found msg
     NSString* noItemsMsg = nil;
     
-    //get segment tag
-    segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+    //main thread
+    // get segment tag
+    if(YES == [NSThread isMainThread])
+    {
+        //get segment tag
+        segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+    }
+    //background thread
+    // get segment tag on main thread
+    else
+    {
+        //on main thread
+        // get segment tag
+        dispatch_sync(dispatch_get_main_queue(), ^{
+     
+            //get segment tag
+            segmentTag = [[self.bottomPaneBtn selectedCell] tagForSegment:[self.bottomPaneBtn selectedSegment]];
+            
+        });
+    }
     
     //ignore reloads for unselected tasks
     // ->note: when no task is passed in, always reload though
@@ -1753,8 +1813,8 @@ bail:
     //maks
     self.filteringOverlay.layer.masksToBounds = YES;
     
-    //set overlay's view color to black
-    self.filteringOverlay.layer.backgroundColor = [NSColor grayColor].CGColor;
+    //set overlay's view color to gray
+    self.filteringOverlay.layer.backgroundColor = NSColor.grayColor.CGColor;
     
     //make it semi-transparent
     self.filteringOverlay.alphaValue = 0.95;
@@ -2334,5 +2394,104 @@ bail:
 bail:
     
     return fieldEditor;
+}
+
+
+//call into Update obj
+// check to see if there an update?
+- (IBAction)check4Update:(id)sender
+{
+    //update obj
+    Update* update = nil;
+    
+    //init update obj
+    update = [[Update alloc] init];
+    
+    //check for update
+    // ->'updateResponse newVersion:' method will be called when check is done
+    [update checkForUpdate:^(NSUInteger result, NSString* newVersion) {
+        
+        //process response
+        // when invoked from menu show full results
+        [self updateResponse:result newVersion:newVersion alwaysShow:(nil != sender)];
+        
+    }];
+    
+    return;
+}
+
+//process update response
+// error, no update, update/new version
+-(void)updateResponse:(NSInteger)result newVersion:(NSString*)newVersion alwaysShow:(BOOL)alwaysShow
+{
+    //details
+    NSString* details = nil;
+    
+    //action
+    NSString* action = nil;
+    
+    //handle response
+    // new version, show popup
+    switch (result)
+    {
+        //error
+        case -1:
+            
+            //set details
+            details = @"error, failed to check for an update.";
+            
+            //set action
+            action = @"Close";
+            
+            break;
+            
+        //no updates
+        case 0:
+            
+            //set details
+            details = [NSString stringWithFormat:@"you're all up to date! (v. %@)", getAppVersion()];
+            
+            //set action
+            action = @"Close";
+            
+            break;
+            
+        //new version
+        case 1:
+            
+            //set details
+            details = [NSString stringWithFormat:@"a new version (%@) is available!", newVersion];
+            
+            //set action
+            action = @"Update";
+            
+            break;
+    }
+    
+    //always show results?
+    if(YES == alwaysShow)
+    {
+        //alloc update window
+        updateWindowController = [[UpdateWindowController alloc] initWithWindowNibName:@"UpdateWindow"];
+        
+        //configure
+        [self.updateWindowController configure:details buttonTitle:action];
+        
+        //center window
+        [[self.updateWindowController window] center];
+        
+        //show it
+        [self.updateWindowController showWindow:self];
+        
+        //invoke function in background that will make window modal
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            //make modal
+            makeModal(self.updateWindowController);
+            
+        });
+    }
+    
+    return;
 }
 @end

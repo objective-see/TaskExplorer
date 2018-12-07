@@ -60,11 +60,11 @@
         color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.5];
     }
     //non-flagged files
-    // ->just gray
+    //gray
     else
     {
         //gray
-        color = [NSColor lightGrayColor];
+        color = NSColor.grayColor;
     }
     
     //set string
@@ -101,11 +101,10 @@
         color = [NSColor redColor];
     }
     //non-flagged files
-    // ->just black
+    // set (back) to default
     else
     {
-        //gray
-        color = [NSColor blackColor];
+        color = NSColor.controlTextColor;
     }
     
     //set string
@@ -133,11 +132,11 @@
         color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.66];
     }
     //non-flagged files
-    // ->just black
+    // set (back) to default
     else
     {
         //gray
-        color = [NSColor grayColor];
+        color = NSColor.grayColor;
     }
     
     //set string
@@ -173,7 +172,7 @@
         else
         {
             //gray
-            color = [NSColor grayColor];
+            color = NSColor.grayColor;
         }
     }
     //mouse is up
@@ -189,11 +188,11 @@
             color = [NSColor redColor];
         }
         //non-flagged files
-        // ->just black
+        // set (back) to default
         else
         {
             //gray
-            color = [NSColor blackColor];
+            color = NSColor.controlTextColor;
         }
     }
     

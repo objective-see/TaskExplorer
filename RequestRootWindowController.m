@@ -45,8 +45,13 @@
     //super
     [super windowDidLoad];
     
-    //make white
-    [self.window setBackgroundColor: NSColor.whiteColor];
+    //no dark mode?
+    // make window white
+    if(YES != isDarkMode())
+    {
+        //make white
+        self.window.backgroundColor = NSColor.whiteColor;
+    }
     
     //set version sting
     //[self.versionLabel setStringValue:[NSString stringWithFormat:@"version: %@", getAppVersion()]];
@@ -118,7 +123,7 @@
     installArgs[3] = NULL;
     
     //reset text color
-    self.statusMsg.textColor = [NSColor blackColor];
+    self.statusMsg.textColor = NSColor.controlTextColor;
     
     //create authorization ref
     osStatus = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, &authorizationRef);

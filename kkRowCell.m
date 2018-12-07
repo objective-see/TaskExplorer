@@ -12,7 +12,6 @@
 
 @synthesize tag;
 
-
 //draw method
 - (void)drawRect:(NSRect)dirtyRect
 {

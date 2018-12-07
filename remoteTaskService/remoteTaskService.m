@@ -239,15 +239,15 @@ bail:
     versionMinor = getVersion(gestaltSystemVersionMinor);
     
     //when OS version is older then el capitan
-    // ->read memory directly
+    // read memory directly to get list of loaded dylibs
     if(versionMinor < OS_MINOR_VERSION_EL_CAPITAN)
     {
         //enum dylibs
         dylibPaths = [self enumerateDylibsOld:(NSNumber*)taskPID];
         
     }
-    //OS version is el capitan
-    // ->have to use vmmap, since we don't com.apple.system-task-ports entitlement
+    //OS version is el capitan+
+    // have to use vmmap, since we don't com.apple.system-task-ports entitlement
     else
     {
         //enum dylibs
@@ -455,14 +455,17 @@ bail:
 }
 
 //enumerate dylibs via vmmap
-// ->OS version is el capitan, and we don't have the com.apple.system-task-ports entitlement :/
+// ->OS version is el capitan+, and we don't have the com.apple.system-task-ports entitlement :/
 -(NSMutableArray*)enumerateDylibsNew:(NSNumber*)pid
 {
     //dylibs
     NSMutableArray* dylibs = nil;
 
     //results from 'file' cmd
-    NSString* results = nil;
+    NSMutableDictionary* results = nil;
+    
+    //output (stdout) from 'file' cmd
+    NSString* output = nil;
     
     //path offset
     NSRange pathOffset = {0};
@@ -473,6 +476,22 @@ bail:
     //alloc array for dylibs
     dylibs = [NSMutableArray array];
     
+    //skip launchd
+    // mojave has a bug
+    if(1 == pid.integerValue)
+    {
+        //skip
+        goto bail;
+    }
+    
+    //skip self
+    // mojave call's suspend on process
+    if(getpid() == pid.integerValue)
+    {
+        //skip
+        goto bail;
+    }
+    
     //vmmap can't directly handle 32bit procs
     // ->so either exec 'vmmap32' or on older OSs, exec via 'arch -i386 vmmap <32bit pid>'
     if(YES == Is32Bit(pid.unsignedIntValue))
@@ -482,14 +501,14 @@ bail:
         if(YES == [[NSFileManager defaultManager] fileExistsAtPath:VMMAP_32])
         {
             //exec vmmap32
-            results = [[NSString alloc] initWithData:execTask(VMMAP_32, @[@"-w", [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
+            results = execTask(VMMAP_32, @[@"-w", [pid stringValue]], YES);
         }
         //otherwise
         // ->assume vmmap is 'fat', and exec 32bit version (pre El Capitan)
         else
         {
             //exec vmmap, but it's i386 version
-            results = [[NSString alloc] initWithData:execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
+            results = execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]], YES);
         }
     }
     //for 64bit procs
@@ -497,20 +516,23 @@ bail:
     else
     {
         //exec vmmap
-        results = [[NSString alloc] initWithData:execTask(VMMAP, @[@"-w", [pid stringValue]], YES) encoding:NSUTF8StringEncoding];
+        results = execTask(VMMAP, @[@"-w", [pid stringValue]], YES);
     }
     
     //sanity check
-    if( (nil == results) ||
-        (0 == results.length))
+    if( (nil == results[EXIT_CODE]) ||
+        (0 != [results[EXIT_CODE] integerValue]) )
     {
         //bail
         goto bail;
     }
     
+    //convert stdout data to string
+    output = [[NSString alloc] initWithData:results[STDOUT] encoding:NSUTF8StringEncoding];
+    
     //iterate over all results
     // ->line by line, looking for '__TEXT'
-    for(NSString* line in [results componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\n"]])
+    for(NSString* line in [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
     {
         //ignore any line that doesn't start with '__TEXT'
         if(YES != [line hasPrefix:@"__TEXT"])
@@ -561,7 +583,7 @@ bail:
 -(void)enumerateFiles:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
 {
     //results
-    NSData* results = nil;
+    NSMutableDictionary* results = nil;
     
     //results split on '\n'
     NSArray* splitResults = nil;
@@ -587,19 +609,15 @@ bail:
    
     //exec 'file' to get file type
     results = execTask(LSOF, @[@"-Fn", @"-p", taskPID.stringValue], YES);
-    
-    //sanity check(s)
-    if( (nil == results) ||
-        (0 == results.length) )
+    if( (nil == results[EXIT_CODE]) ||
+        (0 != [results[EXIT_CODE] integerValue]) )
     {
         //bail
         goto bail;
     }
     
     //split results into array
-    splitResults = [[[NSString alloc] initWithData:results encoding:NSUTF8StringEncoding] componentsSeparatedByString:@"\n"];
-    
-    //sanity check(s)
+    splitResults = [[[NSString alloc] initWithData:results[STDOUT] encoding:NSUTF8StringEncoding] componentsSeparatedByString:@"\n"];
     if( (nil == splitResults) ||
         (0 == splitResults.count) )
     {

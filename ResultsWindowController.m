@@ -33,8 +33,13 @@
     //super
     [super windowDidLoad];
     
-    //make white
-    [self.window setBackgroundColor: NSColor.whiteColor];
+    //no dark mode?
+    // make window white
+    if(YES != isDarkMode())
+    {
+        //make white
+        self.window.backgroundColor = NSColor.whiteColor;
+    }
     
     //set details
     self.detailsLabel.stringValue = self.details;

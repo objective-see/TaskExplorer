@@ -17,10 +17,17 @@
 NSDictionary* extractSigningInfo(NSString* path);
 
 
-/* METHODS */
+/* FUNCTIONS */
+
+//loads a framework
+// note: assumes it is in 'Framework' dir
+NSBundle* loadFramework(NSString* name);
+
+//init crash reporting
+void initCrashReporting(void);
 
 //check if OS is supported
-BOOL isSupportedOS();
+BOOL isSupportedOS(void);
 
 //get OS's major or minor version
 SInt32 getVersion(OSType selector);
@@ -53,7 +60,7 @@ BOOL isApple(NSString* path);
 NSMutableAttributedString* setStringColor(NSAttributedString* string, NSColor* color);
 
 //exec a process and grab it's output
-NSData* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait);
+NSMutableDictionary* execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait);
 
 //wait until a window is non nil
 // ->then make it modal
@@ -83,5 +90,9 @@ BOOL Is32Bit(pid_t targetPID);
 //check if app is translocated
 // ->based on http://lapcatsoftware.com/articles/detect-app-translocation.html
 NSURL* getUnTranslocatedURL();
+
+//check if (full) dark mode
+// meaning, Mojave+ and dark mode enabled
+BOOL isDarkMode();
 
 #endif

@@ -1,12 +1,13 @@
 //
-//  AboutWindowController.h
-//  TaskExplorer
+//  file: AboutWindowController.h
+//  project: lulu (config)
+//  description: about window display/controller (header)
 //
-//  Created by Patrick Wardle on 7/15/16.
-//  Copyright (c) 2016 Objective-See. All rights reserved.
+//  created by Patrick Wardle
+//  copyright (c) 2018 Objective-See. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+@import Cocoa;
 
 @interface AboutWindowController : NSWindowController <NSWindowDelegate>
 {
@@ -16,13 +17,13 @@
 /* PROPERTIES */
 
 //version label/string
-@property (weak) IBOutlet NSTextField *versionLabel;
+@property (weak, atomic) IBOutlet NSTextField *versionLabel;
 
 //patrons
-@property (unsafe_unretained) IBOutlet NSTextView *patrons;
+@property (unsafe_unretained, atomic) IBOutlet NSTextView *patrons;
 
-
-/* METHODS */
+//'support us' button
+@property (weak, atomic) IBOutlet NSButton *supportUs;
 
 
 @end
