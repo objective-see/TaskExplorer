@@ -6,20 +6,19 @@
 //
 //
 
+#import <syslog.h>
+#import <signal.h>
+#import <unistd.h>
 #import <libproc.h>
 #import <sys/proc_info.h>
 
 #import "Task.h"
 #import "Consts.h"
-#import "AppDelegate.h"
+#import "Signing.h"
 #import "Utilities.h"
-#import "TaskEnumerator.h"
 #import "Connection.h"
-
-#import <syslog.h>
-#import <signal.h>
-#import <unistd.h>
-
+#import "AppDelegate.h"
+#import "TaskEnumerator.h"
 
 @implementation TaskEnumerator
 
@@ -81,7 +80,7 @@
     newTasks = [self getAllTasks];
     
     //build ancestries
-    // ->do here, and use 'new tasks' since there might be new parents too
+    // do here, and use 'new tasks' since there might be new parents too
     [self generateAncestries:newTasks];
     
     //get all tasks that are pau
@@ -91,12 +90,16 @@
     // ->invoke custom method to handle kids too...
     for(NSNumber* key in deadTasks)
     {
-        //remove
-        [self removeTask:self.tasks[key]];
+        //sync to remove
+        @synchronized(self.tasks)
+        {
+            //sync
+            [self removeTask:self.tasks[key]];
+        }
     }
     
     //add all tasks that are really new to 'tasks' iVar
-    // ->ensures existing task and their info are reused
+    // ensures existing task and their info are re-used
     for(NSNumber* key in newTasks.allKeys)
     {
         //get task
@@ -143,8 +146,8 @@
 
     });
     
-    //now generate signing info/encryption check/packer check
-    // ->for (new) tasks
+    //for new tasks
+    // now generate signing info/encryption check/packer check
     for(NSNumber* key in newTasks)
     {
         //get task
@@ -158,10 +161,14 @@
             continue;
         }
         
-        //generate signing info
-        // ->do this before macho parsing!
-        [newTask.binary generatedSigningInfo];
-        
+        //generate signing info dynamically
+        newTask.binary.signingInfo = extractSigningInfo(newTask.pid.intValue, nil, kSecCSDefaultFlags);
+        if(nil == newTask.binary.signingInfo)
+        {
+            //extract signing info statically
+            newTask.binary.signingInfo = extractSigningInfo(0, newTask.binary.path, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources);
+        }
+
         //parse
         if(YES == [newTask.binary parse])
         {
@@ -183,7 +190,7 @@
 
     /*
       begin enumeration of dylibs/files/network connections
-      ->this is for global search, as otherwise, each is re-gen'd per task on each bottom-pane click
+      ...this is for global search, as otherwise, each is re-gen'd per task on each bottom-pane click
     */
     
     //set state
@@ -764,8 +771,8 @@ bail:
             if(YES == isDylib)
             {
                 //sync
-                @synchronized(task.dylibs)
-                {
+                //@synchronized(task.dylibs)
+                //{
                     //check if dylib is loaded in task
                     for(Binary* taskDylib in task.dylibs)
                     {
@@ -780,7 +787,7 @@ bail:
                         }
                     }
                     
-                }//sync
+                //}//sync
                 
             }//dylibs
             
@@ -788,8 +795,8 @@ bail:
             else if(YES == isFile)
             {
                 //sync
-                @synchronized(task.files)
-                {
+                //@synchronized(task.files)
+                //{
                     //check if file is loaded in task
                     for(File* taskFile in task.files)
                     {
@@ -803,7 +810,7 @@ bail:
                             break;
                         }
                     }
-                }//sync
+                //}//sync
                 
             }//files
             
@@ -811,8 +818,8 @@ bail:
             else if(YES == isConnection)
             {
                 //sync
-                @synchronized(task.connections)
-                {
+                //@synchronized(task.connections)
+                //{
                     //check if connection is 'in' task
                     for(Connection* taskConnection in task.connections)
                     {
@@ -827,9 +834,11 @@ bail:
                             break;
                         }
                     }
-                }//sync
+                //}//sync
             
             }//connections
+             
+
     
         }//all tasks
         

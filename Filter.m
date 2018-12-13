@@ -617,7 +617,8 @@ bail:
     
     //check
     // ->just look at signing info
-    if(YES == [item.signingInfo[KEY_SIGNING_IS_APPLE] boolValue])
+    if( (noErr == [item.signingInfo[KEY_SIGNATURE_STATUS] integerValue]) &&
+        (Apple == [item.signingInfo[KEY_SIGNATURE_SIGNER] intValue]) )
     {
         //set flag
         isApple = YES;

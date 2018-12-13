@@ -173,6 +173,7 @@ bail:
     return version;
 }
 
+/*
 //get the signing info of a file
 NSDictionary* extractSigningInfo(NSString* path)
 {
@@ -389,6 +390,7 @@ bail:
 
     return isApple;
 }
+*/
 
 //given a directory and a filter predicate
 // ->return all matches
@@ -629,10 +631,6 @@ NSMutableDictionary* execTask(NSString* binaryPath, NSArray* arguments, BOOL sho
     
     //init task
     task = [NSTask new];
-    
-    //TODO:
-    NSLog(@"calling %@ / %@", binaryPath, arguments);
-    printf("calling %s / %s\n", binaryPath.UTF8String, arguments.description.UTF8String);
     
     //only setup pipes if wait flag is set
     if(YES == shouldWait)

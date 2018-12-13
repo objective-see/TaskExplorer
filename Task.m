@@ -268,6 +268,23 @@ bail:
     //alloc array for new dylibs
     newDylibs = [NSMutableArray array];
     
+    //on mojave
+    // skip launchd (apple bug)
+    if( (1 == self.pid.integerValue) &&
+        (getVersion(gestaltSystemVersionMinor) >= OS_MINOR_VERSION_MOJAVE) )
+    {
+        //skip
+        return;
+    }
+    
+    //skip window server
+    // hangs the UI otherwise!
+    if(YES == [self.binary.path isEqualToString:WINDOW_SERVER])
+    {
+        //skip
+        return;
+    }
+    
     //alloc XPC connection
     xpcConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.objective-see.remoteTaskService"];
 
@@ -419,7 +436,7 @@ bail:
         //wait
         dispatch_semaphore_wait(waitSema, DISPATCH_TIME_FOREVER);
     }
-
+    
     return;
 }
 

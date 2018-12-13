@@ -9,12 +9,8 @@
 #ifndef DHS_Utilities_h
 #define DHS_Utilities_h
 
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-
-
-//get the signing info of a file
-NSDictionary* extractSigningInfo(NSString* path);
+#import <Foundation/Foundation.h>
 
 
 /* FUNCTIONS */
@@ -46,9 +42,6 @@ NSDictionary* hashFile(NSString* filePath);
 //get app's version
 // ->extracted from Info.plist
 NSString* getAppVersion();
-
-//determine if a file is signed by Apple proper
-BOOL isApple(NSString* path);
 
 //convert a textview to a clickable hyperlink
 void makeTextViewHyperlink(NSTextField* textField, NSURL* url);

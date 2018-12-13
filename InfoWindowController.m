@@ -9,9 +9,10 @@
 #import "Task.h"
 #import "File.h"
 #import "Binary.h"
-#import "Connection.h"
 #import "Consts.h"
+#import "Signing.h"
 #import "Utilities.h"
+#import "Connection.h"
 #import "InfoWindowController.h"
 
 @interface InfoWindowController ()
@@ -195,7 +196,15 @@
         if(nil == task.binary.signingInfo)
         {
             //generate signing info
-            task.binary.signingInfo = extractSigningInfo(task.binary.path);
+            task.binary.signingInfo = extractSigningInfo(task.pid.intValue, nil, kSecCSDefaultFlags);
+            
+            //failed?
+            // try extract signing info statically
+            if(nil == task.binary.signingInfo)
+            {
+                //extract signing info statically
+                task.binary.signingInfo = extractSigningInfo(0, task.binary.path, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources);
+            }
         }
         
         //set signing info
@@ -248,7 +257,7 @@
         if(nil == dylib.signingInfo)
         {
             //generate signing info
-            dylib.signingInfo = extractSigningInfo(dylib.path);
+            dylib.signingInfo = extractSigningInfo(-1, dylib.path, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources);
         }
         
         //set signing info

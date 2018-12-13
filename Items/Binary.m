@@ -8,6 +8,7 @@
 
 #import "Binary.h"
 #import "Consts.h"
+#import "Signing.h"
 #import "Utilities.h"
 #import "AppDelegate.h"
 
@@ -87,8 +88,8 @@ bail:
         
         //unset 'packed' flag for apple signed binaries
         // ->as apple doesn't pack binaries, but packer algo has some false positives
-        if( (nil != [self.signingInfo objectForKey:KEY_SIGNING_IS_APPLE]) &&
-            (YES == [self.signingInfo[KEY_SIGNING_IS_APPLE] boolValue]) )
+        if( (noErr == [self.signingInfo[KEY_SIGNATURE_STATUS] intValue]) &&
+            (Apple == [self.signingInfo[KEY_SIGNATURE_SIGNER] intValue]) )
         {
             //unset
             self.parser.binaryInfo[KEY_IS_PACKED] = NO;
@@ -201,7 +202,7 @@ bail:
 -(void)generatedSigningInfo
 {
     //set signing info
-    self.signingInfo = extractSigningInfo(self.path);
+    self.signingInfo = extractSigningInfo(1, self.path, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources);
     
     return;
 }
@@ -268,7 +269,7 @@ bail:
             prettyPrint = [NSMutableString string];//stringWithString:@"signed by:"];
             
             //add each signing auth
-            for(NSString* signingAuthority in self.signingInfo[KEY_SIGNING_AUTHORITIES])
+            for(NSString* signingAuthority in self.signingInfo[KEY_SIGNATURE_AUTHORITIES])
             {
                 //append
                 [prettyPrint appendString:[NSString stringWithFormat:@"%@, ", signingAuthority]];

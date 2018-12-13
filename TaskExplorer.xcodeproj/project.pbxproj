@@ -32,6 +32,7 @@
 		CD1508D921BA4B9D0081F1AF /* UpdateWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1508D521BA4B9C0081F1AF /* UpdateWindowController.m */; };
 		CD1508DA21BA4B9D0081F1AF /* Update.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1508D821BA4B9D0081F1AF /* Update.m */; };
 		CD1508DC21BA4BAC0081F1AF /* UpdateWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD1508DB21BA4BAC0081F1AF /* UpdateWindow.xib */; };
+		CD1508DF21BB13990081F1AF /* Signing.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1508DD21BB13980081F1AF /* Signing.m */; };
 		CD1D14EF21B7A67600FF7F4B /* Sentry.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CD1D14F121B7A69300FF7F4B /* Sentry.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CD1D14F321B8F2FC00FF7F4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */; };
@@ -217,6 +218,8 @@
 		CD1508D721BA4B9D0081F1AF /* UpdateWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UpdateWindowController.h; sourceTree = SOURCE_ROOT; };
 		CD1508D821BA4B9D0081F1AF /* Update.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Update.m; sourceTree = SOURCE_ROOT; };
 		CD1508DB21BA4BAC0081F1AF /* UpdateWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = UpdateWindow.xib; path = UI/UpdateWindow.xib; sourceTree = "<group>"; };
+		CD1508DD21BB13980081F1AF /* Signing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Signing.m; sourceTree = SOURCE_ROOT; };
+		CD1508DE21BB13980081F1AF /* Signing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signing.h; sourceTree = SOURCE_ROOT; };
 		CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = Carthage/Build/Mac/Sentry.framework; sourceTree = "<group>"; };
 		CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TaskEnumerator.m; sourceTree = SOURCE_ROOT; };
@@ -440,13 +443,15 @@
 		1D21BC54172AF43D009D1CFD /* TaskExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				CD1508DE21BB13980081F1AF /* Signing.h */,
+				CD1508DD21BB13980081F1AF /* Signing.m */,
 				CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */,
-				CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */,
 				CD1508D621BA4B9C0081F1AF /* Update.h */,
 				CD1508D821BA4B9D0081F1AF /* Update.m */,
 				CD1508D721BA4B9D0081F1AF /* UpdateWindowController.h */,
 				CD1508D521BA4B9C0081F1AF /* UpdateWindowController.m */,
 				CD3F4CE71AF5CF68002A2647 /* TaskEnumerator.h */,
+				CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */,
 				CDD248391AF5CC4D00232422 /* Task.h */,
 				CDD2483A1AF5CC4D00232422 /* Task.m */,
 				CDF08CC71AC4C678009B3423 /* PrefsWindowController.h */,
@@ -870,6 +875,7 @@
 				CDA81D531A95B492009790E2 /* Utilities.m in Sources */,
 				CD7B9FAB1AD08FA100DF3C71 /* KKRow.m in Sources */,
 				CD3F4CFD1AF71B58002A2647 /* ItemBase.m in Sources */,
+				CD1508DF21BB13990081F1AF /* Signing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

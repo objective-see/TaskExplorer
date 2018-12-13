@@ -30,10 +30,24 @@
 //success
 #define STATUS_SUCCESS 0
 
-//keys for signing stuff
+
+//signers
+enum Signer{None, Apple, AppStore, DevID, AdHoc};
+
+//signature status
 #define KEY_SIGNATURE_STATUS @"signatureStatus"
-#define KEY_SIGNING_AUTHORITIES @"signingAuthorities"
-#define KEY_SIGNING_IS_APPLE @"signedByApple"
+
+//signer
+#define KEY_SIGNATURE_SIGNER @"signatureSigner"
+
+//signing auths
+#define KEY_SIGNATURE_AUTHORITIES @"signatureAuthorities"
+
+//code signing id
+#define KEY_SIGNATURE_IDENTIFIER @"signatureIdentifier"
+
+//entitlements
+#define KEY_SIGNATURE_ENTITLEMENTS @"signatureEntitlements"
 
 //OS version x
 #define OS_MAJOR_VERSION_X 10
@@ -47,6 +61,8 @@
 //OS minor version el capitan
 #define OS_MINOR_VERSION_EL_CAPITAN 11
 
+//OS minor version mojave
+#define OS_MINOR_VERSION_MOJAVE 14
 
 //executable path
 #define EXECUTABLE_PATH @"@executable_path"
@@ -101,6 +117,9 @@
 
 //dyld_ key for applications
 #define APPLICATION_DYLD_KEY @"LSEnvironment"
+
+//path to window server
+#define WINDOW_SERVER @"/System/Library/PrivateFrameworks/SkyLight.framework/Versions/A/Resources/WindowServer"
 
 //menu
 
@@ -179,9 +198,6 @@
 // ->filter apple signed/known items
 #define KEY_SCANNER_FILTER @"filterItems"
 
-//plugin key
-//#define KEY_RESULT_PLUGIN @"plugin"
-
 //XPC Service name
 #define XPC_SERVICE @"remoteTaskService.xpc"
 
@@ -190,6 +206,8 @@
 
 //location of kernel in Yosemite+
 #define KERNEL_YOSEMITE @"/System/Library/Kernels/kernel"
+
+//
 
 //top pane
 #define PANE_TOP 0x0
@@ -379,6 +397,7 @@
 
 //more info button tag
 #define BUTTON_MORE_INFO 101
+
 
 //patreon url
 #define PATREON_URL @"https://www.patreon.com/objective_see"

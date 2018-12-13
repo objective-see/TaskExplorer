@@ -93,8 +93,8 @@
     //center
     [self.window center];
     
-    //no need to have a first responder
-    [self.window makeFirstResponder:nil];
+    //first responder: filter tasks
+    [self.window makeFirstResponder:self.filterTasksBox];
     
     //make main window front
     [self.window makeKeyAndOrderFront:self];
@@ -114,8 +114,6 @@
     
     //check
     [self check4Update:nil];
-    
-    return;
     
     //register for hotkey presses
     [self registerKeypressHandler];
@@ -516,7 +514,7 @@ bail:
     __block NSUInteger row = 0;
     
     //run everything on main thread
-    // ->ensures table view isn't changed out from under us....
+    // ensures table view isn't changed out from under us....
     dispatch_async(dispatch_get_main_queue(), ^{
     
     //top table (pane)
@@ -530,22 +528,30 @@ bail:
         if(YES != [tableView isKindOfClass:[NSOutlineView class]])
         {
             //no filtering
-            // ->grab row from all tasks
+            // grab row from all tasks
             if(YES != self.taskTableController.isFiltered)
             {
-                //get row
-                row = [self.taskEnumerator.tasks indexOfKey:((Task*)item).pid];
+                //sync to get row
+                @synchronized (self.taskEnumerator.tasks)
+                {
+                    //get row
+                    row = [self.taskEnumerator.tasks indexOfKey:((Task*)item).pid];
+                }
             }
             //filtering
-            // ->grab row from filtered tasks
+            // grab row from filtered tasks
             else
             {
-                //get row
-                row = [self.taskTableController.filteredItems indexOfObject:item];
+                //sync to get row
+                @synchronized (self.taskTableController.filteredItems)
+                {
+                    //get row
+                    row = [self.taskTableController.filteredItems indexOfObject:item];
+                }
             }
         }
         //reload item
-        // ->tree view, so no need to worry about filtering
+        // tree view, so no need to worry about filtering
         else
         {
             //get row
@@ -763,7 +769,9 @@ bail:
     [(id)self.bottomViewController reloadTable];
     
     //no items?
-    if(0 == self.bottomViewController.tableItems.count)
+    // but there is something in top....
+    if( (0 == self.bottomViewController.tableItems.count) &&
+        (nil != self.currentTask) )
     {
         //how
         self.noItemsLabel.hidden = NO;
@@ -1476,16 +1484,20 @@ bail:
     // ->check if its still alive
     if(nil != self.currentTask)
     {
-        //helper method that takes care of all check/handling dead tasks :)
+        //helper method that takes care of all check/handling dead tasks
         [self.taskTableController handleRowSelection];
     }
     
     //when no current task
-    // ->set to first task in sorted tasks
+    // set to first task in sorted tasks, unless filtering
     if(nil == self.currentTask)
     {
-        //set to first
-        self.currentTask = self.taskEnumerator.tasks[[self.taskEnumerator.tasks keyAtIndex:0]];
+        if( (YES != self.taskTableController.isFiltered) ||
+            ( (YES == self.taskTableController.isFiltered) && (0 != self.taskTableController.filteredItems.count) ) )
+        {
+            //set to first
+            self.currentTask = self.taskEnumerator.tasks[[self.taskEnumerator.tasks keyAtIndex:0]];
+        }
     }
 
     //get segment tag

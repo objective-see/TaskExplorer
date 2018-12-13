@@ -24,7 +24,7 @@
                                     <action selector="about:" target="494" id="1Av-a0-4RW"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Check for update..." tag="1" id="sx3-3V-esp">
+                            <menuItem title="Check For Update..." tag="1" id="sx3-3V-esp">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="check4Update:" target="494" id="wDZ-Nd-MOD"/>

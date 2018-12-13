@@ -870,11 +870,14 @@ bail:
             
             //end updates
             [self.itemView endUpdates];
+            
+            //reload bottom pane
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+            
         });
         
         //bail
         goto bail;
-        
     }
     
     //ignore if row selection and task didn't change

@@ -476,22 +476,6 @@ bail:
     //alloc array for dylibs
     dylibs = [NSMutableArray array];
     
-    //skip launchd
-    // mojave has a bug
-    if(1 == pid.integerValue)
-    {
-        //skip
-        goto bail;
-    }
-    
-    //skip self
-    // mojave call's suspend on process
-    if(getpid() == pid.integerValue)
-    {
-        //skip
-        goto bail;
-    }
-    
     //vmmap can't directly handle 32bit procs
     // ->so either exec 'vmmap32' or on older OSs, exec via 'arch -i386 vmmap <32bit pid>'
     if(YES == Is32Bit(pid.unsignedIntValue))

@@ -104,44 +104,53 @@ NSImage* getCodeSigningIcon(Binary* binary)
     //signature image
     NSImage* codeSignIcon = nil;
     
-    //set signature status icon
-    if(nil != binary.signingInfo)
+    //none?
+    // just set to unknown
+    if(nil == binary.signingInfo)
     {
-        //binary is signed by apple
-        if(YES == [binary.signingInfo[KEY_SIGNING_IS_APPLE] boolValue])
-        {
-            //set
-            codeSignIcon = [NSImage imageNamed:@"signedAppleIcon"];
-        }
-        
-        //binary is signed
-        else if(STATUS_SUCCESS == [binary.signingInfo[KEY_SIGNATURE_STATUS] integerValue])
-        {
-            //set
-            codeSignIcon = [NSImage imageNamed:@"signed"];
-        }
-        
-        //binary not signed
-        else if(errSecCSUnsigned == [binary.signingInfo[KEY_SIGNATURE_STATUS] integerValue])
-        {
-            //set
-            codeSignIcon = [NSImage imageNamed:@"unsigned"];
-        }
-        
-        //unknown
-        else
-        {
-            //set
-            codeSignIcon = [NSImage imageNamed:@"unknown"];
-        }
-    }
-    //signing info is nil
-    // ->just to unknown
-    else
-    {
-        //set
+        //set icon
         codeSignIcon = [NSImage imageNamed:@"unknown"];
+        
+        //bail
+        goto bail;
     }
+    
+    //parse signing info
+    switch([binary.signingInfo[KEY_SIGNATURE_STATUS] intValue])
+    {
+        //happily signed
+        case noErr:
+            
+            //item signed by apple
+            if(Apple == [binary.signingInfo[KEY_SIGNATURE_SIGNER] intValue])
+            {
+                //set icon
+                codeSignIcon = [NSImage imageNamed:@"signedAppleIcon"];
+            }
+            //signed by dev id/ad hoc, etc
+            else
+            {
+                //set icon
+                codeSignIcon = [NSImage imageNamed:@"signed"];
+            }
+            
+            break;
+            
+        //unsigned
+        case errSecCSUnsigned:
+            
+            //set icon
+            codeSignIcon = [NSImage imageNamed:@"unsigned"];
+            
+            break;
+            
+        default:
+            
+            //set icon
+            codeSignIcon = [NSImage imageNamed:@"unknown"];
+    }
+    
+bail:
     
     return codeSignIcon;
 }

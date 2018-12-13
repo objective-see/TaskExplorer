@@ -95,14 +95,13 @@
 }
 
 //init the UI
-// ->each time window is shown, reset, show enumeration status, etc
+// each time window is shown, reset, show enumeration status, etc
 -(void)initUI
 {
     //center
     [self.window center];
-    
+   
     //table reload
-    // ->make sure all is reset
     [self.searchTable reloadData];
     
     //reset search string
@@ -138,6 +137,8 @@
 
     //spin up thread to monitor update enumeration state
     [NSThread detachNewThreadSelector:@selector(updateEnumerationState) toTarget:self withObject:nil];
+    
+    
     
     return;
 }
@@ -234,7 +235,7 @@
         if(0 == self.searchResults.count)
         {
             //set msg
-            self.searchResultsMessage.stringValue = @"nothing found";
+            self.searchResultsMessage.stringValue = @"no items matched";
         }
         
         //update status mesasge with count
@@ -551,11 +552,11 @@ bail:
     self.searchBox.enabled = NO;
     
     //grab all tasks
-    // ->make copy to avoid threading issues
+    // make copy to avoid threading issues
     allTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks copy];
     
     //kick off filtering in background
-    // ->will call back into to refresh UI when done
+    // will call back into to refresh UI when done
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         //nap to allow message to show
