@@ -580,12 +580,16 @@ bail:
         //bottom table view
         tableView = [((id)self.bottomViewController) itemView];
         
+        //sync bottom view controller
+        @synchronized(self.bottomViewController)
+        {
+        
         //no filtering
         // ->grab row from all items
         if(YES != self.bottomViewController.isFiltered)
         {
             //get row
-            @synchronized(self.bottomViewController)
+            @synchronized(self.bottomViewController.tableItems)
             {
                 //get
                 row = [self.bottomViewController.tableItems indexOfObject:item];
@@ -596,8 +600,14 @@ bail:
         else
         {
             //get row
-            row = [self.bottomViewController.filteredItems indexOfObject:item];
+            @synchronized(self.bottomViewController.filteredItems)
+            {
+                //get row
+                row = [self.bottomViewController.filteredItems indexOfObject:item];
+            }
         }
+            
+        }//sync
 
         //make sure item was found
         if(NSNotFound == row)
@@ -739,7 +749,7 @@ bail:
     {
         //reload
         // ->in main UI thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             
             //set not found label
             self.noItemsLabel.stringValue = noItemsMsg;

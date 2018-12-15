@@ -390,11 +390,11 @@ bail:
             
         }] mutableCopy];
         
+        }//sync
+        
         //reload bottom pane now
         // note: this will only reload if new task is the currently selected one, etc
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
-            
-        }//sync
         
         //complete dylib processing for new dylib
         // ->get signing info, hash, etc, & save into global list
