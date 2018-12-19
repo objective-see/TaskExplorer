@@ -24,6 +24,16 @@
 #import "FlaggedItemWindowController.h"
 #import "RequestRootWindowController.h"
 
+/* GLOBALS */
+
+//shared enumerator
+extern TaskEnumerator* taskEnumerator;
+
+//shared virustotal object
+extern VirusTotal* virusTotal;
+
+//network connected flag
+extern BOOL isConnected;
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate>
 {
@@ -36,9 +46,6 @@
 //start time
 @property NSTimeInterval startTime;
 
-//connection flag
-@property BOOL isConnected;
-
 //'filter task' search box
 // ->top pane
 @property (weak) IBOutlet NSSearchField *filterTasksBox;
@@ -46,12 +53,8 @@
 //(current) bottom view controller
 @property(nonatomic, retain)TaskTableController *bottomViewController;
 
+//top view/pane
 @property (weak) IBOutlet NSView *topPane;
-
-//@property (weak) IBOutlet NSScrollView *taskScrollView;
-
-//task enumerator object
-@property(nonatomic, retain)TaskEnumerator* taskEnumerator;
 
 //task table controller object
 @property (nonatomic, retain)TaskTableController *taskTableController;
@@ -83,9 +86,6 @@
 
 @property (weak) IBOutlet NSButton *logoButton;
 
-
-//@property (weak) IBOutlet NSButton *showPreferencesButton;
-
 //spinner
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 
@@ -94,9 +94,6 @@
 
 //filter object
 @property(nonatomic, retain)Filter* filterObj;
-
-//virus total object
-@property(nonatomic, retain)VirusTotal* virusTotalObj;
 
 //array for all virus total threads
 @property(nonatomic, retain)NSMutableArray* vtThreads;
@@ -152,9 +149,6 @@
 //top constraint
 @property(nonatomic, retain)NSLayoutConstraint* trailingConstraint;
 
-//flagged items
-@property(nonatomic, retain)NSMutableArray* flaggedItems;
-
 //flag for filter field (autocomplete)
 @property BOOL completePosting;
 
@@ -196,13 +190,6 @@
 // ->query OS to refresh/reload all tasks
 -(IBAction)refreshTasks:(id)sender;
 
-//callback when user has updated prefs
-// ->reload table, etc
-//-(void)applyPreferences;
-
-//button handler for when settings icon (gear) is clicked
-//-(IBAction)showPreferences:(id)sender;
-
 //button handler for logo
 -(IBAction)logoButtonHandler:(id)sender;
 
@@ -240,10 +227,6 @@
 
 //display (in separate popup) all flagged items
 -(IBAction)showFlaggedItems:(id)sender;
-
-//save a flagged binary
-// ->also set text flagged items button label to red
--(void)saveFlaggedBinary:(Binary*)binary;
 
 //callback for custom search fields
 // ->handle auto-complete filterings

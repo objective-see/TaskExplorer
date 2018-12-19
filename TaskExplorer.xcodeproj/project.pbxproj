@@ -222,6 +222,7 @@
 		CD1508DE21BB13980081F1AF /* Signing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signing.h; sourceTree = SOURCE_ROOT; };
 		CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = Carthage/Build/Mac/Sentry.framework; sourceTree = "<group>"; };
 		CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		CD24FE7621C6FC3D00900B61 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = SOURCE_ROOT; };
 		CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TaskEnumerator.m; sourceTree = SOURCE_ROOT; };
 		CD3F4CE71AF5CF68002A2647 /* TaskEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TaskEnumerator.h; sourceTree = SOURCE_ROOT; };
 		CD3F4CE91AF6D948002A2647 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OrderedDictionary.h; path = 3rdParty/OrderedDictionary.h; sourceTree = "<group>"; };
@@ -479,6 +480,7 @@
 				CDA81D581A95B4B4009790E2 /* TaskExplorer-Info.plist */,
 				CDA81D591A95B4B4009790E2 /* TaskExplorer-Prefix.pch */,
 				CDA81D5A1A95B4B4009790E2 /* main.m */,
+				CD24FE7621C6FC3D00900B61 /* main.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";

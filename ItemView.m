@@ -306,8 +306,8 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
     //add name
     [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:binary.name]];
     
-    //init gray color for pid
-    attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+    //init default color for pid
+    attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
     
     //search window
     // ->only for tasks, since dylibs in search window are handled elsewhere ('loaded in')
@@ -334,8 +334,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             (YES == binary.isPacked) )
         {
             //init color for comma, etc
-            // ->light gray
-            attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+            attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
             
             //tasks
             //add comma string
@@ -376,7 +375,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 (YES != binary.notFound))
             {
                 //init color for closing
-                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
                 
                 //close string
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -392,8 +391,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
                 (YES == binary.isPacked) )
             {
                 //init color for comma,
-                // ->light gray
-                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
                 
                 //add
                 [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@", " attributes:attributes]];
@@ -402,8 +400,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             else
             {
                 //init color for comma, etc
-                // ->light gray
-                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
                 
                 //tasks
                 //add comma string
@@ -427,14 +424,14 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
             attributes  = [NSDictionary dictionaryWithObject:[NSColor redColor] forKey:NSForegroundColorAttributeName];
             
             //add
-            [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"not found" attributes:attributes]];
+            [taskString appendAttributedString:[[NSAttributedString alloc] initWithString:@"deleted" attributes:attributes]];
             
             //dylib, need to close string here
             // ->normally it doesn't have anything after...
             if(YES != [item isKindOfClass:[Task class]])
             {
                 //init color for closing
-                attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+                attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
                 
                 //close string
                 [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -448,8 +445,7 @@ NSAttributedString* initBinaryString(id item, BOOL isSearchWindow)
     if(YES == [item isKindOfClass:[Task class]])
     {
         //init color for closing
-        // ->light gray
-        attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+        attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
         
         //close string
         [taskString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")" attributes:attributes]];
@@ -478,7 +474,7 @@ NSAttributedString* initLoadedInString(id item)
     
     //get host tasks
     // ->works with dylibs or files
-    tasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator loadedIn:item];
+    tasks = [taskEnumerator loadedIn:item];
     
     //dylibs/files
     // ->add name
@@ -497,8 +493,7 @@ NSAttributedString* initLoadedInString(id item)
     }
 
     //init color for 'loaded in...'
-    // ->light gray
-    attributes = [NSDictionary dictionaryWithObject:NSColor.grayColor forKey:NSForegroundColorAttributeName];
+    attributes = [NSDictionary dictionaryWithObject:NSColor.controlTextColor forKey:NSForegroundColorAttributeName];
     
     //add dylib indicator
     //-> '(dylib, loaded in: ... '
@@ -851,8 +846,8 @@ void configVTButton(NSTableCellView *itemCell, id owner, Binary* binary)
                     //set string (vt ratio), with attributes
                     [vtButton setAttributedTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];
                     
-                    //set color (gray)
-                    stringAttributes[NSForegroundColorAttributeName] = NSColor.grayColor;
+                    //set color
+                    stringAttributes[NSForegroundColorAttributeName] = NSColor.controlTextColor;
                     
                     //set selected text color
                     [vtButton setAttributedAlternateTitle:[[NSAttributedString alloc] initWithString:vtDetectionRatio attributes:stringAttributes]];

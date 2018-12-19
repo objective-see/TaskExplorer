@@ -6,17 +6,6 @@
 //
 //
 
-#import <syslog.h>
-#import <signal.h>
-#import <unistd.h>
-#import <libproc.h>
-#import <sys/proc_info.h>
-
-#import "Task.h"
-#import "Consts.h"
-#import "Signing.h"
-#import "Utilities.h"
-#import "Connection.h"
 #import "AppDelegate.h"
 #import "TaskEnumerator.h"
 
@@ -27,6 +16,7 @@
 @synthesize dylibs;
 @synthesize binaryQueue;
 @synthesize executables;
+@synthesize flaggedItems;
 
 //init
 -(id)init
@@ -44,6 +34,9 @@
         //alloc dylibs dictionary
         dylibs = [NSMutableDictionary dictionary];
         
+        //alloc flagged items
+        flaggedItems = [NSMutableArray array];
+        
         //init binary processing queue
         binaryQueue = [[Queue alloc] init];
     }
@@ -53,7 +46,7 @@
 
 
 //enumerate all tasks
-// ->calls back into app delegate to update task (top) table when pau
+// calls back into app delegate to update task (top) table when pau
 -(void)enumerateTasks
 {
     //(new) task item
@@ -70,10 +63,6 @@
     
     //set state
     self.state = ENUMERATION_STATE_TASKS;
-    
-    //determine if network is connected
-    // ->sets 'isConnected' flag
-    ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected = isNetworkConnected();
     
     //get all tasks
     // ->pids and binary obj with just path/name
@@ -138,13 +127,18 @@
     //reload task table
     [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
     
-    //call on main thread
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    //reload bottom pain
+    // call on main thread
+    if(YES != [NSThread isMainThread])
+    {
+        //main thread
+        dispatch_sync(dispatch_get_main_queue(), ^{
         
-        //reload bottom pane
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
-
-    });
+             //reload bottom pane
+             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+            
+         });
+    }
     
     //for new tasks
     // now generate signing info/encryption check/packer check
@@ -226,7 +220,7 @@
         //nap
         [NSThread sleepForTimeInterval:0.01];
     }
-    
+
     //set state
     self.state = ENUMERATION_STATE_FILES;
     
@@ -234,7 +228,6 @@
     count = 0;
     
     //begin file enumeration
-    // ->for search view
     for(NSNumber* key in newTasks)
     {
         //get task
@@ -264,7 +257,7 @@
         //nap
         [NSThread sleepForTimeInterval:0.01];
     }
-    
+
     //set state
     self.state = ENUMERATION_STATE_NETWORK;
     
@@ -272,7 +265,6 @@
     count = 0;
     
     //begin network enumeration
-    // ->for search view
     for(NSNumber* key in newTasks)
     {
         //get task
@@ -544,10 +536,10 @@ bail:
     }
     
     //sync to remove from all executables
-    @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables)
+    @synchronized(taskEnumerator.executables)
     {
         //remove dead executables
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables removeObjectForKey:deadTask.binary.path];
+        [taskEnumerator.executables removeObjectForKey:deadTask.binary.path];
     }
     
     //get parent
@@ -576,7 +568,7 @@ bail:
     for(Binary* dylib in deadTask.dylibs)
     {
         //skip dylibs that aren't flagged
-        if(YES != [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:dylib])
+        if(YES != [taskEnumerator.flaggedItems containsObject:dylib])
         {
             //skip
             continue;
@@ -596,15 +588,15 @@ bail:
         
         //dylib is flagged and only hosted in dead task
         // ->remove it from flaggedItems
-        @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+        @synchronized(taskEnumerator.flaggedItems)
         {
             //remove
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:dylib];
+            [taskEnumerator.flaggedItems removeObject:dylib];
         }
     }
     
     //also remove task if its flagged and only instance
-    if(YES == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:deadTask.binary])
+    if(YES == [taskEnumerator.flaggedItems containsObject:deadTask.binary])
     {
         //get number of task instances
         // ->might be more (flagged) instances that are still alive
@@ -625,17 +617,17 @@ bail:
         if(1 == taskInstances)
         {
             //sync and remove
-            @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+            @synchronized(taskEnumerator.flaggedItems)
             {
                 //remove
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:deadTask.binary];
+                [taskEnumerator.flaggedItems removeObject:deadTask.binary];
             }
         }
     }
     
     //when there are no flagged items
     // ->(re)set flagged icon to black
-    if(0 == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems.count)
+    if(0 == taskEnumerator.flaggedItems.count)
     {
         //set main image
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedButton setImage:[NSImage imageNamed:@"flagged"]];
@@ -706,7 +698,6 @@ bail:
     return matchingTasks;
 }
 
-
 //get all tasks a dylib/file is loaded into
 -(NSMutableArray*)loadedIn:(id)item
 {
@@ -771,8 +762,8 @@ bail:
             if(YES == isDylib)
             {
                 //sync
-                //@synchronized(task.dylibs)
-                //{
+                @synchronized(task.dylibs)
+                {
                     //check if dylib is loaded in task
                     for(Binary* taskDylib in task.dylibs)
                     {
@@ -787,7 +778,7 @@ bail:
                         }
                     }
                     
-                //}//sync
+                }//sync
                 
             }//dylibs
             
@@ -795,8 +786,8 @@ bail:
             else if(YES == isFile)
             {
                 //sync
-                //@synchronized(task.files)
-                //{
+                @synchronized(task.files)
+                {
                     //check if file is loaded in task
                     for(File* taskFile in task.files)
                     {
@@ -810,7 +801,7 @@ bail:
                             break;
                         }
                     }
-                //}//sync
+                }//sync
                 
             }//files
             
@@ -818,8 +809,8 @@ bail:
             else if(YES == isConnection)
             {
                 //sync
-                //@synchronized(task.connections)
-                //{
+                @synchronized(task.connections)
+                {
                     //check if connection is 'in' task
                     for(Connection* taskConnection in task.connections)
                     {
@@ -834,12 +825,10 @@ bail:
                             break;
                         }
                     }
-                //}//sync
+                }//sync
             
             }//connections
-             
-
-    
+            
         }//all tasks
         
     }//sync
@@ -849,6 +838,5 @@ bail:
     
     return hostTasks;
 }
-
 
 @end

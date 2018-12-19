@@ -22,6 +22,7 @@
 @synthesize parser;
 @synthesize vtInfo;
 @synthesize isPacked;
+@synthesize loadedIn;
 @synthesize notFound;
 @synthesize isEncrypted;
 @synthesize signingInfo;
@@ -52,6 +53,8 @@
         //determine if its on disk
         self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
     
+        //get attributes
+        self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
     }
            
 //bail
@@ -217,13 +220,8 @@ bail:
     //computes hashes
     // ->set 'md5' and 'sha1' iVars
     self.hashes = hashFile(self.path);
-    
-    //call into filter object to check if file is known
-    // ->apple-signed or whitelisted
-    //self.isTrusted = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).filterObj isTrustedFile:self];
-    
+
     return;
-    
 }
 
 //format the signing info dictionary
@@ -356,10 +354,10 @@ bail:
 -(NSString*)toJSON
 {
     //json string
-    NSString *json = nil;
+    NSMutableString *json = nil;
     
     //json data
-    // ->for intermediate conversions
+    // for intermediate conversions
     NSData *jsonData = nil;
     
     //hashes
@@ -371,19 +369,25 @@ bail:
     //VT detection ratio
     NSString* vtDetectionRatio = nil;
     
+    //tasks loaded in
+    NSMutableArray* taskPids = nil;
+    
+    //'loaded in' list
+    NSString* tasks = nil;
+    
     //init file hash to default string
-    // ->used when hashes are nil, or serialization fails
+    // used when hashes are nil, or serialization fails
     fileHashes = @"\"unknown\"";
     
     //init file signature to default string
-    // ->used when signatures are nil, or serialization fails
+    // used when signatures are nil, or serialization fails
     fileSigs = @"\"unknown\"";
     
     //convert hashes to JSON
     if(nil != self.hashes)
     {
         //convert hash dictionary
-        // ->wrap since we are serializing JSON
+        // wrap since we are serializing JSON
         @try
         {
             //convert
@@ -395,7 +399,7 @@ bail:
             }
         }
         //ignore exceptions
-        // ->file hashes will just be 'unknown'
+        // file hashes will just be 'unknown'
         @catch(NSException *exception)
         {
             ;
@@ -406,7 +410,7 @@ bail:
     if(nil != self.signingInfo)
     {
         //convert signing dictionary
-        // ->wrap since we are serializing JSON
+        // wrap since we are serializing JSON
         @try
         {
             //convert
@@ -424,15 +428,55 @@ bail:
             ;
         }
     }
+    
+    //dylibs
+    //covert 'loaded in' array to JSON
+    if(YES != isTaskBinary)
+    {
+        //init
+        taskPids = [NSMutableArray array];
+        
+        //tasks loaded in
+        for(Task* task in self.loadedIn)
+        {
+            //add pid
+            [taskPids addObject:task.pid];
+        }
 
+        //wrap since we are serializing JSON
+        @try
+        {
+            //convert
+            jsonData = [NSJSONSerialization dataWithJSONObject:taskPids options:kNilOptions error:NULL];
+            if(nil != jsonData)
+            {
+                //convert data to string
+                tasks = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            }
+        }
+        //ignore exceptions
+        // ->file sigs will just be 'unknown'
+        @catch(NSException *exception)
+        {
+            ;
+        }
+    }
+    
     //init VT detection ratio
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
     //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d", self.name, self.path, fileHashes, fileSigs, vtDetectionRatio, self.isEncrypted, self.isPacked, self.notFound];
+    json = [NSMutableString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"deleted\": %d", self.name, self.path, fileHashes, fileSigs, vtDetectionRatio, self.isEncrypted, self.isPacked, self.notFound];
+    
+    //dylibs
+    // add tasks they are loaded in
+    if(YES != self.isTaskBinary)
+    {
+        //add
+        [json appendString:[NSString stringWithFormat:@", \"loaded in\": \"%@\"", tasks]];
+    }
     
     return json;
 }
-
 
 @end

@@ -82,44 +82,6 @@
     return;
 }
 
-/*
-//save prefs
--(void)savePrefs
-{
-    //first, any prefs changed, a 'save' set
-    // ->set 'save now' flag
-    if( ((self.showTrustedItems != self.showTrustedItemsBtn.state) ||
-         (self.disableVTQueries != self.disableVTQueriesBtn.state) ||
-         (self.saveOutput != self.saveOutputBtn.state) ) &&
-         (YES == self.saveOutputBtn.state) )
-    {
-        //set
-        self.shouldSaveNow = YES;
-    }
-    //don't save
-    else
-    {
-        //unset
-        self.shouldSaveNow = NO;
-    }
-    
-    //save hiding OS components flag
-    self.showTrustedItems = self.showTrustedItemsBtn.state;
-    
-    //save disabling VT flag
-    self.disableVTQueries = self.disableVTQueriesBtn.state;
-    
-    //save save output flag
-    self.saveOutput = self.saveOutputBtn.state;
-    
-    //call back up into app delegate for filtering/hiding OS components
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) applyPreferences];
-
-    return;
-}
-*/
-
-
 //'OK' button handler
 // ->save prefs and close window
 -(IBAction)closeWindow:(id)sender

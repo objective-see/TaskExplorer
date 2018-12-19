@@ -14,6 +14,8 @@
 
 @implementation Queue
 
+@synthesize itemsIn;
+@synthesize itemsOut;
 @synthesize eventQueue;
 @synthesize queueCondition;
 @synthesize qProcessorThread;
@@ -50,12 +52,6 @@
     // ->don't want UI thread, etc to suffer
     [NSThread sleepForTimeInterval:5.0f];
     
-    //VT object
-    VirusTotal* vtObject = nil;
-    
-    //grab VT object
-    vtObject = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).virusTotalObj;
-    
     //for ever
     while(YES)
     {
@@ -75,36 +71,29 @@
         //get item off queue
         binary = [eventQueue dequeue];
             
-        //sanity check
-        if(YES != [binary isKindOfClass:[Binary class]])
-        {
-            //ignore
-            continue;
-        }
-        
-        //process
-        //->for now, just hash, etc
-        [binary generateDetailedInfo];
-        
-        //when connected
-        // ->add item for VT processing
-        if(YES == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).isConnected)
-        {
-            //add
-            [vtObject addItem:binary];
-        }
+        //inc
+        itemsOut++;
             
         //unlock
         [self.queueCondition unlock];
             
-        //pool
+        //generate hashes, etc
+        [binary generateDetailedInfo];
+        
+        //when connected
+        // add item for VT processing
+        if(YES == isConnected)
+        {
+            //add
+            [virusTotal addItem:binary];
         }
+            
+        } //pool
         
     }//foreverz process queue
         
     return;
 }
-
 
 //add an object to the queue
 -(void)enqueue:(id)anObject
@@ -115,6 +104,9 @@
     //add to queue
     [self.eventQueue enqueue:anObject];
     
+    //inc
+    itemsIn++;
+
     //signal
     [self.queueCondition signal];
     
@@ -122,12 +114,6 @@
     [self.queueCondition unlock];
     
     return;
-}
-
-//process binary
--(void)processBinary:(Binary*)binary
-{
-    
 }
 
 @end

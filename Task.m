@@ -51,7 +51,7 @@
     if(nil != self)
     {
         //grab existings binaries
-        existingBinaries = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.executables;
+        existingBinaries = taskEnumerator.executables;
         
         //since root UID is zero
         // ->init UID to -1
@@ -111,7 +111,7 @@
             
             //add to queue
             // ->this will process in background
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:self.binary];
+            [taskEnumerator.binaryQueue enqueue:self.binary];
             
             //sync
             @synchronized(existingBinaries)
@@ -362,7 +362,7 @@ bail:
                 
                 //add to queue
                 // ->this will trigger background processing
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.binaryQueue enqueue:dylib];
+                [taskEnumerator.binaryQueue enqueue:dylib];
                 
                 //add to list of new dylibs
                 // ->will allow for post processing
@@ -492,7 +492,7 @@ bail:
         
         //reset existing files
         [self.files removeAllObjects];
-        
+            
         //create/add all files
         for(NSMutableDictionary* fileDescriptor in fileDescriptors)
         {
@@ -509,7 +509,7 @@ bail:
                 [self.files addObject:file];
             }
         }
-        
+    
         //sort by name
         self.files = [[self.files sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
         {
@@ -630,7 +630,7 @@ bail:
 }
 
 //convert self to JSON string
--(NSString*)toJSON
+-(NSString*)toJSON:(BOOL)detailed
 {
     //json string
     NSString *json = nil;
@@ -738,62 +738,74 @@ bail:
     //init VT detection ratio
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.binary.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.binary.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
     
-    //sync
-    @synchronized(self.dylibs)
+    //detailed?
+    // generate full json
+    if(YES == detailed)
     {
-        //convert all dylibs and add
-        for(Binary* dylib in self.dylibs)
+        //sync
+        @synchronized(self.dylibs)
         {
-            //convert/add
-            [dylibsJSON appendFormat:@"{%@},", [dylib toJSON]];
+            //convert all dylibs and add
+            for(Binary* dylib in self.dylibs)
+            {
+                //convert/add
+                [dylibsJSON appendFormat:@"{%@},", [dylib toJSON]];
+            }
         }
-    }
-    
-    //remove last ','
-    if(YES == [dylibsJSON hasSuffix:@","])
-    {
-        //remove
-        [dylibsJSON deleteCharactersInRange:NSMakeRange([dylibsJSON length]-1, 1)];
-    }
-    
-    //sync
-    @synchronized(self.files)
-    {
-        //convert all file and add
-        for(File* file in self.files)
+        
+        //remove last ','
+        if(YES == [dylibsJSON hasSuffix:@","])
         {
-            //convert/add
-            [filesJSON appendFormat:@"{%@},", [file toJSON]];
+            //remove
+            [dylibsJSON deleteCharactersInRange:NSMakeRange([dylibsJSON length]-1, 1)];
         }
-    }
-    
-    //remove last ','
-    if(YES == [filesJSON hasSuffix:@","])
-    {
-        //remove
-        [filesJSON deleteCharactersInRange:NSMakeRange([filesJSON length]-1, 1)];
-    }
-    
-    //sync
-    @synchronized(self.connections)
-    {
-        //convert all connections and add
-        for(Connection* connection in self.connections)
+        
+        //sync
+        @synchronized(self.files)
         {
-            //convert/add
-            [connectionsJSON appendFormat:@"{%@},", [connection toJSON]];
+            //convert all file and add
+            for(File* file in self.files)
+            {
+                //convert/add
+                [filesJSON appendFormat:@"{%@},", [file toJSON]];
+            }
         }
+        
+        //remove last ','
+        if(YES == [filesJSON hasSuffix:@","])
+        {
+            //remove
+            [filesJSON deleteCharactersInRange:NSMakeRange([filesJSON length]-1, 1)];
+        }
+        
+        //sync
+        @synchronized(self.connections)
+        {
+            //convert all connections and add
+            for(Connection* connection in self.connections)
+            {
+                //convert/add
+                [connectionsJSON appendFormat:@"{%@},", [connection toJSON]];
+            }
+        }
+        
+        //remove last ','
+        if(YES == [connectionsJSON hasSuffix:@","])
+        {
+            //remove
+            [connectionsJSON deleteCharactersInRange:NSMakeRange([connectionsJSON length]-1, 1)];
+        }
+        
+        //init json
+        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d, \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", self.binary.name, self.binary.path, self.pid, taskCommandLine, fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound, dylibsJSON, filesJSON, connectionsJSON];
     }
     
-    //remove last ','
-    if(YES == [connectionsJSON hasSuffix:@","])
+    //basic
+    else
     {
-        //remove
-        [connectionsJSON deleteCharactersInRange:NSMakeRange([connectionsJSON length]-1, 1)];
+        //init json
+        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d", self.binary.name, self.binary.path, self.pid, taskCommandLine, fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound];
     }
-    
-    //init json
-    json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d, \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", self.binary.name, self.binary.path, self.pid, taskCommandLine, fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound, dylibsJSON, filesJSON, connectionsJSON];
     
     return json;
 }

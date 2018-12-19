@@ -85,7 +85,7 @@
 {
     //not done?
     // ->make spinner keep spinning
-    if(ENUMERATION_STATE_COMPLETE != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
+    if(ENUMERATION_STATE_COMPLETE != taskEnumerator.state)
     {
         //(re)start
         [self.activityIndicator startAnimation:nil];
@@ -115,7 +115,7 @@
     
     //still enumerating?
     // ->show the spinner
-    if(ENUMERATION_STATE_COMPLETE != ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
+    if(ENUMERATION_STATE_COMPLETE != taskEnumerator.state)
     {
         //show
         self.activityIndicator.hidden = NO;
@@ -163,7 +163,7 @@
         });
         
         //done?
-        if(ENUMERATION_STATE_COMPLETE == ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state)
+        if(ENUMERATION_STATE_COMPLETE == taskEnumerator.state)
         {
             //stop spinner
             [self.activityIndicator stopAnimation:nil];
@@ -180,7 +180,7 @@
 -(void)showEnumerationState
 {
     //set status
-    switch(((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.state) {
+    switch(taskEnumerator.state) {
             
         //tasks
         case ENUMERATION_STATE_TASKS:
@@ -533,8 +533,20 @@ bail:
     //maks
     self.overlay.layer.masksToBounds = YES;
     
-    //set overlay's view color to gray
-    self.overlay.layer.backgroundColor = NSColor.grayColor.CGColor;
+    //dark mode
+    // set overlay to light
+    if(YES == isDarkMode())
+    {
+        //set overlay's view color to gray
+        self.overlay.layer.backgroundColor = NSColor.lightGrayColor.CGColor;
+    }
+    //light mode
+    // set overlay to gray
+    else
+    {
+        //set to gray
+        self.overlay.layer.backgroundColor = NSColor.grayColor.CGColor;
+    }
     
     //make it semi-transparent
     self.overlay.alphaValue = 0.95;
@@ -553,7 +565,7 @@ bail:
     
     //grab all tasks
     // make copy to avoid threading issues
-    allTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks copy];
+    allTasks = [taskEnumerator.tasks copy];
     
     //kick off filtering in background
     // will call back into to refresh UI when done

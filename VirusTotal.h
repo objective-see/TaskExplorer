@@ -19,16 +19,14 @@
 //array for (up to 25) items
 @property(nonatomic, retain)NSMutableArray* items;
 
+//array for all threads
+@property(nonatomic, retain)NSMutableArray* vtThreads;
 
 /* METHODS */
 
 //add item
 // ->will query VT when 25 items are hit
 -(void)addItem:(Binary*)binary;
-
-//thread function
-// ->runs in the background to get virus total info about a plugin's items
-//-(void)getInfo:(PluginBase*)plugin;
 
 //make the (POST)query to VT
 -(NSDictionary*)postRequest:(NSURL*)url parameters:(id)params;

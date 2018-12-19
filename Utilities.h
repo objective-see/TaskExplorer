@@ -15,6 +15,9 @@
 
 /* FUNCTIONS */
 
+//disable std err
+void disableSTDERR(void);
+
 //loads a framework
 // note: assumes it is in 'Framework' dir
 NSBundle* loadFramework(NSString* name);
@@ -84,8 +87,15 @@ BOOL Is32Bit(pid_t targetPID);
 // ->based on http://lapcatsoftware.com/articles/detect-app-translocation.html
 NSURL* getUnTranslocatedURL();
 
+//give a list of paths
+// convert any `~` to all or current user
+NSMutableArray* expandPaths(const __strong NSString* const paths[], int count);
+
 //check if (full) dark mode
 // meaning, Mojave+ and dark mode enabled
 BOOL isDarkMode();
+
+//bring an app to foreground (to get an icon in the dock) or background
+void transformProcess(ProcessApplicationTransformState location);
 
 #endif

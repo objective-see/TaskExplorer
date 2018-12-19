@@ -10,6 +10,10 @@
 
 #import <Foundation/Foundation.h>
 
+/* GLOBALS */
+
+//(privacy) protected directories
+extern NSArray* protectedDirectories;
 
 @interface File : ItemBase
 {
@@ -34,7 +38,5 @@
 //set file type
 // ->invokes 'file' cmd, the parses out result
 -(void)setFileType;
-
-
 
 @end

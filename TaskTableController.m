@@ -76,7 +76,7 @@
         if(YES != isFiltered)
         {
             //get tasks
-            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+            tasks = taskEnumerator.tasks;
         
             //set count
             rows = tasks.count;
@@ -150,7 +150,7 @@
         if(YES != isFiltered)
         {
             //grab tasks
-            tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+            tasks = taskEnumerator.tasks;
             
             //sanity check
             // ->make sure there is table item for row
@@ -325,7 +325,7 @@ bail:
     NSUInteger taskIndex = 0;
     
     //grab tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    tasks = taskEnumerator.tasks;
     
     //get task
     selectedTask = [self taskForRow:nil];
@@ -427,7 +427,7 @@ bail:
     Task* task = nil;
     
     //grab tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    tasks = taskEnumerator.tasks;
     
     //use sender if provided
     if(nil != sender)
@@ -658,7 +658,7 @@ bail:
     OrderedDictionary* tasks = nil;
     
     //grab tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    tasks = taskEnumerator.tasks;
     
     //number of children
     NSUInteger numberOfChildren = 0;
@@ -708,7 +708,7 @@ bail:
     Task* task = nil;
     
     //grab all tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    tasks = taskEnumerator.tasks;
     
     //root item
     if(nil == item)
@@ -797,7 +797,7 @@ bail:
     }
     
     //grab tasks
-    tasks = ((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator.tasks;
+    tasks = taskEnumerator.tasks;
     
     //get index of newly selected row
     newlySelectedRow = [self.itemView selectedRow];
@@ -834,7 +834,7 @@ bail:
             ((kkRowCell*)selectedView).color = nil;
             
             //remove task from task emumerator
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator removeTask:task];
+            [taskEnumerator removeTask:task];
             
             //when filtering
             // ->remove deceased task from filter tasks

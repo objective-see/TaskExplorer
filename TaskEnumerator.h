@@ -6,11 +6,20 @@
 //
 //
 
+#import "Task.h"
 #import "Queue.h"
+#import "Consts.h"
+#import "Signing.h"
+#import "Utilities.h"
+#import "Connection.h"
 #import "3rdParty/OrderedDictionary.h"
 
+#import <syslog.h>
+#import <signal.h>
+#import <unistd.h>
+#import <libproc.h>
+#import <sys/proc_info.h>
 #import <Foundation/Foundation.h>
-
 
 @interface TaskEnumerator : NSObject
 {
@@ -27,6 +36,9 @@
 
 //all dylibs
 @property(nonatomic, retain)NSMutableDictionary* dylibs;
+
+//flagged items
+@property(nonatomic, retain)NSMutableArray* flaggedItems;
 
 //queue
 // ->contains binaries that should be processed

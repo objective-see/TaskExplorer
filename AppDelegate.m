@@ -10,8 +10,8 @@
 #import "Consts.h"
 #import "Binary.h"
 #import "Update.h"
-#import "Connection.h"
 #import "Utilities.h"
+#import "Connection.h"
 #import "AppDelegate.h"
 #import "serviceInterface.h"
 #import "TaskTableController.h"
@@ -29,13 +29,9 @@
 @synthesize bottomPane;
 @synthesize saveButton;
 @synthesize currentTask;
-@synthesize isConnected;
-@synthesize flaggedItems;
 @synthesize searchButton;
 @synthesize viewSelector;
 @synthesize scannerThread;
-@synthesize virusTotalObj;
-@synthesize taskEnumerator;
 @synthesize taskViewFormat;
 @synthesize commandHandling;
 @synthesize completePosting;
@@ -57,17 +53,17 @@
 //kick off main window/logic
 -(void)taskExplore
 {
+    //make foreground so it has an dock icon, etc
+    transformProcess(kProcessTransformToForegroundApplication);
+    
     //for autolayout
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
     
     //init virus total object
-    virusTotalObj = [[VirusTotal alloc] init];
+    virusTotal = [[VirusTotal alloc] init];
     
     //init filter obj
     filterObj = [[Filter alloc] init];
-    
-    //alloc flagged items
-    flaggedItems = [NSMutableArray array];
     
     //alloc/init custom search field for tasks
     customTasksFilter = [[CustomTextField alloc] init];
@@ -123,7 +119,7 @@
     if(YES != [self isAuthenticated])
     {
         //display auth popup
-        // ->will invoke 'go' method on successful auth
+        // will invoke 'go' method on successful auth
         [self askForRoot];
     }
     //go!
@@ -171,12 +167,9 @@
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    //init crash reporting
-    initCrashReporting();
-    
     //first time run?
     // show thanks to friends window!
-    // note: on close invokes method to show main window
+    // note: on close, invokes method to show main window
     if(YES != [[NSUserDefaults standardUserDefaults] boolForKey:NOT_FIRST_TIME])
     {
         //set key
@@ -209,8 +202,10 @@
 //register handler for hot keys
 -(void)registerKeypressHandler
 {
-    NSEvent * (^keypressHandler)(NSEvent *);
+    //handler
+    NSEvent * (^keypressHandler)(NSEvent *) = nil;
     
+    //handler block
     keypressHandler = ^NSEvent * (NSEvent * theEvent){
         
         return [self handleKeypress:theEvent];
@@ -440,7 +435,7 @@ bail:
 -(void)exploreTasks
 {
     //alloc task enumerator
-    if(nil == self.taskEnumerator)
+    if(nil == taskEnumerator)
     {
         //alloc
         taskEnumerator = [[TaskEnumerator alloc] init];
@@ -448,7 +443,7 @@ bail:
     
     //kick off thread to enum task
     // ->will update table as results come in
-    [NSThread detachNewThreadSelector:@selector(enumerateTasks) toTarget:self.taskEnumerator withObject:nil];
+    [NSThread detachNewThreadSelector:@selector(enumerateTasks) toTarget:taskEnumerator withObject:nil];
     
     return;
 }
@@ -532,10 +527,10 @@ bail:
             if(YES != self.taskTableController.isFiltered)
             {
                 //sync to get row
-                @synchronized (self.taskEnumerator.tasks)
+                @synchronized (taskEnumerator.tasks)
                 {
                     //get row
-                    row = [self.taskEnumerator.tasks indexOfKey:((Task*)item).pid];
+                    row = [taskEnumerator.tasks indexOfKey:((Task*)item).pid];
                 }
             }
             //filtering
@@ -816,11 +811,11 @@ bail:
         if(YES != self.taskTableController.isFiltered)
         {
             //sync
-            @synchronized(self.taskEnumerator.tasks)
+            @synchronized(taskEnumerator.tasks)
             {
                 
             //get tasks
-            tasks = self.taskEnumerator.tasks;
+            tasks = taskEnumerator.tasks;
             
             //reload each row w/ new VT info
             for(NSNumber* taskPid in tasks)
@@ -870,6 +865,35 @@ bail:
         //reload
         [self reloadRow:binary];
     }
+    
+    //main thread
+    //update 'flagged' item
+    // ...method might be invoked by VT callback, etc
+    dispatch_async(dispatch_get_main_queue(), ^{
+    
+        //flagged items?
+        // set icon to red
+        if(0 != taskEnumerator.flaggedItems.count)
+        {
+            //set main image
+            self.flaggedButton.image = [NSImage imageNamed:@"flaggedRed"];
+            
+            //set alternate image
+            self.flaggedButton.alternateImage = [NSImage imageNamed:@"flaggedRedBG"];
+        }
+        //no flagged items
+        // set icon back to default
+        else
+        {
+            //set main image
+            self.flaggedButton.image = [NSImage imageNamed:@"flagged"];
+            
+            //set alternate image
+            self.flaggedButton.alternateImage = [NSImage imageNamed:@"flaggedBG"];
+        }
+        
+    });
+    
     
     return;
 }
@@ -965,7 +989,7 @@ bail:
 -(void)reloadTaskTable
 {
     //sort tasks
-    [self sortTasksForView:self.taskEnumerator.tasks];
+    [self sortTasksForView:taskEnumerator.tasks];
     
     //when exec'ing on background thread
     // ->exec on main thread
@@ -988,62 +1012,6 @@ bail:
         [(id)self.taskTableController refresh];
     }
     
-    return;
-}
-
-//callback when user has updated prefs
-// ->reload table, etc
--(void)applyPreferences
-{
-    //currently selected category
-    //NSUInteger selectedCategory = 0;
-    
-    /*
-    
-    //get currently selected category
-    //selectedCategory = self.categoryTableController.categoryTableView.selectedRow;
-    
-    //reload category table
-    [self.categoryTableController customReload];
-    
-    //reloading the category table resets the selected plugin
-    // ->so manually (re)set it here
-    self.selectedPlugin = self.plugins[selectedCategory];
-    
-    //reload item table
-    [self.taskTableController.itemTableView reloadData];
-    
-    //if VT query was never done (e.g. scan was started w/ pref disabled)
-    // ->kick off VT queries now
-    if( (0 == self.vtThreads.count) &&
-        (YES != self.prefsWindowController.disableVTQueries) )
-    {
-        //iterate over all plugins
-        // ->do VT query for each
-        for(PluginBase* plugin in self.plugins)
-        {
-            //do query
-            [self queryVT:plugin];
-        }
-    }
-    
-    //save results?
-    // ->if there was a previous scan
-    if( (nil != self.scannerThread) &&
-        (YES == self.prefsWindowController.shouldSaveNow))
-    {
-        //save
-        [self saveResults];
-        
-        //alloc/init alert
-        saveAlert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"current results saved to %@", OUTPUT_FILE] defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"subsequent scans will overwrite this file"];
-        
-        //show it
-        [saveAlert runModal];
-    }
-     
-    */
-   
     return;
 }
 
@@ -1128,7 +1096,7 @@ bail:
         else if(FLAGGED_BUTTON_TAG == tag)
         {
             //when no flagged items
-            if(0 == self.flaggedItems.count)
+            if(0 == taskEnumerator.flaggedItems.count)
             {
                 //set
                 imageName = @"flagged";
@@ -1175,7 +1143,7 @@ bail:
         else if(FLAGGED_BUTTON_TAG == tag)
         {
             //when no flagged items
-            if(0 == self.flaggedItems.count)
+            if(0 == taskEnumerator.flaggedItems.count)
             {
                 //set
                 imageName = @"flaggedOver";
@@ -1250,14 +1218,14 @@ bail:
             [output appendString:@"{\"tasks:\":["];
             
             //sync
-            @synchronized(self.taskEnumerator.tasks)
+            @synchronized(taskEnumerator.tasks)
             {
                 
             //get tasks
-            for(NSNumber* taskPid in self.taskEnumerator.tasks)
+            for(NSNumber* taskPid in taskEnumerator.tasks)
             {
                 //append task JSON
-                [output appendFormat:@"{%@},", [self.taskEnumerator.tasks[taskPid] toJSON]];
+                [output appendFormat:@"{%@},", [taskEnumerator.tasks[taskPid] toJSON]];
             }
             
             }//sync
@@ -1281,7 +1249,6 @@ bail:
                 
                 //init popup w/ error msg
                 saveResultPopup = [NSAlert alertWithMessageText:@"ERROR: failed to save output" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"details: %@", error];
-                
             }
             //happy
             // ->set result msg
@@ -1506,7 +1473,7 @@ bail:
             ( (YES == self.taskTableController.isFiltered) && (0 != self.taskTableController.filteredItems.count) ) )
         {
             //set to first
-            self.currentTask = self.taskEnumerator.tasks[[self.taskEnumerator.tasks keyAtIndex:0]];
+            self.currentTask = taskEnumerator.tasks[[taskEnumerator.tasks keyAtIndex:0]];
         }
     }
 
@@ -1576,7 +1543,7 @@ bail:
 
             //(re)enumerate dylibs via XPC
             // ->triggers table reload when done
-            [self.currentTask enumerateDylibs:self.taskEnumerator.dylibs shouldWait:NO];
+            [self.currentTask enumerateDylibs:taskEnumerator.dylibs shouldWait:NO];
             
             break;
             
@@ -1731,7 +1698,7 @@ bail:
             [self.taskTableController.filteredItems removeAllObjects];
                 
             //normal filter
-            [self.filterObj filterTasks:search.string items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
+            [self.filterObj filterTasks:search.string items:taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
             
             }//sync
                 
@@ -1835,8 +1802,20 @@ bail:
     //maks
     self.filteringOverlay.layer.masksToBounds = YES;
     
-    //set overlay's view color to gray
-    self.filteringOverlay.layer.backgroundColor = NSColor.grayColor.CGColor;
+    //dark mode
+    // set overlay to light
+    if(YES == isDarkMode())
+    {
+        //light gray
+        self.filteringOverlay.layer.backgroundColor = NSColor.lightGrayColor.CGColor;
+    }
+    //light mode
+    // set overlay to gray
+    else
+    {
+        //gray
+        self.filteringOverlay.layer.backgroundColor = NSColor.grayColor.CGColor;
+    }
     
     //make it semi-transparent
     self.filteringOverlay.alphaValue = 0.95;
@@ -2084,43 +2063,6 @@ bail:
     return;
 }
 
-//save a flagged item
-// ->also set text flagged items button label to red
--(void)saveFlaggedBinary:(Binary*)binary
-{
-    //first check if item is already flagged
-    if(YES == [self.flaggedItems containsObject:binary])
-    {
-        //no need to add
-        // ->so bail
-        goto bail;
-    }
-    
-    //sync to save
-    @synchronized(self.flaggedItems)
-    {
-        //save
-        [self.flaggedItems addObject:binary];
-    }
-    
-    //when count is 1
-    // ->means first flagged file so set image to red
-    if(1 == self.flaggedItems.count)
-    {
-        //set main image
-        [self.flaggedButton setImage:[NSImage imageNamed:@"flaggedRed"]];
-        
-        //set alternate image
-        [self.flaggedButton setAlternateImage:[NSImage imageNamed:@"flaggedRedBG"]];
-    
-    }
-    
-//bail
-bail:
-    
-    return;
-}
-
 //button handle for 'flagged items' button
 // ->display (in separate popup) all flagged items
 -(IBAction)showFlaggedItems:(id)sender
@@ -2130,7 +2072,7 @@ bail:
     
     //handle case where there aren't any flagged items
     // ->just show alert
-    if(0 == self.flaggedItems.count)
+    if(0 == taskEnumerator.flaggedItems.count)
     {
         //alloc/init alert
         alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:@"No items flagged by VirusTotal"] defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"hooray! 😇"];
@@ -2321,7 +2263,7 @@ bail:
             [self finalizeFiltration:PANE_TOP];
             
             //filter
-            [self.filterObj filterTasks:filterString items:self.taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
+            [self.filterObj filterTasks:filterString items:taskEnumerator.tasks results:self.taskTableController.filteredItems pane:PANE_TOP];
         }
         
         //refresh/update UI when not a keyword search

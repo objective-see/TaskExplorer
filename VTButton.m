@@ -42,7 +42,7 @@
 }
 
 //automatically invoked when mouse-down occurs
-// ->set color to light gray or light red
+// ->set color to default or red
 -(void)mouseDown:(NSEvent *)theEvent;
 {
     //mouse down/over color
@@ -60,11 +60,10 @@
         color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.5];
     }
     //non-flagged files
-    //gray
     else
     {
-        //gray
-        color = NSColor.grayColor;
+        //default
+        color = NSColor.controlTextColor;
     }
     
     //set string
@@ -74,7 +73,7 @@
 }
 
 //automatically invoked when mouse-up occurs
-// ->reset color to gray or red and trigger mouse click logic (if necessary)
+// ->reset color to default or red and trigger mouse click logic (if necessary)
 -(void)mouseUp:(NSEvent *)theEvent;
 {
     //mouse up color
@@ -135,8 +134,8 @@
     // set (back) to default
     else
     {
-        //gray
-        color = NSColor.grayColor;
+        //default
+        color = NSColor.controlTextColor;
     }
     
     //set string
@@ -156,7 +155,7 @@
     self.mouseExit = YES;
     
     //check if mouse is down
-    // ->set color to gray/lightish red
+    // ->set color to default/red
     if(YES == self.mouseDown)
     {
         //flagged files
@@ -168,11 +167,10 @@
             color = [NSColor colorWithCalibratedRed:(255/255.0f) green:(1.0/255.0f) blue:(1.0/255.0f) alpha:0.66];
         }
         //non-flagged files
-        // ->just black
         else
         {
-            //gray
-            color = NSColor.grayColor;
+            //default
+            color = NSColor.controlTextColor;
         }
     }
     //mouse is up
@@ -191,7 +189,7 @@
         // set (back) to default
         else
         {
-            //gray
+            //default
             color = NSColor.controlTextColor;
         }
     }

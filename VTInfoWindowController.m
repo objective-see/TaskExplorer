@@ -135,7 +135,7 @@
         makeTextViewHyperlink(self.analysisURL, [NSURL URLWithString:self.item.vtInfo[VT_RESULTS_URL]]);
         
         //set 'submit' button text to 'rescan'
-        self.submitButton.title = @"rescan?";
+        self.submitButton.title = @"Rescan?";
     }
     //unknown file
     else
@@ -236,9 +236,21 @@
     //pre-req
     [self.overlayView setWantsLayer:YES];
     
-    //set overlay's view color to white
-    self.overlayView.layer.backgroundColor = [NSColor whiteColor].CGColor;
-
+    //dark mode
+    // set overlay to light
+    if(YES == isDarkMode())
+    {
+        //set overlay's view color to gray
+        self.overlayView.layer.backgroundColor = NSColor.lightGrayColor.CGColor;
+    }
+    //light mode
+    // set overlay to gray
+    else
+    {
+        //set to gray
+        self.overlayView.layer.backgroundColor = NSColor.grayColor.CGColor;
+    }
+    
     //make it semi-transparent
     self.overlayView.alphaValue = 0.85;
     
@@ -252,7 +264,7 @@
     [self.progressIndicator startAnimation:nil];
 
     //rescan file?
-    if(YES == [((NSButton*)sender).title isEqualToString:@"rescan?"])
+    if(YES == [((NSButton*)sender).title isEqualToString:@"Rescan?"])
     {
         //set status msg
         [self.statusMsg setStringValue:[NSString stringWithFormat:@"submitting re-scan request for %@", self.item.name]];

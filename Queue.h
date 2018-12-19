@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Synack. All rights reserved.
 //
 
-
 //from: https://github.com/esromneb/ios-queue-object/blob/master/NSMutableArray%2BQueueAdditions.h
 
 #import <Foundation/Foundation.h>
@@ -27,20 +26,27 @@
 
 /* PROPERTIES */
 
+//items in
+@property NSUInteger itemsIn;
+
+//items out
+@property NSUInteger itemsOut;
 
 //event queue
 @property(retain, atomic)NSMutableArray* eventQueue;
 
-
+//thread to process events
 @property (nonatomic, retain)NSThread* qProcessorThread;
-@property (nonatomic, retain)NSCondition* queueCondition;
 
+//condition for queue
+@property (nonatomic, retain)NSCondition* queueCondition;
 
 //METHODS
 
 //add an object to the queue
 -(void)enqueue:(id)anObject;
 
-
+//process events from queue
+-(void)processQueue:(id)threadParam;
 
 @end

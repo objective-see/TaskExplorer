@@ -91,6 +91,6 @@ struct dyld_image_info_32 {
 -(void)enumerateNetworking:(BOOL)shouldWait;
 
 //convert self to JSON string
--(NSString*)toJSON;
+-(NSString*)toJSON:(BOOL)detailed;
 
 @end

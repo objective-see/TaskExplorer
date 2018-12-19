@@ -20,7 +20,27 @@
 #import <Security/Security.h>
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <CoreServices/CoreServices.h>
+#import <Collaboration/Collaboration.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+
+//disable std err
+void disableSTDERR()
+{
+    //file handle
+    int devNull = -1;
+    
+    //open /dev/null
+    devNull = open("/dev/null", O_RDWR);
+    
+    //dup
+    dup2(devNull, STDERR_FILENO);
+    
+    //close
+    close(devNull);
+    
+    return;
+}
 
 //init crash reporting
 void initCrashReporting()
@@ -1182,7 +1202,128 @@ bail:
     }
     
     return untranslocatedURL;
+}
+
+//get all user
+// includes name/home directory
+NSMutableDictionary* allUsers()
+{
+    //users
+    NSMutableDictionary* users = nil;
     
+    //query
+    CSIdentityQueryRef query = nil;
+    
+    //query results
+    CFArrayRef results = NULL;
+    
+    //error
+    CFErrorRef error = NULL;
+    
+    //identiry
+    CBIdentity* identity = NULL;
+    
+    //alloc dictionary
+    users = [NSMutableDictionary dictionary];
+    
+    //init query
+    query = CSIdentityQueryCreate(NULL, kCSIdentityClassUser, CSGetLocalIdentityAuthority());
+    
+    //exec query
+    if(true != CSIdentityQueryExecute(query, 0, &error))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //grab results
+    results = CSIdentityQueryCopyResults(query);
+    
+    //process all results
+    // add user and home directory
+    for (int i = 0; i < CFArrayGetCount(results); ++i)
+    {
+        //grab identity
+        identity = [CBIdentity identityWithCSIdentity:(CSIdentityRef)CFArrayGetValueAtIndex(results, i)];
+        
+        //add user
+        users[identity.UUIDString] = @{USER_NAME:identity.posixName, USER_DIRECTORY:NSHomeDirectoryForUser(identity.posixName)};
+    }
+    
+bail:
+    
+    //release results
+    if(NULL != results)
+    {
+        //release
+        CFRelease(results);
+    }
+    
+    //release query
+    if(NULL != query)
+    {
+        //release
+        CFRelease(query);
+    }
+    
+    return users;
+}
+
+//give a list of paths
+// convert any `~` to all or current user
+NSMutableArray* expandPaths(const __strong NSString* const paths[], int count)
+{
+    //expanded paths
+    NSMutableArray* expandedPaths = nil;
+    
+    //(current) path
+    const NSString* path = nil;
+    
+    //all users
+    NSMutableDictionary* users = nil;
+    
+    //grab all users
+    users = allUsers();
+    
+    //alloc list
+    expandedPaths = [NSMutableArray array];
+    
+    //iterate/expand
+    for(NSInteger i = 0; i < count; i++)
+    {
+        //grab path
+        path = paths[i];
+        
+        //no `~`?
+        // just add and continue
+        if(YES != [path hasPrefix:@"~"])
+        {
+            //add as is
+            [expandedPaths addObject:path];
+            
+            //next
+            continue;
+        }
+        
+        //handle '~' case
+        // root? add each user
+        if(0 == geteuid())
+        {
+            //add each user
+            for(NSString* user in users)
+            {
+                [expandedPaths addObject:[users[user][USER_DIRECTORY] stringByAppendingPathComponent:[path substringFromIndex:1]]];
+            }
+        }
+        //otherwise
+        // just convert to current user
+        else
+        {
+            [expandedPaths addObject:[path stringByExpandingTildeInPath]];
+        }
+    }
+    
+    return expandedPaths;
 }
 
 //check if (full) dark mode
@@ -1213,6 +1354,26 @@ BOOL isDarkMode()
 bail:
     
     return darkMode;
+}
+
+//bring an app to foreground (to get an icon in the dock) or background
+void transformProcess(ProcessApplicationTransformState location)
+{
+    //process serial no
+    ProcessSerialNumber processSerialNo;
+    
+    //init process stuct
+    // ->high to 0
+    processSerialNo.highLongOfPSN = 0;
+    
+    //init process stuct
+    // ->low to self
+    processSerialNo.lowLongOfPSN = kCurrentProcess;
+    
+    //transform to foreground
+    TransformProcessType(&processSerialNo, location);
+    
+    return;
 }
 
 

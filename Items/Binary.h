@@ -31,6 +31,10 @@
 //flag for task (main) executable
 @property BOOL isTaskBinary;
 
+//loaded in
+// ...for dylibs only
+@property(nonatomic, retain)NSArray* loadedIn;
+
 //hashes (md5, sha1)
 @property(nonatomic, retain)NSDictionary* hashes;
 
@@ -48,6 +52,7 @@
 
 //not found
 @property BOOL notFound;
+
 
 /* VIRUS TOTAL INFO */
 

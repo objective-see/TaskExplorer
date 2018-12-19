@@ -16,12 +16,11 @@
 
 @synthesize type;
 
-
 //init method
 -(id)initWithParams:(NSDictionary*)params
 {
     //super
-    // ->saves path, etc
+    // saves path, etc
     self = [super initWithParams:params];
     if(self)
     {
@@ -31,18 +30,22 @@
         //set icon
         self.icon = [[NSWorkspace sharedWorkspace] iconForFile:self.path];
         
-        //grab attributes
-        self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
+        //check if protected
+        // if not, get file attrs
+        if(YES != [self isProtected])
+        {
+            //get attrs
+            self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
+        }
     }
-           
-//bail
+    
 bail:
     
     return self;
 }
 
 //set file type
-// ->invokes 'file' cmd, the parses out result
+// invokes 'file' cmd, the parses out result
 -(void)setFileType
 {
     //results from 'file' cmd
@@ -82,7 +85,6 @@ bail:
     // ->also trim whitespace
     self.type = [parsedResults[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     
-//bail
 bail:
     
     return;
@@ -100,14 +102,14 @@ bail:
 }
 
 //override method
-// ->hash
+// hash the file
 -(NSUInteger)hash
 {
     return [self.path hash];
 }
 
 //override method
-// ->equality check
+// file equality check (path)
 -(BOOL)isEqual:(id)object
 {
     //flag
@@ -143,10 +145,34 @@ bail:
         goto bail;
     }
     
-//bail
 bail:
     
     return objEqual;
+}
+
+//check if file is protected
+// on mojave+, need to avoid prompts
+-(BOOL)isProtected
+{
+    //flag
+    BOOL protected = NO;
+    
+    //skip any files in (privacy) protected directories
+    // as otherwise we will generate a privacy prompt (on Mojave)
+    for(NSString* directory in protectedDirectories)
+    {
+        //check
+        if(YES == [self.path hasPrefix:directory])
+        {
+            //set flag
+            protected = YES;
+            
+            //done
+            break;
+        }
+    }
+    
+    return protected;
 }
 
 //convert object to JSON string
@@ -162,7 +188,7 @@ bail:
     attributesJSON = [NSMutableString string];
     
     //when attributes are nil
-    // ->init default string
+    // init default string, 'unknown'
     if(nil == self.attributes)
     {
         //init
@@ -170,7 +196,7 @@ bail:
     }
     
     //file has attributes
-    // ->add each
+    // add each one to json
     else
     {
         //start
@@ -207,6 +233,5 @@ bail:
     
     return json;
 }
-
 
 @end

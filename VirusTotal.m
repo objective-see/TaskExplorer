@@ -17,6 +17,7 @@
 @implementation VirusTotal
 
 @synthesize items;
+@synthesize vtThreads;
 
 //init
 -(id)init
@@ -28,8 +29,11 @@
         //alloc array for items
         items = [NSMutableArray array];
         
+        //init array for virus total threads
+        vtThreads = [NSMutableArray array];
+        
         //kick of thread to watch/flush queue
-        // ->will flush if item not processed in 30 seconds
+        // ->will flush if item not processed in 3 seconds
         [NSThread detachNewThreadSelector:@selector(queueFlusher) toTarget:self withObject:nil];
     }
     
@@ -98,6 +102,9 @@
     //items to process
     NSMutableArray* vtItems = nil;
     
+    //virus total thread
+    NSThread* virusTotalThread = nil;
+    
     //sync
     @synchronized(self.items)
     {
@@ -108,10 +115,21 @@
         if(VT_MAX_QUERY_COUNT == self.items.count)
         {
             //make copy
-            vtItems =  [NSMutableArray arrayWithArray:self.items];
-    
-            //kick of thread to make a query to VT
-            [NSThread detachNewThreadSelector:@selector(queryVT:) toTarget:self withObject:vtItems];
+            vtItems = [NSMutableArray arrayWithArray:self.items];
+            
+            //alloc thread
+            // ->will query virus total to get info about all detected items
+            virusTotalThread = [[NSThread alloc] initWithTarget:self selector:@selector(queryVT:) object:vtItems];
+            
+            //start thread
+            [virusTotalThread start];
+            
+            //sync
+            @synchronized(self.vtThreads)
+            {
+                //save it into array
+                [self.vtThreads addObject:virusTotalThread];
+            }
             
             //remove all items
             [self.items removeAllObjects];
@@ -226,22 +244,29 @@
             //save flagged item
             if(0 != [results[VT_RESULTS_POSITIVES] unsignedIntegerValue])
             {
-                //save
-                [((AppDelegate*)[[NSApplication sharedApplication] delegate]) saveFlaggedBinary:item];
+                //sync to check/add
+                @synchronized(taskEnumerator.flaggedItems)
+                {
+                    if(YES != [taskEnumerator.flaggedItems containsObject:item])
+                    {
+                        //save
+                        [taskEnumerator.flaggedItems addObject:item];
+                    }
+                }
             }
             //for non-flagged items
-            // ->remove from list, if they were previously flagged
+            // remove from list, if it was previously flagged
             else
             {
-                //check if previously flagged
-                // ->then remove
-                if(YES == [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems containsObject:item])
+                //sync to check/remove
+                @synchronized(taskEnumerator.flaggedItems)
                 {
-                    //sync to remove
-                    @synchronized(((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+                    //check if previously flagged
+                    // ...if so, then remove
+                    if(YES == [taskEnumerator.flaggedItems containsObject:item])
                     {
                         //remove
-                        [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems removeObject:item];
+                        [taskEnumerator.flaggedItems removeObject:item];
                     }
                 }
             }
@@ -300,9 +325,6 @@
             postData = [NSJSONSerialization dataWithJSONObject:params options:kNilOptions error:nil];
             if(nil == postData)
             {
-                //err msg
-                syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to convert request %s to JSON", [[postData description] UTF8String]);
-                
                 //bail
                 goto bail;
             }
@@ -354,9 +376,6 @@
     //bail on any exceptions
     @catch (NSException *exception)
     {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: converting response %s to JSON threw %s", [[vtData description] UTF8String], [[exception description] UTF8String]);
-        
         //bail
         goto bail;
     }
@@ -364,9 +383,6 @@
     //sanity check
     if(nil == results)
     {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: failed to convert response %s to JSON", [[vtData description] UTF8String]);
-        
         //bail
         goto bail;
     }
@@ -513,12 +529,10 @@ bail:
         goto bail;
     }
     
-//bail
 bail:
     
     return results;
 }
-
 
 //submit a rescan request
 -(NSDictionary*)reScan:(Binary*)item
@@ -551,7 +565,6 @@ bail:
         goto bail;
     }
     
-//bail
 bail:
     
     return result;
@@ -563,7 +576,7 @@ bail:
 {
     //queried binary obj
     Binary* queriedItem = nil;
-        
+    
     //process all results
     // ->save VT result dictionary into File obj
     for(NSDictionary* result in results[VT_RESULTS])
@@ -571,8 +584,6 @@ bail:
         //extract ('match') queried item
         // ->VT gives us back a hash
         queriedItem = queriedItems[result[@"hash"]];
-        
-        //sanity check
         if(nil == queriedItem)
         {
             //skip
@@ -582,11 +593,16 @@ bail:
         //save VT results into item
         queriedItem.vtInfo = result;
         
-        //save flagged item
-        if(0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue])
+        //sync to check/add
+        @synchronized(taskEnumerator.flaggedItems)
         {
-            //save
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) saveFlaggedBinary:queriedItem];
+            //save flagged item
+            if( (0 != [result[VT_RESULTS_POSITIVES] unsignedIntegerValue]) &&
+                (YES != [taskEnumerator.flaggedItems containsObject:queriedItem]) )
+            {
+                //save
+                [taskEnumerator.flaggedItems addObject:queriedItem];
+            }
         }
         
         //call up into app delegate to smartly reload

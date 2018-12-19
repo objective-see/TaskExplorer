@@ -30,6 +30,11 @@
 //success
 #define STATUS_SUCCESS 0
 
+//user name
+#define USER_NAME @"userName"
+
+//user (home) directory
+#define USER_DIRECTORY @"userDirectory"
 
 //signers
 enum Signer{None, Apple, AppStore, DevID, AdHoc};

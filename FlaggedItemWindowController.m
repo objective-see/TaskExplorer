@@ -64,14 +64,14 @@
     }
     
     //populate flagged items array
-    for(Binary* flaggedItem in ((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedItems)
+    for(Binary* flaggedItem in taskEnumerator.flaggedItems)
     {
         //when binary is task binary
         // ->find/save all tasks instances
         if(YES == flaggedItem.isTaskBinary)
         {
             //get all tasks instances
-            flaggedTasks = [((AppDelegate*)[[NSApplication sharedApplication] delegate]).taskEnumerator tasksForBinary:flaggedItem];
+            flaggedTasks = [taskEnumerator tasksForBinary:flaggedItem];
             
             //sync to save
             @synchronized(self.flaggedItems)

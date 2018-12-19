@@ -29,10 +29,6 @@
         
         //extract/save path
         self.path = params[KEY_RESULT_PATH];
-        
-        //get attributes
-        // ->based off path
-        self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
     }
     
     return self;
@@ -50,20 +46,10 @@
 /* OPTIONAL METHODS */
 
 
-
 /* REQUIRED METHODS */
 
 //stubs for inherited methods
-// ->all just throw exceptions as they should be implemented in sub-classes
-
-//scan
--(void)scan:(NSDictionary*)scanOptions
-{
-    @throw [NSException exceptionWithName:kExceptName
-                                   reason:[NSString stringWithFormat:kErrFormat, NSStringFromSelector(_cmd), [self class]]
-                                 userInfo:nil];
-    return;
-}
+// throw exceptions as they should be implemented in sub-classes
 
 //convert object to JSON string
 -(NSString*)toJSON
