@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
             goto bail;
         }
         
+        //set flag
+        cmdlineMode = YES;
+        
         //scan
         cmdlineExplore();
         
@@ -94,8 +97,14 @@ int main(int argc, char *argv[])
     // just kick off app for UI instance
     else
     {
+        //set flag
+        cmdlineMode = NO;
+        
+        //make foreground so it has an dock icon, etc
+        transformProcess(kProcessTransformToForegroundApplication);
+        
         //invoke app's main
-        status =  NSApplicationMain(argc, (const char **)argv);
+        status = NSApplicationMain(argc, (const char **)argv);
     }
     
 bail:
@@ -114,8 +123,9 @@ void usage()
     printf(" -explore     enumerate all tasks and dylibs\n");
     printf("\noptions:\n");
     printf(" -pretty      json output is 'pretty-printed'\n");
+    printf(" -pid [pid]   just scan/explore the specified task'\n");
     printf(" -skipVT      do not query VirusTotal (when '-explore' is specified)\n");
-    printf(" -full        for each task; include dylibs, files, & network connections\n\n");
+    printf(" -detailed    for each task; include dylibs, files, & network connections\n\n");
 
     return;
 }
@@ -123,6 +133,9 @@ void usage()
 //perform a cmdline enumeration of all things
 void cmdlineExplore()
 {
+    //args
+    NSArray* arguments = nil;
+    
     //filter obj
     Filter* filter = nil;
 
@@ -141,6 +154,16 @@ void cmdlineExplore()
     //output
     NSMutableString* output = nil;
     
+    //formatter
+    NSNumberFormatter* formatter = nil;
+    
+    //pid
+    // if single task was specified
+    NSNumber* pid = nil;
+    
+    //grab args
+    arguments = [[NSProcessInfo processInfo] arguments];
+    
     //init filter obj
     filter = [[Filter alloc] init];
     
@@ -149,7 +172,7 @@ void cmdlineExplore()
     
     //set flag
     // skip virus total?
-    skipVirusTotal = [[[NSProcessInfo processInfo] arguments] containsObject:@"-skipVT"];
+    skipVirusTotal = [arguments containsObject:@"-skipVT"];
     
     //virus total?
     if(YES != skipVirusTotal)
@@ -161,8 +184,22 @@ void cmdlineExplore()
     //be nice
     nice(15);
     
+    //scan just one pid?
+    if( (YES == [arguments containsObject:@"-pid"]) &&
+        (YES != [@"-pid" isEqualToString:arguments.lastObject]) )
+    {
+        //init formatter
+        formatter = [[NSNumberFormatter alloc] init];
+        
+        //set style
+        formatter.numberStyle = NSNumberFormatterDecimalStyle;
+        
+        //extract/convert pid
+        pid = [formatter numberFromString:arguments[[arguments indexOfObject:@"-pid"] + 1]];
+    }
+    
     //enumerate all tasks/dylibs/files/etc
-    [taskEnumerator enumerateTasks];
+    [taskEnumerator enumerateTasks:pid];
     
     //wait for items to complete processing
     while(taskEnumerator.binaryQueue.itemsOut != taskEnumerator.binaryQueue.itemsOut)
@@ -172,7 +209,7 @@ void cmdlineExplore()
     }
     
     //determine what each dylib is loaded in
-    // do here as all tasks and all dylibs are enum'd
+    // do here as all tasks and all dylibs are (now) enum'd
     for(NSString* dylib in taskEnumerator.dylibs)
     {
         //loaded in
@@ -189,21 +226,21 @@ void cmdlineExplore()
     
     //set flag
     // include apple items?
-    includeApple = [[[NSProcessInfo processInfo] arguments] containsObject:@"-apple"];
+    includeApple = [arguments containsObject:@"-apple"];
     
     //set flag
     // pretty print json?
-    prettyPrint = [[[NSProcessInfo processInfo] arguments] containsObject:@"-pretty"];
+    prettyPrint = [arguments containsObject:@"-pretty"];
     
     //set flag
     // full output?
-    detailed = [[[NSProcessInfo processInfo] arguments] containsObject:@"-detailed"];
+    detailed = [arguments containsObject:@"-detailed"];
     
     //alloc output JSON
     output = [NSMutableString string];
     
     //only flagged items?
-    if(YES == [[[NSProcessInfo processInfo] arguments] containsObject:@"-scan"])
+    if(YES == [arguments containsObject:@"-scan"])
     {
         //start JSON
         [output appendString:@"{\"flagged items\":["];
@@ -225,6 +262,7 @@ void cmdlineExplore()
         [output appendString:@"]}"];
     }
     
+    //all items
     else
     {
         //start JSON
@@ -234,8 +272,10 @@ void cmdlineExplore()
         for(NSNumber* taskPid in taskEnumerator.tasks)
         {
             //skip apple?
+            // unless we're scanning a single proc
             if( (YES != includeApple) &&
-               (YES == [filter isApple:((Task*)taskEnumerator.tasks[taskPid]).binary]) )
+                (1  != taskEnumerator.tasks.count) &&
+                (YES == [filter isApple:((Task*)taskEnumerator.tasks[taskPid]).binary]) )
             {
                 //skip
                 continue;
@@ -252,9 +292,10 @@ void cmdlineExplore()
             [output deleteCharactersInRange:NSMakeRange([output length]-1, 1)];
         }
         
-        //not detailed?
-        // add separate array of dylibs
-        if(YES != detailed)
+        //not detailed or not just scanning 1 task
+        // add separate array of for all the dylibs
+        if( (YES != detailed) &&
+            (1 != taskEnumerator.tasks.count) )
         {
             //append
             [output appendString:@"],\"dylibs\":["];

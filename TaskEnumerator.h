@@ -52,7 +52,7 @@
 
 //enumerate all tasks
 // ->call back into app delegate to update task (top) table
--(void)enumerateTasks;
+-(void)enumerateTasks:(NSNumber*)pid;
 
 //get list of all pids
 -(OrderedDictionary*)getAllTasks;

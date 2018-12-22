@@ -208,6 +208,9 @@
     //VT scan ID
     __block NSString* scanID = nil;
     
+    //new report
+    __block NSURL* newReport = nil;
+    
     //alloc/init VT obj
     vtObj = [[VirusTotal alloc] init];
     
@@ -313,8 +316,19 @@
                 //nap so user can see msg
                 [NSThread sleepForTimeInterval:0.5];
                 
-                //launch browser to show rew report
-                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:result[@"permalink"]]];
+                //launch browser to show new report
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    
+                    //sanity check
+                    // then launch browser
+                    if( (nil != result[@"permalink"]) &&
+                       (nil != (newReport = [NSURL URLWithString:result[@"permalink"]])) )
+                    {
+                        //launch browser
+                        [[NSWorkspace sharedWorkspace] openURL:newReport];
+                    }
+                    
+                });
                 
                 //wait to browser is up and happy
                 [NSThread sleepForTimeInterval:0.5];
@@ -390,8 +404,19 @@
                 //nap so user can see msg
                 [NSThread sleepForTimeInterval:0.5];
                 
-                //launch browser to show rew report
-                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:result[@"permalink"]]];
+                //launch browser to show new report
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    
+                    //sanity check
+                    // then launch browser
+                    if( (nil != result[@"permalink"]) &&
+                        (nil != (newReport = [NSURL URLWithString:result[@"permalink"]])) )
+                    {
+                        //launch browser
+                        [[NSWorkspace sharedWorkspace] openURL:newReport];
+                    }
+                    
+                });
                 
                 //wait to browser is up and happy
                 [NSThread sleepForTimeInterval:0.5];

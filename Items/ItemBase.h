@@ -1,9 +1,9 @@
 //
 //  ItemBase.h
-//  BlockBlock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 9/25/14.
-//  Copyright (c) 2014 Synack. All rights reserved.
+//  Copyright (c) 2014 Objective-See. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -24,13 +24,6 @@
 
 //file attributes
 @property(nonatomic, retain)NSDictionary* attributes;
-
-//flag if known
-// ->signed by apple and/or whitelisted
-//@property BOOL isTrusted;
-
-
-
 
 /* METHODS */
 

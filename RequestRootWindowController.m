@@ -195,7 +195,7 @@
     self.cancelButton.enabled = NO;
     
     //update auth message
-    self.statusMsg.stringValue = @"ok: authorization successful";
+    self.statusMsg.stringValue = @"...authorization successful!";
     
     //wait a bit
     // ->then hide window & kick off action

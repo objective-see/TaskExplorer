@@ -3,7 +3,6 @@
 //  TaskExplorer
 //
 //  Created by Patrick Wardle on 12/16/18.
-//  Copyright © 2018 Lucas Derraugh. All rights reserved.
 //
 
 #ifndef main_h
@@ -32,6 +31,9 @@ VirusTotal* virusTotal = nil;
 
 //network connected flag
 BOOL isConnected = NO;
+
+//cmdline flag
+BOOL cmdlineMode = NO;
 
 //(privacy) protected directories
 NSArray* protectedDirectories = nil;

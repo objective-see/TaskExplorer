@@ -1,9 +1,9 @@
 //
 //  Queue.h
-//  BlockBlock
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 9/26/14.
-//  Copyright (c) 2014 Synack. All rights reserved.
+//  Copyright (c) 2014 Objective-See. All rights reserved.
 //
 
 //from: https://github.com/esromneb/ios-queue-object/blob/master/NSMutableArray%2BQueueAdditions.h

@@ -763,9 +763,12 @@ void makeModal(NSWindowController* windowController)
             //make modal on main thread
             dispatch_sync(dispatch_get_main_queue(), ^{
                 
+                //make app front
+                [NSApp activateIgnoringOtherApps:YES];
+                
                 //modal
                 [[NSApplication sharedApplication] runModalForWindow:windowController.window];
-        
+                
             });
             
             //all done
@@ -1375,8 +1378,3 @@ void transformProcess(ProcessApplicationTransformState location)
     
     return;
 }
-
-
-
-
-

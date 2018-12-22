@@ -53,9 +53,6 @@
 //kick off main window/logic
 -(void)taskExplore
 {
-    //make foreground so it has an dock icon, etc
-    transformProcess(kProcessTransformToForegroundApplication);
-    
     //for autolayout
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSConstraintBasedLayoutVisualizeMutuallyExclusiveConstraints"];
     
@@ -115,15 +112,21 @@
     [self registerKeypressHandler];
     
     //check if authenticated
-    // ->display authentication request if needed
+    // display authentication request if needed
     if(YES != [self isAuthenticated])
     {
-        //display auth popup
-        // will invoke 'go' method on successful auth
-        [self askForRoot];
+        //wait to allow app to become front
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .33 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            
+            //display auth popup
+            // will invoke 'go' method on successful auth
+            [self askForRoot];
+            
+        });
     }
+    
     //go!
-    // ->setup tracking areas and begin thread that explores tasks
+    // setup tracking areas and begin thread that explores tasks
     else
     {
         //go!
@@ -161,12 +164,23 @@
     //set delegate
     // ->ensures our 'windowWillClose' method, which has logic to fully exit app
     self.window.delegate = self;
+                       
+    return;
 }
 
 //automatically invoked by OS
 // ->main entry point
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    
+    //toggle away
+    [[[NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.loginwindow"] firstObject] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    
+    //toggle back
+    // work-around for menu not showing since we set Application is agent(UIElement): YES
+    [[[NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.objective-see.TaskExplorer"] firstObject] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    
+    
     //first time run?
     // show thanks to friends window!
     // note: on close, invokes method to show main window
@@ -443,7 +457,7 @@ bail:
     
     //kick off thread to enum task
     // ->will update table as results come in
-    [NSThread detachNewThreadSelector:@selector(enumerateTasks) toTarget:taskEnumerator withObject:nil];
+    [NSThread detachNewThreadSelector:@selector(enumerateTasks:) toTarget:taskEnumerator withObject:nil];
     
     return;
 }

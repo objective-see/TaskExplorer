@@ -25,5 +25,4 @@
 //'support us' button
 @property (weak, atomic) IBOutlet NSButton *supportUs;
 
-
 @end

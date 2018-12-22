@@ -394,7 +394,11 @@ bail:
         
         //reload bottom pane now
         // note: this will only reload if new task is the currently selected one, etc
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
+        if(YES != cmdlineMode)
+        {
+            //reload
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:DYLIBS_VIEW];
+        }
         
         //complete dylib processing for new dylib
         // ->get signing info, hash, etc, & save into global list
@@ -415,15 +419,19 @@ bail:
                 newDylib.isPacked = [newDylib.parser.binaryInfo[KEY_IS_PACKED] boolValue];
             }
         
-            //no need to reload if task is now longer current/selected
-            if(((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask != self)
+            //need to load?
+            if(YES != cmdlineMode)
             {
-                //skip reload
-                continue;
+                //no need to reload if task is now longer current/selected
+                if(((AppDelegate*)[[NSApplication sharedApplication] delegate]).currentTask != self)
+                {
+                    //skip reload
+                    continue;
+                }
+                
+                //reload row
+                [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newDylib];
             }
-            
-            //reload row
-            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newDylib];
         }
         
         //signal sema
@@ -519,7 +527,12 @@ bail:
         }] mutableCopy];
         
         //reload bottom pane
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:FILES_VIEW];
+        if(YES != cmdlineMode)
+        {
+            //reload
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:FILES_VIEW];
+        }
+        
             
         }//sync
         
@@ -603,7 +616,11 @@ bail:
         }
             
         //reload bottom pane
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:NETWORKING_VIEW];
+        if(YES != cmdlineMode)
+        {
+            //reload
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:self itemView:NETWORKING_VIEW];
+        }
             
         }//sync
         

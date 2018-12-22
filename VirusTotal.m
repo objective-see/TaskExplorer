@@ -606,11 +606,14 @@ bail:
         }
         
         //call up into app delegate to smartly reload
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:queriedItem];
+        if(YES != cmdlineMode)
+        {
+            //reload
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBinary:queriedItem];
+        }
     }
     
     return;
 }
-
 
 @end

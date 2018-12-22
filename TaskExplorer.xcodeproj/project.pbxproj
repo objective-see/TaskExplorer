@@ -238,6 +238,8 @@
 		CD3F4CFE1AF72BC4002A2647 /* TaskInfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = TaskInfoWindow.xib; path = UI/TaskInfoWindow.xib; sourceTree = "<group>"; };
 		CD3F4D131AF85088002A2647 /* FlatView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = FlatView.xib; path = UI/FlatView.xib; sourceTree = "<group>"; };
 		CD3F4D151AF89066002A2647 /* TreeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = TreeView.xib; path = UI/TreeView.xib; sourceTree = "<group>"; };
+		CD42FF8F21CE0CED000A0461 /* TaskExplorer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TaskExplorer.entitlements; sourceTree = SOURCE_ROOT; };
+		CD42FF9021CE0D05000A0461 /* remoteTaskService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = remoteTaskService.entitlements; sourceTree = "<group>"; };
 		CD4D53C91B20296E00008030 /* unknown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = unknown.png; path = images/unknown.png; sourceTree = SOURCE_ROOT; };
 		CD4D53CF1B23ED3900008030 /* connectedIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = connectedIcon.png; path = images/connectedIcon.png; sourceTree = SOURCE_ROOT; };
 		CD4D53D11B23ED4300008030 /* listeningIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = listeningIcon.png; path = images/listeningIcon.png; sourceTree = SOURCE_ROOT; };
@@ -444,6 +446,7 @@
 		1D21BC54172AF43D009D1CFD /* TaskExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				CD42FF8F21CE0CED000A0461 /* TaskExplorer.entitlements */,
 				CD1508DE21BB13980081F1AF /* Signing.h */,
 				CD1508DD21BB13980081F1AF /* Signing.m */,
 				CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */,
@@ -565,6 +568,7 @@
 		CDA5F6AE1B16D805003CE340 /* remoteTaskService */ = {
 			isa = PBXGroup;
 			children = (
+				CD42FF9021CE0D05000A0461 /* remoteTaskService.entitlements */,
 				CDA5F6B21B16D805003CE340 /* remoteTaskService.h */,
 				CDA5F6B31B16D805003CE340 /* remoteTaskService.m */,
 				CDA5F6B51B16D805003CE340 /* main.m */,
@@ -715,10 +719,20 @@
 				TargetAttributes = {
 					1D21BC4A172AF43D009D1CFD = {
 						DevelopmentTeam = VBG97UB4TA;
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+						};
 					};
 					CDA5F6AC1B16D805003CE340 = {
 						CreatedOnToolsVersion = 6.3.2;
 						DevelopmentTeam = VBG97UB4TA;
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -1008,6 +1022,7 @@
 				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
@@ -1031,6 +1046,7 @@
 				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
@@ -1057,6 +1073,7 @@
 				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1092,6 +1109,7 @@
 				CODE_SIGN_IDENTITY = "Developer ID Application: Objective-See, LLC (VBG97UB4TA)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (

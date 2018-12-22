@@ -44,10 +44,9 @@
     return self;
 }
 
-
 //enumerate all tasks
 // calls back into app delegate to update task (top) table when pau
--(void)enumerateTasks
+-(void)enumerateTasks:(NSNumber*)pid
 {
     //(new) task item
     Task* newTask = nil;
@@ -65,18 +64,28 @@
     self.state = ENUMERATION_STATE_TASKS;
     
     //get all tasks
-    // ->pids and binary obj with just path/name
+    // pids and binary obj with just path/name
     newTasks = [self getAllTasks];
     
     //build ancestries
     // do here, and use 'new tasks' since there might be new parents too
     [self generateAncestries:newTasks];
     
+    //only interested in one task?
+    if(nil != pid)
+    {
+        //enumerate task
+        [self enumerateTask:newTasks[pid]];
+
+        //done
+        goto bail;
+    }
+    
     //get all tasks that are pau
     deadTasks = [self.tasks.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT SELF IN %@", newTasks.allKeys]];
     
     //remove any old tasks that have exited/died
-    // ->invoke custom method to handle kids too...
+    // invoke custom method to handle kids too...
     for(NSNumber* key in deadTasks)
     {
         //sync to remove
@@ -121,23 +130,26 @@
     }//add new tasks
     
     //sort tasks
-    // ->ensures that signing info etc w/ be generated for (top) visible tasks
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) sortTasksForView:newTasks];
-    
-    //reload task table
-    [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
-    
-    //reload bottom pain
-    // call on main thread
-    if(YES != [NSThread isMainThread])
+    if(YES != cmdlineMode)
     {
-        //main thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
-        
-             //reload bottom pane
-             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+        //sort
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) sortTasksForView:newTasks];
+    
+        //reload task table
+        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadTaskTable];
+    
+        //reload bottom pain
+        // call on main thread
+        if(YES != [NSThread isMainThread])
+        {
+            //main thread
+            dispatch_sync(dispatch_get_main_queue(), ^{
             
-         });
+                 //reload bottom pane
+                 [((AppDelegate*)[[NSApplication sharedApplication] delegate]) selectBottomPaneContent:nil];
+                
+             });
+        }
     }
     
     //for new tasks
@@ -173,12 +185,16 @@
             newTask.binary.isPacked = [newTask.binary.parser.binaryInfo[KEY_IS_PACKED] boolValue];
         }
         
-        //reload task (row) in table
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newTask];
-    
-        //reload bottom pane
-        // ->this will only reload if new task is the currently selected one, etc
-        [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
+        //reload UI
+        if(YES != cmdlineMode)
+        {
+            //reload task (row) in table
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadRow:newTask];
+        
+            //reload bottom pane
+            // ->this will only reload if new task is the currently selected one, etc
+            [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
+        }
 
     }//signing info for all new tasks
 
@@ -297,6 +313,53 @@
     
     //set state
     self.state = ENUMERATION_STATE_COMPLETE;
+    
+bail:
+    
+    return;
+}
+
+//scan a single task
+-(void)enumerateTask:(Task*)task
+{
+    //sanity check
+    if(nil == task)
+    {
+        //bail
+        goto bail;
+    }
+
+    //generate signing info dynamically
+    task.binary.signingInfo = extractSigningInfo(task.pid.intValue, nil, kSecCSDefaultFlags);
+    if(nil == task.binary.signingInfo)
+    {
+        //extract signing info statically
+        task.binary.signingInfo = extractSigningInfo(0, task.binary.path, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources);
+    }
+    
+    //parse
+    if(YES == [task.binary parse])
+    {
+        //save encrypted flag
+        task.binary.isEncrypted = [task.binary.parser.binaryInfo[KEY_IS_ENCRYPTED] boolValue];
+        
+        //save packed flag
+        task.binary.isPacked = [task.binary.parser.binaryInfo[KEY_IS_PACKED] boolValue];
+    }
+    
+    //enumerate dylibs
+    [task enumerateDylibs:self.dylibs shouldWait:YES];
+    
+    //enumerate files
+    [task enumerateFiles:YES];
+    
+    //enumerate networking
+    [task enumerateNetworking:YES];
+    
+    //save task
+    self.tasks[task.pid] = task;
+    
+bail:
     
     return;
 }
@@ -627,7 +690,8 @@ bail:
     
     //when there are no flagged items
     // ->(re)set flagged icon to black
-    if(0 == taskEnumerator.flaggedItems.count)
+    if( (YES != cmdlineMode) &&
+        (0 == taskEnumerator.flaggedItems.count) )
     {
         //set main image
         [((AppDelegate*)[[NSApplication sharedApplication] delegate]).flaggedButton setImage:[NSImage imageNamed:@"flagged"]];

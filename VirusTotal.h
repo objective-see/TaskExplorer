@@ -9,6 +9,11 @@
 #import "Binary.h"
 #import <Foundation/Foundation.h>
 
+/* GLOBALS */
+ 
+//cmdline flag
+extern BOOL cmdlineMode;
+
 @interface VirusTotal : NSObject
 {
     

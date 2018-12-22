@@ -48,7 +48,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-scan"
+            argument = "-pid"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "78779"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-explore"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
