@@ -105,8 +105,6 @@
 		CDAB98A11AEAFAFA00C75B4B /* authorizationIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDAB98A01AEAFAFA00C75B4B /* authorizationIcon.png */; };
 		CDAB98A31AEB413C00C75B4B /* dylibIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDAB98A21AEB413C00C75B4B /* dylibIcon.png */; };
 		CDBE49181B58DC9B0031FC22 /* NSApplicationKeyEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = CDBE49171B58DC9B0031FC22 /* NSApplicationKeyEvents.m */; };
-		CDD248341AF5947300232422 /* TAAdaptiveSpaceItem.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD248311AF5947300232422 /* TAAdaptiveSpaceItem.m */; };
-		CDD248351AF5947300232422 /* TAAdaptiveSpaceItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD248331AF5947300232422 /* TAAdaptiveSpaceItemView.m */; };
 		CDD2483B1AF5CC4D00232422 /* Task.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD2483A1AF5CC4D00232422 /* Task.m */; };
 		CDEE76FC1B3FD44500763826 /* saveIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE76FB1B3FD44500763826 /* saveIcon.png */; };
 		CDEE76FF1B3FD4B000763826 /* saveIconBG.png in Resources */ = {isa = PBXBuildFile; fileRef = CDEE76FD1B3FD4B000763826 /* saveIconBG.png */; };
@@ -318,10 +316,6 @@
 		CDAB98A21AEB413C00C75B4B /* dylibIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dylibIcon.png; path = images/dylibIcon.png; sourceTree = SOURCE_ROOT; };
 		CDBE49161B58DC9B0031FC22 /* NSApplicationKeyEvents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSApplicationKeyEvents.h; sourceTree = "<group>"; };
 		CDBE49171B58DC9B0031FC22 /* NSApplicationKeyEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSApplicationKeyEvents.m; sourceTree = "<group>"; };
-		CDD248301AF5947300232422 /* TAAdaptiveSpaceItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAAdaptiveSpaceItem.h; path = 3rdParty/TAAdaptiveSpaceItem.h; sourceTree = "<group>"; };
-		CDD248311AF5947300232422 /* TAAdaptiveSpaceItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TAAdaptiveSpaceItem.m; path = 3rdParty/TAAdaptiveSpaceItem.m; sourceTree = "<group>"; };
-		CDD248321AF5947300232422 /* TAAdaptiveSpaceItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAAdaptiveSpaceItemView.h; path = 3rdParty/TAAdaptiveSpaceItemView.h; sourceTree = "<group>"; };
-		CDD248331AF5947300232422 /* TAAdaptiveSpaceItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TAAdaptiveSpaceItemView.m; path = 3rdParty/TAAdaptiveSpaceItemView.m; sourceTree = "<group>"; };
 		CDD248391AF5CC4D00232422 /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Task.h; sourceTree = SOURCE_ROOT; };
 		CDD2483A1AF5CC4D00232422 /* Task.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Task.m; sourceTree = SOURCE_ROOT; };
 		CDEE76FB1B3FD44500763826 /* saveIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = saveIcon.png; path = images/saveIcon.png; sourceTree = SOURCE_ROOT; };
@@ -657,10 +651,6 @@
 			children = (
 				CD3F4CE91AF6D948002A2647 /* OrderedDictionary.h */,
 				CD3F4CEA1AF6D948002A2647 /* OrderedDictionary.m */,
-				CDD248301AF5947300232422 /* TAAdaptiveSpaceItem.h */,
-				CDD248311AF5947300232422 /* TAAdaptiveSpaceItem.m */,
-				CDD248321AF5947300232422 /* TAAdaptiveSpaceItemView.h */,
-				CDD248331AF5947300232422 /* TAAdaptiveSpaceItemView.m */,
 				CDF08CE41AC89FE1009B3423 /* HyperlinkTextField.h */,
 				CDF08CE51AC89FE1009B3423 /* HyperlinkTextField.m */,
 			);
@@ -881,12 +871,10 @@
 				CD3F4CFA1AF71B58002A2647 /* Binary.m in Sources */,
 				CD3F4CFC1AF71B58002A2647 /* File.m in Sources */,
 				CDA81D5E1A95B4B4009790E2 /* main.m in Sources */,
-				CDD248341AF5947300232422 /* TAAdaptiveSpaceItem.m in Sources */,
 				CD0219531AD34D9A005148A2 /* AboutWindowController.m in Sources */,
 				CD1508D921BA4B9D0081F1AF /* UpdateWindowController.m in Sources */,
 				CDF08CC61AC46E75009B3423 /* VTButton.m in Sources */,
 				CD3F4CFB1AF71B58002A2647 /* Connection.m in Sources */,
-				CDD248351AF5947300232422 /* TAAdaptiveSpaceItemView.m in Sources */,
 				CDBE49181B58DC9B0031FC22 /* NSApplicationKeyEvents.m in Sources */,
 				CDA81D531A95B492009790E2 /* Utilities.m in Sources */,
 				CD7B9FAB1AD08FA100DF3C71 /* KKRow.m in Sources */,

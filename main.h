@@ -43,8 +43,8 @@ NSArray* protectedDirectories = nil;
 //print usage
 void usage(void);
 
-//perform a cmdline enumeration
-void cmdlineExplore(void);
+//perform a cmdline actions
+void cmdlineInterface(void);
 
 //block until vt queries are done
 void completeVTQuery(void);

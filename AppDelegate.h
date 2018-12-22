@@ -43,9 +43,6 @@ extern BOOL isConnected;
 //friends
 @property (weak) IBOutlet NSWindow *friends;
 
-//start time
-@property NSTimeInterval startTime;
-
 //'filter task' search box
 // ->top pane
 @property (weak) IBOutlet NSSearchField *filterTasksBox;
@@ -64,7 +61,6 @@ extern BOOL isConnected;
 @property NSUInteger taskViewFormat;
 
 //drop-down view selector
-
 @property (weak) IBOutlet NSPopUpButton *viewSelector;
 
 //segmented button for button pane

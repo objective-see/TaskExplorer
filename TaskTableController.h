@@ -11,8 +11,6 @@
 #import "VTInfoWindowController.h"
 #import "3rdParty/OrderedDictionary.h"
 
-
-
 #import <Foundation/Foundation.h>
 
 @interface TaskTableController : NSViewController <NSTableViewDataSource, NSTableViewDelegate>

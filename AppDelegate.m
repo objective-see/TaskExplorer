@@ -17,14 +17,12 @@
 #import "TaskTableController.h"
 #import "RequestRootWindowController.h"
 
-//TODO: filter out dup'd networks (airportd 0:0..) -not sure want to do this
 //TODO: autolayout vertically
 
 @implementation AppDelegate
 
 @synthesize topPane;
 @synthesize filterObj;
-@synthesize startTime;
 @synthesize vtThreads;
 @synthesize bottomPane;
 @synthesize saveButton;
@@ -79,9 +77,6 @@
     
     //set field editor for items
     [self.customItemsFilter setFieldEditor:YES];
-    
-    //set start time
-    self.startTime = [NSDate timeIntervalSinceReferenceDate];
     
     //center
     [self.window center];

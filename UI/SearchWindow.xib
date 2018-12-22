@@ -113,7 +113,7 @@
                                                             <rect key="frame" x="31" y="2" width="1118" height="21"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="task/dylib path" id="q9H-hQ-BE4">
                                                                 <font key="font" size="11" name="Menlo-Regular"/>
-                                                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                         </textField>
@@ -249,7 +249,7 @@
                                                             <rect key="frame" x="30" y="2" width="1190" height="20"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="file" id="1An-1Z-a3L">
                                                                 <font key="font" size="11" name="Menlo-Regular"/>
-                                                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                         </textField>
@@ -321,7 +321,7 @@
                                                             <rect key="frame" x="31" y="2" width="1228" height="20"/>
                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="item path" id="V6l-Qj-AQN">
                                                                 <font key="font" size="11" name="Menlo-Regular"/>
-                                                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                         </textField>

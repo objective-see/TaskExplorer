@@ -236,10 +236,17 @@
                     <constraint firstItem="UiZ-UI-inM" firstAttribute="top" secondItem="E4M-PF-VD0" secondAttribute="bottom" constant="9" id="vgi-Tg-WQk"/>
                 </constraints>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
+            <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" centeredItem="1Uj-D5-daU" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
                 <allowedToolbarItems>
-                    <toolbarItem implicitItemIdentifier="33BA6F3A-71D3-476F-B1FA-72F899CFDCA2" label="Toolbar Item" paletteLabel="Toolbar Item" tag="-1" id="1xB-mk-PMD" customClass="TAAdaptiveSpaceItem"/>
                     <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="eEO-jq-TLG"/>
+                    <toolbarItem implicitItemIdentifier="1087FB6D-CBC1-4AA2-BCA0-0C1214A6E6DB" label="" paletteLabel="" image="teText" sizingBehavior="auto" autovalidates="NO" id="1Uj-D5-daU">
+                        <nil key="toolTip"/>
+                        <imageView key="view" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="h15-Vb-FPu">
+                            <rect key="frame" x="0.0" y="14" width="500" height="90"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="teText" id="Gia-8H-MVp"/>
+                        </imageView>
+                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="146A46B5-DE4B-42D4-98E4-7C3A803AC963" label="" paletteLabel="" id="7ph-jg-soj">
                         <nil key="toolTip"/>
                         <size key="minSize" width="100" height="28"/>
@@ -283,21 +290,9 @@
                             </connections>
                         </searchField>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="F54A1AEB-291E-4556-8B7E-D1C677012ABF" label="" paletteLabel="" image="teText" id="UwA-pW-Mg8">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="330" height="62"/>
-                        <size key="maxSize" width="330" height="62"/>
-                        <imageView key="view" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aNo-Uq-I0N">
-                            <rect key="frame" x="0.0" y="14" width="330" height="62"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="teText" id="hwQ-Gs-JPJ"/>
-                        </imageView>
-                    </toolbarItem>
                 </allowedToolbarItems>
                 <defaultToolbarItems>
-                    <toolbarItem reference="eEO-jq-TLG"/>
-                    <toolbarItem reference="1xB-mk-PMD"/>
-                    <toolbarItem reference="UwA-pW-Mg8"/>
+                    <toolbarItem reference="1Uj-D5-daU"/>
                     <toolbarItem reference="eEO-jq-TLG"/>
                     <toolbarItem reference="7ph-jg-soj"/>
                     <toolbarItem reference="y4u-t8-Acq"/>

@@ -83,8 +83,8 @@ int main(int argc, char *argv[])
         //set flag
         cmdlineMode = YES;
         
-        //scan
-        cmdlineExplore();
+        //cli
+        cmdlineInterface();
         
         //happy
         status = 0;
@@ -123,15 +123,15 @@ void usage()
     printf(" -explore     enumerate all tasks and dylibs\n");
     printf("\noptions:\n");
     printf(" -pretty      json output is 'pretty-printed'\n");
-    printf(" -pid [pid]   just scan/explore the specified task'\n");
+    printf(" -pid [pid]   just scan/explore the specified task\n");
     printf(" -skipVT      do not query VirusTotal (when '-explore' is specified)\n");
     printf(" -detailed    for each task; include dylibs, files, & network connections\n\n");
 
     return;
 }
 
-//perform a cmdline enumeration of all things
-void cmdlineExplore()
+//perform a cmdline interface
+void cmdlineInterface()
 {
     //args
     NSArray* arguments = nil;
@@ -196,6 +196,17 @@ void cmdlineExplore()
         
         //extract/convert pid
         pid = [formatter numberFromString:arguments[[arguments indexOfObject:@"-pid"] + 1]];
+        
+        //sanity check
+        if( (nil == pid) ||
+            (YES != isAlive(pid.intValue)) )
+        {
+            //err msg
+            printf("{\"ERROR\" : \"specified pid, %s, does not exist\"}\n", [arguments[[arguments indexOfObject:@"-pid"] + 1] UTF8String]);
+            
+            //bail
+            goto bail;
+        }
     }
     
     //enumerate all tasks/dylibs/files/etc
@@ -330,6 +341,8 @@ void cmdlineExplore()
         //output
         printf("%s\n", output.UTF8String);
     }
+    
+bail:
      
     return;
 }
