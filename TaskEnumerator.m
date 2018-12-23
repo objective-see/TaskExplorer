@@ -14,6 +14,7 @@
 @synthesize state;
 @synthesize tasks;
 @synthesize dylibs;
+@synthesize enumerator;
 @synthesize binaryQueue;
 @synthesize executables;
 @synthesize flaggedItems;
@@ -60,6 +61,10 @@
     //counter
     int count = 0;
     
+    //save thread
+    // allows to be cancelled on refresh, etc
+    self.enumerator = [NSThread currentThread];
+    
     //set state
     self.state = ENUMERATION_STATE_TASKS;
     
@@ -70,6 +75,13 @@
     //build ancestries
     // do here, and use 'new tasks' since there might be new parents too
     [self generateAncestries:newTasks];
+    
+    //exit if thread was cancelled
+    if(YES == [[NSThread currentThread] isCancelled])
+    {
+        //exit
+        [NSThread exit];
+    }
     
     //only interested in one task?
     if(nil != pid)
@@ -128,6 +140,13 @@
         }//sync
         
     }//add new tasks
+    
+    //exit if thread was cancelled
+    if(YES == [[NSThread currentThread] isCancelled])
+    {
+        //exit
+        [NSThread exit];
+    }
     
     //sort tasks
     if(YES != cmdlineMode)
@@ -195,7 +214,14 @@
             // ->this will only reload if new task is the currently selected one, etc
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) reloadBottomPane:newTask itemView:CURRENT_VIEW];
         }
-
+        
+        //exit if thread was cancelled
+        if(YES == [[NSThread currentThread] isCancelled])
+        {
+            //exit
+            [NSThread exit];
+        }
+        
     }//signing info for all new tasks
 
     /*
@@ -233,8 +259,15 @@
             [newTask enumerateDylibs:self.dylibs shouldWait:NO];
         }
         
+        //exit if thread was cancelled
+        if(YES == [[NSThread currentThread] isCancelled])
+        {
+            //exit
+            [NSThread exit];
+        }
+        
         //nap
-        [NSThread sleepForTimeInterval:0.01];
+        [NSThread sleepForTimeInterval:0.05f];
     }
 
     //set state
@@ -269,9 +302,16 @@
             //enumerate
             [newTask enumerateFiles:NO];
         }
-            
+        
+        //exit if thread was cancelled
+        if(YES == [[NSThread currentThread] isCancelled])
+        {
+            //exit
+            [NSThread exit];
+        }
+        
         //nap
-        [NSThread sleepForTimeInterval:0.01];
+        [NSThread sleepForTimeInterval:0.05f];
     }
 
     //set state
@@ -307,8 +347,15 @@
             [newTask enumerateNetworking:NO];
         }
         
+        //exit if thread was cancelled
+        if(YES == [[NSThread currentThread] isCancelled])
+        {
+            //exit
+            [NSThread exit];
+        }
+        
         //nap
-        [NSThread sleepForTimeInterval:0.01];
+        [NSThread sleepForTimeInterval:0.05f];
     }
     
     //set state

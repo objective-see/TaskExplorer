@@ -29,7 +29,6 @@
 @synthesize currentTask;
 @synthesize searchButton;
 @synthesize viewSelector;
-@synthesize scannerThread;
 @synthesize taskViewFormat;
 @synthesize commandHandling;
 @synthesize completePosting;
@@ -2007,9 +2006,19 @@ bail:
     //select top row
     [self.taskTableController.itemView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     
-    //get tasks
-    // ->background thread will enum tasks, update table, etc
-    [self exploreTasks];
+    //wait till (existing) task enumerator thread is done
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        //wait
+        while(YES == [taskEnumerator.enumerator isExecuting])
+        {
+            //nap
+            [NSThread sleepForTimeInterval:0.5f];
+        }
+        
+        //(re)explore tasks
+        [self exploreTasks];
+    });
     
     return;
 }

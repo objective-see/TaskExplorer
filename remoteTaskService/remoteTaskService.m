@@ -250,9 +250,19 @@ bail:
     // have to use vmmap, since we don't com.apple.system-task-ports entitlement
     else
     {
+        //skip self
+        // ...'vmmap' suspends the process
+        if(taskPID.intValue == getpid())
+        {
+            //bail
+            goto bail;
+        }
+        
         //enum dylibs
         dylibPaths = [self enumerateDylibsNew:(NSNumber*)taskPID];
     }
+    
+bail:
     
     //invoke reply block
     reply(dylibPaths);

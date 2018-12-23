@@ -73,20 +73,17 @@ extern BOOL isConnected;
 //bottom pane view
 @property (weak) IBOutlet NSView *bottomPane;
 
-
-//'filter items' search box
-// ->bottom pane
+//'filter items' search box (bottom pane)
 @property (weak) IBOutlet NSSearchField *filterItemsBox;
 
+//(main) window
 @property (assign) IBOutlet NSWindow *window;
 
+//logo button
 @property (weak) IBOutlet NSButton *logoButton;
 
 //spinner
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
-
-//non-UI thread that performs actual scan
-@property(nonatomic, strong)NSThread *scannerThread;
 
 //filter object
 @property(nonatomic, retain)Filter* filterObj;

@@ -28,6 +28,9 @@
 
 /* PROPERTIES */
 
+//enumerator thread
+@property(nonatomic, retain)NSThread* enumerator;
+
 //all tasks objects
 @property(nonatomic, retain)OrderedDictionary* tasks;
 
