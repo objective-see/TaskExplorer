@@ -2243,14 +2243,13 @@ bail:
         didPerformRequestedSelectorOnTextView = YES;
     }
     
-//bail
 bail:
     
     return didPerformRequestedSelectorOnTextView;
 }
 
 //callback for custom search fields
-// ->handle auto-complete filterings
+// handles the auto-complete filterings
 -(void)filterAutoComplete:(NSTextView*)textView
 {
     //filter string
@@ -2414,10 +2413,10 @@ bail:
     
     //handle response
     // new version, show popup
-    switch (result)
+    switch(result)
     {
         //error
-        case -1:
+        case UPDATE_ERROR:
             
             //set details
             details = @"error, failed to check for an update.";
@@ -2428,7 +2427,7 @@ bail:
             break;
             
         //no updates
-        case 0:
+        case UPDATE_NOTHING_NEW:
             
             //set details
             details = [NSString stringWithFormat:@"you're all up to date! (v. %@)", getAppVersion()];
@@ -2439,7 +2438,7 @@ bail:
             break;
             
         //new version
-        case 1:
+        case UPDATE_NEW_VERSION:
             
             //set details
             details = [NSString stringWithFormat:@"a new version (%@) is available!", newVersion];
@@ -2450,8 +2449,10 @@ bail:
             break;
     }
     
-    //always show results?
-    if(YES == alwaysShow)
+    //new version?
+    //...or always show results?
+    if( (YES == alwaysShow) ||
+       (UPDATE_NEW_VERSION == result) )
     {
         //alloc update window
         updateWindowController = [[UpdateWindowController alloc] initWithWindowNibName:@"UpdateWindow"];
