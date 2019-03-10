@@ -323,7 +323,7 @@ bail:
     dylibs = [NSMutableArray array];
     
     //get task for pid
-    // ->allows access to read remote process memory
+    // allows access to read remote process memory
     status = task_for_pid(mach_task_self(), [pid intValue], &remoteTask);
     if(KERN_SUCCESS != status)
     {
@@ -338,7 +338,7 @@ bail:
     taskInfoSize = TASK_DYLD_INFO_COUNT;
     
     //get TASK_DYLD_INFO
-    // ->populates task_dyld_info structure
+    // populates task_dyld_info structure
     status = task_info(remoteTask, TASK_DYLD_INFO, (task_info_t)&dyldInfo, &taskInfoSize);
     if(KERN_SUCCESS != status)
     {
@@ -347,7 +347,8 @@ bail:
     }
     
     //remotely read dyld_all_image_infos
-    status = mach_vm_read(remoteTask, (vm_address_t)dyldInfo.all_image_info_addr, dyldInfo.all_image_info_size, (vm_offset_t*)&allImageInfo, &aifBytesRead);
+    status = mach_vm_read(remoteTask, (vm_address_t)dyldInfo.all_image_info_addr,
+                          dyldInfo.all_image_info_size, (vm_offset_t*)&allImageInfo, &aifBytesRead);
     if(KERN_SUCCESS != status)
     {
         //err msg

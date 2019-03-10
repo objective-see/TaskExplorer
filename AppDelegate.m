@@ -189,6 +189,15 @@
         //front
         [NSApp activateIgnoringOtherApps:YES];
         
+        //make first responder
+        // calling this without a timeout sometimes fails :/
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (100 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
+            
+            //and make it first responder
+            [self.friends makeFirstResponder:[self.friends.contentView viewWithTag:1]];
+            
+        });
+        
         //close after 3 seconds
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
             

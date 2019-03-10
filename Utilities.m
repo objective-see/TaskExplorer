@@ -1336,9 +1336,10 @@ BOOL isDarkMode()
     //flag
     BOOL darkMode = NO;
     
-    //not mojave?
+    //prior to mojave?
     // bail, since not true dark mode
-    if(YES != [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 14, 0}])
+    if( (YES != [NSProcessInfo instancesRespondToSelector:@selector(isOperatingSystemAtLeastVersion:)]) ||
+        (YES != [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 14, 0}]) )
     {
         //bail
         goto bail;
