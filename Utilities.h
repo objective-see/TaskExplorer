@@ -12,21 +12,19 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+extern bool _dyld_shared_cache_contains_path(const char* path);
+
 
 /* FUNCTIONS */
 
-//disable std err
-void disableSTDERR(void);
+//TODO: remove unneeded items
 
 //loads a framework
 // note: assumes it is in 'Framework' dir
 NSBundle* loadFramework(NSString* name);
 
-//init crash reporting
-void initCrashReporting(void);
-
 //check if OS is supported
-BOOL isSupportedOS(void);
+//BOOL isSupportedOS(void);
 
 //get OS's major or minor version
 SInt32 getVersion(OSType selector);
@@ -97,5 +95,9 @@ BOOL isDarkMode();
 
 //bring an app to foreground (to get an icon in the dock) or background
 void transformProcess(ProcessApplicationTransformState location);
+
+//check if file is in shared cache
+// uses private _dyld_shared_cache_contains_path API
+BOOL isInSharedCache(NSString* path);
 
 #endif

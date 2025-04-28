@@ -52,6 +52,14 @@
         
         //determine if its on disk
         self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
+        
+        //though maybe its in the dyld shared cache
+        if( (YES == self.notFound) &&
+            (isInSharedCache(self.path)) )
+        {
+            //unset
+            self.notFound = NO;
+        }
     
         //get attributes
         self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];

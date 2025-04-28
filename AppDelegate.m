@@ -89,6 +89,8 @@
     //make app front
     [NSApp activateIgnoringOtherApps:YES];
     
+    //TODO: remove
+    /*
     //check that OS is supported
     if(YES != isSupportedOS())
     {
@@ -98,6 +100,7 @@
         //exit
         exit(0);
     }
+    */
     
     //check
     [self check4Update:nil];

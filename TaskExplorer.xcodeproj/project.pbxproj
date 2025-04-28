@@ -33,8 +33,6 @@
 		CD1508DA21BA4B9D0081F1AF /* Update.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1508D821BA4B9D0081F1AF /* Update.m */; };
 		CD1508DC21BA4BAC0081F1AF /* UpdateWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CD1508DB21BA4BAC0081F1AF /* UpdateWindow.xib */; };
 		CD1508DF21BB13990081F1AF /* Signing.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1508DD21BB13980081F1AF /* Signing.m */; };
-		CD1D14EF21B7A67600FF7F4B /* Sentry.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		CD1D14F121B7A69300FF7F4B /* Sentry.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CD1D14F321B8F2FC00FF7F4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */; };
 		CD1D14F421B8F2FC00FF7F4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */; };
 		CD3F4CE81AF5CF68002A2647 /* TaskEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */; };
@@ -150,7 +148,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				CD1D14EF21B7A67600FF7F4B /* Sentry.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -161,7 +158,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				CD1D14F121B7A69300FF7F4B /* Sentry.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,8 +189,8 @@
 		7D73480C1BCB82C900CD7235 /* flaggedRed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRed.png; path = images/flaggedRed.png; sourceTree = SOURCE_ROOT; };
 		7D73480D1BCB82C900CD7235 /* flaggedRedBG.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRedBG.png; path = images/flaggedRedBG.png; sourceTree = SOURCE_ROOT; };
 		7D73480E1BCB82C900CD7235 /* flaggedRedOver.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flaggedRedOver.png; path = images/flaggedRedOver.png; sourceTree = SOURCE_ROOT; };
-		7DA5CA0D1C7AA8CB00627DD7 /* MachO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MachO.h; path = ../MachO/MachOParser/MachO.h; sourceTree = "<group>"; };
-		7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MachO.m; path = ../MachO/MachOParser/MachO.m; sourceTree = "<group>"; };
+		7DA5CA0D1C7AA8CB00627DD7 /* MachO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MachO.h; path = "../Mach-O/MachOParser/MachO.h"; sourceTree = "<group>"; };
+		7DA5CA0E1C7AA8CB00627DD7 /* MachO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MachO.m; path = "../Mach-O/MachOParser/MachO.m"; sourceTree = "<group>"; };
 		7DAA78071B903BF1004840B9 /* CustomTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomTextField.h; sourceTree = "<group>"; };
 		7DAA78081B903BF1004840B9 /* CustomTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomTextField.m; sourceTree = "<group>"; };
 		CD001B351AB903040089014A /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = images/logo.png; sourceTree = SOURCE_ROOT; };
@@ -218,7 +214,6 @@
 		CD1508DB21BA4BAC0081F1AF /* UpdateWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = UpdateWindow.xib; path = UI/UpdateWindow.xib; sourceTree = "<group>"; };
 		CD1508DD21BB13980081F1AF /* Signing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Signing.m; sourceTree = SOURCE_ROOT; };
 		CD1508DE21BB13980081F1AF /* Signing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signing.h; sourceTree = SOURCE_ROOT; };
-		CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sentry.framework; path = Carthage/Build/Mac/Sentry.framework; sourceTree = "<group>"; };
 		CD1D14F221B8F2FC00FF7F4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		CD24FE7621C6FC3D00900B61 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = SOURCE_ROOT; };
 		CD3F4CE61AF5CF68002A2647 /* TaskEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TaskEnumerator.m; sourceTree = SOURCE_ROOT; };
@@ -417,7 +412,6 @@
 		1D21BC4D172AF43D009D1CFD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				CD1D14EB21B7A5DB00FF7F4B /* Sentry.framework */,
 				CD7FBF241B6EDAC000578C5D /* SystemConfiguration.framework */,
 				CDF08CE91AC8D97B009B3423 /* Quartz.framework */,
 				CD6095721A87067D00E091CD /* Security.framework */,
@@ -731,6 +725,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 1D21BC42172AF43D009D1CFD;
@@ -1019,6 +1014,7 @@
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = TaskExplorer;
 				PROVISIONING_PROFILE = "";
@@ -1043,6 +1039,7 @@
 				GCC_PREFIX_HEADER = "TaskExplorer-Prefix.pch";
 				INFOPLIST_FILE = "TaskExplorer-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.objective-see.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = TaskExplorer;
 				PROVISIONING_PROFILE = "";

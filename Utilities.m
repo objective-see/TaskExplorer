@@ -1,12 +1,11 @@
 //
 //  Utilities.m
-//  DHS
+//  TaskExplorer
 //
 //  Created by Patrick Wardle on 2/7/15.
 //  Copyright (c) 2015 Objective-See. All rights reserved.
 //
 
-@import Sentry;
 
 #import "Consts.h"
 #import "Utilities.h"
@@ -24,6 +23,8 @@
 #import <Collaboration/Collaboration.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
+//TODO: remove
+/*
 //disable std err
 void disableSTDERR()
 {
@@ -42,54 +43,6 @@ void disableSTDERR()
     return;
 }
 
-//init crash reporting
-void initCrashReporting()
-{
-    //sentry
-    NSBundle *sentry = nil;
-    
-    //error
-    NSError* error = nil;
-    
-    //class
-    Class SentryClient = nil;
-    
-    //load senty
-    sentry = loadFramework(@"Sentry.framework");
-    if(nil == sentry)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //get client class
-    SentryClient = NSClassFromString(@"SentryClient");
-    if(nil == SentryClient)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //set shared client
-    [SentryClient setSharedClient:[[SentryClient alloc] initWithDsn:CRASH_REPORTING_URL didFailWithError:&error]];
-    if(nil != error)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //start crash handler
-    [[SentryClient sharedClient] startCrashHandlerWithError:&error];
-    if(nil != error)
-    {
-        //bail
-        goto bail;
-    }
-    
-bail:
-    
-    return;
-}
 
 //loads a framework
 // note: assumes it is in 'Framework' dir
@@ -169,6 +122,8 @@ bail:
     
     return isSupported;
 }
+ 
+*/
 
 //get OS's major or minor version
 SInt32 getVersion(OSType selector)
@@ -1329,36 +1284,12 @@ NSMutableArray* expandPaths(const __strong NSString* const paths[], int count)
     return expandedPaths;
 }
 
-//check if (full) dark mode
-// meaning, Mojave+ and dark mode enabled
-BOOL isDarkMode()
+//dark mode?
+BOOL isDarkMode(void)
 {
-    //flag
-    BOOL darkMode = NO;
-    
-    //prior to mojave?
-    // bail, since not true dark mode
-    if( (YES != [NSProcessInfo instancesRespondToSelector:@selector(isOperatingSystemAtLeastVersion:)]) ||
-        (YES != [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 14, 0}]) )
-    {
-        //bail
-        goto bail;
-    }
-    
-    //not dark mode?
-    if(YES != [[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqualToString:@"Dark"])
-    {
-        //bail
-        goto bail;
-    }
-    
-    //ok, mojave dark mode it is!
-    darkMode = YES;
-    
-bail:
-    
-    return darkMode;
+    return [NSApp.effectiveAppearance.name isEqualToString:NSAppearanceNameDarkAqua];
 }
+
 
 //bring an app to foreground (to get an icon in the dock) or background
 void transformProcess(ProcessApplicationTransformState location)
@@ -1378,4 +1309,14 @@ void transformProcess(ProcessApplicationTransformState location)
     TransformProcessType(&processSerialNo, location);
     
     return;
+}
+
+//check if file is in shared cache
+// uses private _dyld_shared_cache_contains_path API
+BOOL isInSharedCache(NSString* path)
+{
+    if (@available(macOS 11.0, *)) {
+        return _dyld_shared_cache_contains_path(path.UTF8String);
+    }
+    return NO;
 }

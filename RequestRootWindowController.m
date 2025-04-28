@@ -39,7 +39,6 @@
 }
 
 //automatically invoked when window is loaded
-// ->set to white
 -(void)windowDidLoad
 {
     //super
@@ -201,31 +200,18 @@
     // ->then hide window & kick off action
     {
         
-    //dispatch, then action
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.50 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        //close window
-        [self.window close];
-        
-        //exec UI actions etc on main thread
-        dispatch_async(dispatch_get_main_queue(), ^{
-
-            //make sure app's key window is (still) front
+        //dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.50 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            [self.window close];
+            
+            // Other UI updates
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]).window makeKeyAndOrderFront:self];
-            
-            //make sure app is (still) front
             [NSApp activateIgnoringOtherApps:YES];
-            
-            //call back into app delegate
-            // ->kick off task enum, etc
             [((AppDelegate*)[[NSApplication sharedApplication] delegate]) go];
-            
-        });
-    });
+       // });
         
     }
 
-//bail
 bail:
     
     //free auth ref

@@ -125,10 +125,7 @@ int main(int argc, const char *argv[])
     
     //listener
     NSXPCListener* listener = nil;
-    
-    //init crash reporting
-    initCrashReporting();
-    
+        
     //make really r00t
     // ->needed for exec'ing vmmap, etc
     if(0 != setuid(0))

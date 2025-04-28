@@ -226,46 +226,15 @@ bail:
 }
 
 //enumerate dylibs for a specified task
-// ->dylibs returned in array arg
 -(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
 {
-    //dylibs
-    NSMutableArray* dylibPaths = nil;
-    
-    //minor OS X version
-    SInt32 versionMinor = 0;
-    
-    //get minor version
-    versionMinor = getVersion(gestaltSystemVersionMinor);
-    
-    //when OS version is older then el capitan
-    // read memory directly to get list of loaded dylibs
-    if(versionMinor < OS_MINOR_VERSION_EL_CAPITAN)
+    //skip self
+    // 'vmmap' suspends the process
+    if(taskPID.intValue != getpid())
     {
         //enum dylibs
-        dylibPaths = [self enumerateDylibsOld:(NSNumber*)taskPID];
-        
+        reply([self enumerateDylibsNew:(NSNumber*)taskPID]);
     }
-    //OS version is el capitan+
-    // have to use vmmap, since we don't com.apple.system-task-ports entitlement
-    else
-    {
-        //skip self
-        // ...'vmmap' suspends the process
-        if(taskPID.intValue == getpid())
-        {
-            //bail
-            goto bail;
-        }
-        
-        //enum dylibs
-        dylibPaths = [self enumerateDylibsNew:(NSNumber*)taskPID];
-    }
-    
-bail:
-    
-    //invoke reply block
-    reply(dylibPaths);
     
     return;
 }

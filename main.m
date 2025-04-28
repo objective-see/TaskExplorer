@@ -15,13 +15,6 @@ int main(int argc, char *argv[])
     //return
     int status = -1;
     
-    //disable stderr
-    // sentry dumps to this, and we want only JSON to output...
-    disableSTDERR();
-    
-    //init crash reporting
-    initCrashReporting();
-    
     //untranslocated URL
     NSURL* untranslocatedURL = nil;
     
