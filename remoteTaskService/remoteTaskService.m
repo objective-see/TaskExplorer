@@ -226,217 +226,7 @@ bail:
 }
 
 //enumerate dylibs for a specified task
--(void)enumerateDylibs:(NSNumber*)taskPID withReply:(void (^)(NSMutableArray *))reply
-{
-    //skip self
-    // 'vmmap' suspends the process
-    if(taskPID.intValue != getpid())
-    {
-        //enum dylibs
-        reply([self enumerateDylibsNew:(NSNumber*)taskPID]);
-    }
-    
-    return;
-}
-
-//enumerate dylibs via direct memory reading
-// ->can only do this pre-el capitan
--(NSMutableArray*)enumerateDylibsOld:(NSNumber*)pid
-{
-    //status
-    kern_return_t status = !KERN_SUCCESS;
-    
-    //task for remote process
-    task_t remoteTask = 0;
-    
-    //remote read addr
-    vm_address_t remoteReadAddr = 0;
-    
-    //number of remote bytes to read
-    mach_msg_type_number_t bytesToRead = 0;
-    
-    //dyld info structure
-    // ->contains remote addr/size of dyld_all_image_infos
-    struct task_dyld_info dyldInfo = {0};
-    
-    //set size of task info
-    mach_msg_type_number_t taskInfoSize = 0;
-    
-    //pointer to structure for...
-    // ->populated by mach_vm_read()
-    struct dyld_all_image_infos* allImageInfo = NULL;
-    
-    //number of bytes read for dyld_all_image_infos
-    mach_msg_type_number_t aifBytesRead = 0;
-    
-    //array of structs w/ dylib info
-    void* dyldImageInfos = NULL;
-    
-    //number of bytes read for list of dyld_image_infos
-    mach_msg_type_number_t diiBytesRead = 0;
-    
-    //pointer to dylib info struct
-    // ->depending on remote (target) process either dyld_image_info or dyld_image_info_32
-    void* imageInfo = NULL;
-    
-    //buffer for dylib path
-    char* dylibPath = NULL;
-    
-    //number of bytes read for dyld_all_image_infos
-    mach_msg_type_number_t dpBytesRead = 0;
-    
-    //dylibs
-    NSMutableArray* dylibs = nil;
-    
-    //alloc array for dylibs
-    dylibs = [NSMutableArray array];
-    
-    //get task for pid
-    // allows access to read remote process memory
-    status = task_for_pid(mach_task_self(), [pid intValue], &remoteTask);
-    if(KERN_SUCCESS != status)
-    {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: task_for_pid() failed w/ %d", status);
-        
-        //bail
-        goto bail;
-    }
-    
-    //set task info size
-    taskInfoSize = TASK_DYLD_INFO_COUNT;
-    
-    //get TASK_DYLD_INFO
-    // populates task_dyld_info structure
-    status = task_info(remoteTask, TASK_DYLD_INFO, (task_info_t)&dyldInfo, &taskInfoSize);
-    if(KERN_SUCCESS != status)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //remotely read dyld_all_image_infos
-    status = mach_vm_read(remoteTask, (vm_address_t)dyldInfo.all_image_info_addr,
-                          dyldInfo.all_image_info_size, (vm_offset_t*)&allImageInfo, &aifBytesRead);
-    if(KERN_SUCCESS != status)
-    {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: mach_vm_read() failed w/ %d", status);
-        
-        //bail
-        goto bail;
-    }
-    
-    //set remote read addr & size
-    // ->64bit mode
-    if(TASK_DYLD_ALL_IMAGE_INFO_64 == dyldInfo.all_image_info_format)
-    {
-        //straight assign
-        remoteReadAddr = (vm_address_t)allImageInfo->infoArray;
-        
-        //init output size
-        bytesToRead = allImageInfo->infoArrayCount * sizeof(struct dyld_image_info);
-    }
-    //set remote read addr & size
-    // ->32bit mode
-    else
-    {
-        //hack, can use 64bit version of struct (since 'infoArray' is first pointer)
-        // ->but zero out top bits
-        remoteReadAddr = (vm_address_t)allImageInfo->infoArray & 0xFFFFFFFF;
-        
-        //init output size
-        bytesToRead = allImageInfo->infoArrayCount * sizeof(struct dyld_image_info_32);
-    }
-    
-    //read remote array of dyld_image_info/32 structs
-    status = mach_vm_read(remoteTask, (vm_address_t)remoteReadAddr, bytesToRead, (vm_offset_t*)&dyldImageInfos, &diiBytesRead);
-    
-    //check
-    if(KERN_SUCCESS != status)
-    {
-        //err msg
-        syslog(LOG_ERR, "OBJECTIVE-SEE ERROR: mach_vm_read() failed w/ %d", status);
-        
-        //bail
-        goto bail;
-    }
-    
-    //iterate over all dyld_image_info_32/dyld_image_info structs
-    // ->extract and remotely read address to dylib path
-    for(NSUInteger i = 0; i<allImageInfo->infoArrayCount; i++)
-    {
-        //reset
-        dpBytesRead = 0;
-        
-        //advance to next image_info struct and set remote read addr
-        // ->64bit mode
-        if(TASK_DYLD_ALL_IMAGE_INFO_64 == dyldInfo.all_image_info_format)
-        {
-            //next dyld_image_info struct
-            imageInfo = (unsigned char*)dyldImageInfos + i * sizeof(struct dyld_image_info);
-            
-            //remote read addr
-            remoteReadAddr = (vm_address_t)((struct dyld_image_info*)imageInfo)->imageFilePath;
-        }
-        //advance to next image_info struct and set remote read addr
-        // ->64bit mode
-        else
-        {
-            //next dyld_image_info_32 struct
-            imageInfo = (unsigned char*)dyldImageInfos + i * sizeof(struct dyld_image_info_32);
-            
-            //remote read addr
-            remoteReadAddr = (vm_address_t)((struct dyld_image_info_32*)imageInfo)->imageFilePath & 0xFFFFFFFF;
-        }
-        
-        //remotely read into dylib's path!
-        // ->seems to always fail for first image, which is base executable...
-        status = mach_vm_read(remoteTask, (vm_address_t)remoteReadAddr, PATH_MAX, (vm_offset_t*)&dylibPath, &dpBytesRead);
-        
-        //sanity check
-        if( (KERN_SUCCESS != status) ||
-            (NULL == dylibPath) )
-        {
-            //try next
-            continue;
-        }
-        
-        //save it
-        [dylibs addObject:[NSString stringWithUTF8String:dylibPath]];
-        
-        //dealloc
-        mach_vm_deallocate(mach_task_self(), (vm_offset_t)dylibPath, dpBytesRead);
-        
-    }//for all dyld_image_info_32/dyld_image_info structs
-    
-//bail
-bail:
-    
-    //dealloc list of dylib info structs
-    if(NULL != dyldImageInfos)
-    {
-        //dealloc
-        mach_vm_deallocate(mach_task_self(), (vm_offset_t)dyldImageInfos, diiBytesRead);
-    }
-    
-    //dealloc dyld_all_image_infos struct
-    if(NULL != allImageInfo)
-    {
-        //dealloc
-        mach_vm_deallocate(mach_task_self(), (vm_offset_t)allImageInfo, aifBytesRead);
-    }
-    
-    //remove dups
-    [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
-    
-    return dylibs;
-    
-}
-
-//enumerate dylibs via vmmap
-// ->OS version is el capitan+, and we don't have the com.apple.system-task-ports entitlement :/
--(NSMutableArray*)enumerateDylibsNew:(NSNumber*)pid
+-(void)enumerateDylibs:(NSNumber*)pid withReply:(void (^)(NSMutableArray *))reply
 {
     //dylibs
     NSMutableArray* dylibs = nil;
@@ -453,37 +243,18 @@ bail:
     //dylib
     NSString* dylib = nil;
     
+    //skip self
+    // can't vmmap self :|
+    if(pid.intValue != getpid())
+    {
+        goto bail;
+    }
+    
     //alloc array for dylibs
     dylibs = [NSMutableArray array];
     
-    //vmmap can't directly handle 32bit procs
-    // ->so either exec 'vmmap32' or on older OSs, exec via 'arch -i386 vmmap <32bit pid>'
-    if(YES == Is32Bit(pid.unsignedIntValue))
-    {
-        //when system has 32bit version of vmmap ('vmmap32')
-        // ->use that
-        if(YES == [[NSFileManager defaultManager] fileExistsAtPath:VMMAP_32])
-        {
-            //exec vmmap32
-            results = execTask(VMMAP_32, @[@"-w", [pid stringValue]], YES);
-        }
-        //otherwise
-        // ->assume vmmap is 'fat', and exec 32bit version (pre El Capitan)
-        else
-        {
-            //exec vmmap, but it's i386 version
-            results = execTask(ARCH, @[@"-i386", VMMAP, [pid stringValue]], YES);
-        }
-    }
-    //for 64bit procs
-    // ->just exec vmmap directly
-    else
-    {
-        //exec vmmap
-        results = execTask(VMMAP, @[@"-w", [pid stringValue]], YES);
-    }
-    
-    //sanity check
+    //exec vmmap
+    results = execTask(VMMAP, @[@"-w", [pid stringValue]], YES);
     if( (nil == results[EXIT_CODE]) ||
         (0 != [results[EXIT_CODE] integerValue]) )
     {
@@ -495,7 +266,7 @@ bail:
     output = [[NSString alloc] initWithData:results[STDOUT] encoding:NSUTF8StringEncoding];
     
     //iterate over all results
-    // ->line by line, looking for '__TEXT'
+    // line by line, looking for '__TEXT'
     for(NSString* line in [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
     {
         //ignore any line that doesn't start with '__TEXT'
@@ -535,11 +306,12 @@ bail:
     //remove dups
     [dylibs setArray:[[[NSSet setWithArray:dylibs] allObjects] mutableCopy]];
     
-//bail
+    //send back
+    reply(dylibs);
+    
 bail:
-    
-    return dylibs;
-    
+
+    return;
 }
 
 //enumerate open files
