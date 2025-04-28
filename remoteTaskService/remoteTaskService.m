@@ -245,7 +245,7 @@ bail:
     
     //skip self
     // can't vmmap self :|
-    if(pid.intValue != getpid())
+    if(pid.intValue == getpid())
     {
         goto bail;
     }

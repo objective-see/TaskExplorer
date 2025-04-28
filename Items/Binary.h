@@ -53,6 +53,8 @@
 //not found
 @property BOOL notFound;
 
+//in dyld cache
+@property BOOL inCache;
 
 /* VIRUS TOTAL INFO */
 

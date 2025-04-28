@@ -50,17 +50,17 @@
         // ->either from bundle or just use system icon
         self.icon = [self getIcon];
         
-        //determine if its on disk
-        self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
+        //is in dyld cache
+        self.inCache = isInSharedCache(self.path);
         
-        //though maybe its in the dyld shared cache
-        if( (YES == self.notFound) &&
-            (isInSharedCache(self.path)) )
+        //determine if its on disk
+        // though ignore files in dyld cache
+        if(YES != self.inCache)
         {
-            //unset
-            self.notFound = NO;
+            //set
+            self.notFound = ![[NSFileManager defaultManager] fileExistsAtPath:self.path];
         }
-    
+        
         //get attributes
         self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
     }

@@ -499,9 +499,9 @@ bail:
     BOOL fulfills = NO;
     
     //handle '#apple'
-    // ->signed by apple
+    // ->signed by apple or in dyld cache
     if( (YES == [keyword isEqualToString:@"#apple"]) &&
-        ( (YES == [self isApple:binary]) ||
+        ( (YES == [self isApple:binary]) || (YES == binary.inCache) ||
           (YES == [binary.path isEqualToString:KERNEL_YOSEMITE]) ))
     {
         //happy
@@ -512,9 +512,9 @@ bail:
     }
     
     //handle '#nonapple'
-    // ->not signed by apple, and not kernel
+    // ->not signed by apple, and not in cache or not kernel
     else if( (YES == [keyword isEqualToString:@"#nonapple"]) &&
-             (YES != [self isApple:binary]) &&
+             (YES != [self isApple:binary]) && (YES != binary.inCache) &&
              (YES != [binary.path isEqualToString:KERNEL_YOSEMITE]) )
     {
         //happy
@@ -525,9 +525,9 @@ bail:
     }
     
     //handle '#signed'
-    // ->signed
+    // ->signed or in dyld cache
     else if( (YES == [keyword isEqualToString:@"#signed"]) &&
-             (YES == [self isSigned:binary]) )
+             ( (YES == [self isSigned:binary]) || (YES == binary.inCache) ) )
     {
         //happy
         fulfills = YES;
@@ -537,9 +537,9 @@ bail:
     }
     
     //handle '#unsigned'
-    // ->not signed
+    // ->not signed (and not in dyld cache)
     else if( (YES == [keyword isEqualToString:@"#unsigned"]) &&
-             (YES != [self isSigned:binary]) )
+             (YES != [self isSigned:binary]) && (!binary.inCache) )
     {
         //happy
         fulfills = YES;
