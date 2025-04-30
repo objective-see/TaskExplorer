@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -47,7 +47,7 @@
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="0.0" y="0.0" width="1354" height="656"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1470" height="918"/>
             <value key="minSize" type="size" width="1000" height="656"/>
             <value key="maxSize" type="size" width="2000" height="656"/>
             <view key="contentView" id="372">
@@ -60,20 +60,20 @@
                     </progressIndicator>
                     <button toolTip="save results" tag="10003" translatesAutoresizingMaskIntoConstraints="NO" id="gSG-Nq-plb">
                         <rect key="frame" x="93" y="7" width="32" height="25"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="32" id="XGt-s5-weq"/>
-                            <constraint firstAttribute="height" constant="25" id="wlR-bC-Msz"/>
-                        </constraints>
                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="saveIcon" imagePosition="overlaps" alignment="center" alternateImage="saveIconBG" imageScaling="proportionallyDown" inset="2" id="1TF-i7-mBn">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="XGt-s5-weq"/>
+                            <constraint firstAttribute="height" constant="25" id="wlR-bC-Msz"/>
+                        </constraints>
                         <connections>
                             <action selector="saveResults:" target="494" id="gtU-9T-Adm"/>
                         </connections>
                     </button>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="TNF-7q-Loy" userLabel="Top Pane">
-                        <rect key="frame" x="-1" y="362" width="1356" height="295"/>
+                        <rect key="frame" x="-1" y="363" width="1356" height="294"/>
                     </customView>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="E4M-PF-VD0" userLabel="Bottom Pane">
                         <rect key="frame" x="-1" y="41" width="1356" height="281"/>
@@ -81,7 +81,7 @@
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="LMT-Bu-FAk">
                                 <rect key="frame" x="662" y="125" width="32" height="32"/>
                             </progressIndicator>
-                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kIC-ZZ-ldy">
+                            <textField hidden="YES" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kIC-ZZ-ldy">
                                 <rect key="frame" x="619" y="210" width="118" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="f5b-Ls-Iea"/>
@@ -102,19 +102,19 @@
                     </customView>
                     <button tag="10004" translatesAutoresizingMaskIntoConstraints="NO" id="HoI-FQ-vTI">
                         <rect key="frame" x="663" y="5" width="29" height="32"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="32" id="18R-rR-Udp"/>
-                            <constraint firstAttribute="width" constant="29" id="JOy-gX-fMr"/>
-                        </constraints>
                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="logoApple" imagePosition="only" alignment="center" alternateImage="logoAppleBG" imageScaling="proportionallyDown" inset="2" id="3g8-vm-R7Z">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="18R-rR-Udp"/>
+                            <constraint firstAttribute="width" constant="29" id="JOy-gX-fMr"/>
+                        </constraints>
                         <connections>
                             <action selector="logoButtonHandler:" target="494" id="H4C-BT-arE"/>
                         </connections>
                     </button>
-                    <searchField wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
+                    <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bNA-gy-9Ta">
                         <rect key="frame" x="1171" y="327" width="175" height="22"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="175" id="1kU-G1-xE4"/>
@@ -131,48 +131,48 @@
                     </searchField>
                     <button toolTip="flagged items" tag="10005" translatesAutoresizingMaskIntoConstraints="NO" id="urJ-dW-Pfr">
                         <rect key="frame" x="1317" y="8" width="32" height="25"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="32" id="RPW-VL-OaB"/>
-                            <constraint firstAttribute="height" constant="25" id="Sdn-9e-XFV"/>
-                        </constraints>
                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="flagged" imagePosition="overlaps" alignment="center" alternateImage="flaggedBG" imageScaling="proportionallyDown" inset="2" id="uv2-BM-czI">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="RPW-VL-OaB"/>
+                            <constraint firstAttribute="height" constant="25" id="Sdn-9e-XFV"/>
+                        </constraints>
                         <connections>
                             <action selector="showFlaggedItems:" target="494" id="hAA-gr-tHn"/>
                         </connections>
                     </button>
                     <button toolTip="global search" tag="10002" translatesAutoresizingMaskIntoConstraints="NO" id="UiZ-UI-inM">
                         <rect key="frame" x="49" y="7" width="32" height="25"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="32" id="OtG-JF-PVX"/>
-                            <constraint firstAttribute="height" constant="25" id="Suo-pl-wcf"/>
-                        </constraints>
                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="search" imagePosition="overlaps" alignment="center" alternateImage="searchBG" imageScaling="proportionallyDown" inset="2" id="d77-J8-SjG">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="OtG-JF-PVX"/>
+                            <constraint firstAttribute="height" constant="25" id="Suo-pl-wcf"/>
+                        </constraints>
                         <connections>
                             <action selector="search:" target="494" id="YU7-xU-gB7"/>
                         </connections>
                     </button>
                     <button toolTip="refresh all" tag="10001" translatesAutoresizingMaskIntoConstraints="NO" id="hum-Mj-cDd">
                         <rect key="frame" x="5" y="7" width="32" height="25"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="32" id="ZaY-KC-vcE"/>
-                            <constraint firstAttribute="height" constant="25" id="dEM-O0-dda"/>
-                        </constraints>
                         <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="refreshIcon" imagePosition="overlaps" alignment="center" alternateImage="refreshIconBG" imageScaling="proportionallyDown" inset="2" id="8g4-ku-EWh">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="ZaY-KC-vcE"/>
+                            <constraint firstAttribute="height" constant="25" id="dEM-O0-dda"/>
+                        </constraints>
                         <connections>
                             <action selector="refreshTasks:" target="494" id="QvB-ix-GUl"/>
                         </connections>
                     </button>
                     <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtq-gn-VPL">
-                        <rect key="frame" x="566" y="326" width="226" height="24"/>
+                        <rect key="frame" x="566" y="327" width="216" height="24"/>
                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="DHY-0u-YD7">
                             <font key="font" metaFont="system"/>
                             <segments>
@@ -192,7 +192,7 @@
                                 <rect key="frame" x="19" y="47" width="32" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </progressIndicator>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fCX-ky-Lk5">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fCX-ky-Lk5">
                                 <rect key="frame" x="72" y="57" width="287" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="filtering..." id="aat-25-BLI">
@@ -236,14 +236,14 @@
                     <constraint firstItem="UiZ-UI-inM" firstAttribute="top" secondItem="E4M-PF-VD0" secondAttribute="bottom" constant="9" id="vgi-Tg-WQk"/>
                 </constraints>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" centeredItem="1Uj-D5-daU" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
+            <toolbar key="toolbar" implicitIdentifier="EAE4838B-30FD-4B21-8BE5-8564B213BE96" centeredItem="1Uj-D5-daU" autosavesConfiguration="NO" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="qEm-Os-zrh">
                 <allowedToolbarItems>
                     <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="eEO-jq-TLG"/>
                     <toolbarItem implicitItemIdentifier="1087FB6D-CBC1-4AA2-BCA0-0C1214A6E6DB" label="" paletteLabel="" image="teText" sizingBehavior="auto" autovalidates="NO" id="1Uj-D5-daU">
                         <nil key="toolTip"/>
                         <imageView key="view" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="h15-Vb-FPu">
                             <rect key="frame" x="0.0" y="14" width="500" height="90"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="teText" id="Gia-8H-MVp"/>
                         </imageView>
                     </toolbarItem>
@@ -256,7 +256,7 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="l3Y-M3-yM2">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="menu"/>
+                                <font key="font" metaFont="message"/>
                                 <menu key="menu" id="IeP-xT-MKw">
                                     <items>
                                         <menuItem title="Flat View" tag="100" id="p1h-kw-5aA">
@@ -277,7 +277,7 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="96" height="19"/>
                         <size key="maxSize" width="175" height="22"/>
-                        <searchField key="view" wantsLayer="YES" verticalHuggingPriority="750" id="4Kr-b9-X6j">
+                        <searchField key="view" wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" id="4Kr-b9-X6j">
                             <rect key="frame" x="0.0" y="14" width="175" height="22"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Filter Tasks" usesSingleLineMode="YES" bezelStyle="round" id="WXx-nE-N2S">
@@ -328,7 +328,7 @@
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="nKo-pR-DT7" userLabel="Friends">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <rect key="contentRect" x="2843" y="305" width="801" height="384"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1470" height="918"/>
             <view key="contentView" id="4IB-8n-m2r">
                 <rect key="frame" x="0.0" y="0.0" width="801" height="384"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -337,7 +337,7 @@
                     <userLayoutGuide location="145" affinity="minY"/>
                 </userGuides>
                 <subviews>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5EF-zU-Rbo">
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5EF-zU-Rbo">
                         <rect key="frame" x="18" y="304" width="765" height="60"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="💕 Mahalo to the &quot;Friends of Objective-See&quot; 💕" id="EIz-yr-5f1">
@@ -346,40 +346,7 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0IA-oe-oLD">
-                        <rect key="frame" x="31" y="107" width="135" height="19"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Digita Security" id="rNy-1f-EHm">
-                            <font key="font" size="13" name="Menlo-Regular"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ecY-gG-DcW">
-                        <rect key="frame" x="53" y="134" width="91" height="115"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsDigita" id="gun-aw-mOP"/>
-                    </imageView>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="emP-YF-Kpy">
-                        <rect key="frame" x="232" y="146" width="114" height="92"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsSophos" id="Ymb-NA-UdU"/>
-                    </imageView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bpm-F7-j5N">
-                        <rect key="frame" x="220" y="107" width="138" height="19"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Sophos" id="mr6-Y1-FJf">
-                            <font key="font" size="13" name="Menlo-Regular"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gf9-20-HgH">
-                        <rect key="frame" x="605" y="139" width="146" height="105"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsMalwarebytes" id="9p2-vf-3nJ"/>
-                    </imageView>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="IKO-30-I6s">
+                    <button tag="1" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IKO-30-I6s">
                         <rect key="frame" x="672" y="13" width="115" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="CZH-dF-XuC">
@@ -390,28 +357,35 @@
                             <action selector="hideFriends:" target="494" id="Rdc-sS-5Z0"/>
                         </connections>
                     </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wbc-pS-ZlX">
-                        <rect key="frame" x="624" y="107" width="108" height="19"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Malwarebytes" id="gPK-PB-5UI">
-                            <font key="font" size="13" name="Menlo-Regular"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vmd-1i-q0p">
-                        <rect key="frame" x="435" y="107" width="105" height="19"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="CleanMyMac X" id="hqw-Wj-RUR">
-                            <font key="font" size="13" name="Menlo-Regular"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A8s-NY-IIu">
-                        <rect key="frame" x="433" y="137" width="110" height="111"/>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" alphaValue="0.80000000000000004" id="MIS-GC-8rm">
+                        <rect key="frame" x="331" y="170" width="138" height="31"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FriendsMacPaw" id="0XE-Vf-E72"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsMacPaw" id="L2V-5n-PFX"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" alphaValue="0.69999999999999996" id="3L6-Pb-4kl">
+                        <rect key="frame" x="158" y="172" width="119" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsPANW" id="pM3-aN-PJi"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" alphaValue="0.69999999999999996" id="Gci-6P-ZLc">
+                        <rect key="frame" x="526" y="172" width="122" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsHuntress" id="yrV-cb-7fh"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" alphaValue="0.80000000000000004" id="8JG-0v-gdL">
+                        <rect key="frame" x="701" y="176" width="57" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsiVerify" id="40H-vg-RgM"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="eyP-49-83V">
+                        <rect key="frame" x="32" y="172" width="77" height="23"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsJamf" id="hEV-j9-iDL"/>
+                    </imageView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" alphaValue="0.80000000000000004" id="Udi-mW-TtJ">
+                        <rect key="frame" x="352" y="262" width="96" height="34"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="FriendsKandji" id="i5K-st-ep5"/>
                     </imageView>
                 </subviews>
             </view>
@@ -419,10 +393,12 @@
         </window>
     </objects>
     <resources>
-        <image name="FriendsDigita" width="450" height="460"/>
-        <image name="FriendsMacPaw" width="2048" height="2048"/>
-        <image name="FriendsMalwarebytes" width="792" height="612"/>
-        <image name="FriendsSophos" width="188" height="190"/>
+        <image name="FriendsHuntress" width="800" height="198"/>
+        <image name="FriendsJamf" width="328" height="114"/>
+        <image name="FriendsKandji" width="1944" height="494"/>
+        <image name="FriendsMacPaw" width="2034" height="335"/>
+        <image name="FriendsPANW" width="1312" height="240"/>
+        <image name="FriendsiVerify" width="500" height="180"/>
         <image name="flagged" width="256" height="256"/>
         <image name="flaggedBG" width="256" height="256"/>
         <image name="logoApple" width="194" height="236"/>

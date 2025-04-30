@@ -23,8 +23,6 @@ extern bool _dyld_shared_cache_contains_path(const char* path);
 // note: assumes it is in 'Framework' dir
 NSBundle* loadFramework(NSString* name);
 
-//check if OS is supported
-//BOOL isSupportedOS(void);
 
 //get OS's major or minor version
 SInt32 getVersion(OSType selector);

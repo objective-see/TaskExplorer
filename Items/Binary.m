@@ -103,7 +103,7 @@ bail:
             (Apple == [self.signingInfo[KEY_SIGNATURE_SIGNER] intValue]) )
         {
             //unset
-            self.parser.binaryInfo[KEY_IS_PACKED] = NO;
+            self.parser.binaryInfo[KEY_IS_PACKED] = nil;
         }
         
     }//sync
