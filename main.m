@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
     {
         //print usage
         usage();
+
+        //happy
+        status = 0;
         
         //done
         goto bail;
