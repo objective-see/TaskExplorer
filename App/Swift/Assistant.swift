@@ -5,18 +5,37 @@
 //  Created by Patrick Wardle on 9/12/26.
 //  Copyright (c) 2026 Objective-See. All rights reserved.
 //
-//  note: assistant model; runs an agentic (tool use) loop against Claude or ChatGPT
+//  note: assistant model; runs an agentic (tool use) loop against Apple Intelligence (on-device), Claude, or ChatGPT
 //        ...tools are those from AssistantTools, invoked in-process (nothing is exposed outside the app)
 
 import AppKit
 import Foundation
 
 //provider
+// ->declared in menu order (raw values are what's persisted, so they never change)
 enum AssistantProvider: Int, CaseIterable, Identifiable {
-    case claude = 0, chatGPT = 1
+    case apple = 2, claude = 0, chatGPT = 1
     var id: Int { rawValue }
-    var label: String { self == .claude ? "Claude" : "ChatGPT" }
-    var keychainService: String { self == .claude ? APIKeyService.anthropic : APIKeyService.openAI }
+    var label: String {
+        switch self {
+        case .apple: return "Apple Intelligence"
+        case .claude: return "Claude"
+        case .chatGPT: return "ChatGPT"
+        }
+    }
+    //keychain service for the API key (nil: no key needed)
+    var keychainService: String? {
+        switch self {
+        case .apple: return nil
+        case .claude: return APIKeyService.anthropic
+        case .chatGPT: return APIKeyService.openAI
+        }
+    }
+    //runs on this Mac (nothing sent anywhere)?
+    var isLocal: Bool { self == .apple }
+
+    //default: Apple Intelligence where it can work (macOS 26+, Apple silicon), else Claude
+    static var `default`: AssistantProvider { Assistant.appleEligible ? .apple : .claude }
 }
 
 //transcript message
@@ -42,7 +61,10 @@ final class Assistant: ObservableObject {
     @Published private(set) var messages: [AssistantMessage] = []
     @Published private(set) var isBusy = false
     @Published private(set) var activity: String?
-    @Published private(set) var hasAPIKey = false
+
+    //ready to answer? (key present, or Apple Intelligence available); else why not
+    @Published private(set) var isReady = false
+    @Published private(set) var unavailableMessage: String?
 
     //current task
     private var task: _Concurrency.Task<Void, Never>?
@@ -54,19 +76,57 @@ final class Assistant: ObservableObject {
     private var client: LLMClient?
 
     private init() {
-        provider = AssistantProvider(rawValue: UserDefaults.standard.integer(forKey: PREF_ASSISTANT_PROVIDER)) ?? .claude
+        //note: no saved choice (first run)? default per what this Mac can do
+        if let saved = UserDefaults.standard.object(forKey: PREF_ASSISTANT_PROVIDER) as? Int, let saved = AssistantProvider(rawValue: saved) {
+            provider = saved
+        } else {
+            provider = .default
+        }
         reloadKey()
     }
 
-    //(re)load api key from keychain
+    //can Apple Intelligence (ever) run here? (macOS 26+, Apple silicon)
+    nonisolated static var appleEligible: Bool {
+        #if canImport(FoundationModels)
+        if #available(macOS 26.0, *) { return AppleClient.deviceEligible }
+        #endif
+        return false
+    }
+
+    //why Apple Intelligence can't be used right now (nil: available)
+    nonisolated static var appleUnavailableReason: String? {
+        #if canImport(FoundationModels)
+        if #available(macOS 26.0, *) { return AppleClient.unavailableReason }
+        #endif
+        return "Apple Intelligence needs macOS 26 or later."
+    }
+
+    //(re)load api key from keychain (or, for Apple Intelligence, re-check its availability)
     func reloadKey() {
-        let key = loadKeychainItem(provider.keychainService)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        hasAPIKey = !key.isEmpty
+        guard let service = provider.keychainService else {
+            //apple intelligence: no key; available?
+            unavailableMessage = Assistant.appleUnavailableReason
+            isReady = (unavailableMessage == nil)
+            loadedKey = ""
+            //(re)build the client on a provider switch, or once the model becomes available
+            if loadedProvider != provider || (client == nil && isReady) {
+                loadedProvider = provider
+                client = nil
+                #if canImport(FoundationModels)
+                if #available(macOS 26.0, *), isReady { client = AppleClient() }
+                #endif
+            }
+            return
+        }
+        let key = loadKeychainItem(service)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        isReady = !key.isEmpty
+        unavailableMessage = key.isEmpty ? "No \(provider.label) API key." : nil
         //unchanged? keep the client (it holds the conversation history)
         if key == loadedKey, loadedProvider == provider, (client != nil) == !key.isEmpty { return }
         loadedKey = key
         loadedProvider = provider
         switch provider {
+        case .apple: client = nil
         case .claude: client = key.isEmpty ? nil : ClaudeClient(apiKey: key)
         case .chatGPT: client = key.isEmpty ? nil : OpenAIClient(apiKey: key)
         }
@@ -96,7 +156,7 @@ final class Assistant: ObservableObject {
     func send(_ text: String) {
         reloadKey()
         guard let client else {
-            messages.append(AssistantMessage(role: .error, text: "No \(provider.label) API key; add one in Settings."))
+            messages.append(AssistantMessage(role: .error, text: unavailableMessage ?? "\(provider.label) isn't available."))
             return
         }
         messages.append(AssistantMessage(role: .user, text: text))
@@ -211,18 +271,18 @@ func postJSON(_ url: URL, headers: [String: String], body: [String: Any]) async 
 }
 
 //invoke tool (on main actor), returning text
-//max size of a tool result handed to the model (bigger results just blow the context, then every later turn fails)
-private let maxToolResultBytes = 64 * 1024
-
-func invokeTool(_ name: String, arguments: [String: Any]) async -> (text: String, isError: Bool) {
+// ->'maxBytes': max size of a tool result handed to the model (bigger results just blow the context, then every later turn fails)
+// ->'defaultLimit': page size unless the model asked for one (an LLM can't use 5000 rows anyway)
+// ->'compact': one line per row instead of JSON (for the small on-device model; see compactToolText)
+func invokeTool(_ name: String, arguments: [String: Any], maxBytes: Int = 64 * 1024, defaultLimit: Int = 200, compact: Bool = false) async -> (text: String, isError: Bool) {
     await MainActor.run {
         do {
-            //note: a small default page (an LLM can't use 5000 rows anyway)
             var arguments = arguments
-            if arguments["limit"] == nil { arguments["limit"] = 200 }
-            var text = AssistantTools.text(try AssistantTools.call(name, arguments: arguments))
-            if text.utf8.count > maxToolResultBytes {
-                text = String(text.utf8.prefix(maxToolResultBytes)) ?? String(text.prefix(maxToolResultBytes / 4))
+            if arguments["limit"] == nil { arguments["limit"] = defaultLimit }
+            let result = try AssistantTools.call(name, arguments: arguments)
+            var text = compact ? compactToolText(result, tool: name) : AssistantTools.text(result)
+            if text.utf8.count > maxBytes {
+                text = String(text.utf8.prefix(maxBytes)) ?? String(text.prefix(maxBytes / 4))
                 text += "\n…(truncated: narrow the query with a filter, keywords, or a smaller limit)"
             }
             //envelope: the data is untrusted (process names, args, paths are attacker-controlled)

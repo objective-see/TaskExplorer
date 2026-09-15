@@ -48,7 +48,7 @@ struct FlaggedSheet: View {
                         Menu {
                             Button("Show in Finder") { store.showInFinder(item.path) }
                             if let url = item.vt.url { Button("VirusTotal Report") { NSWorkspace.shared.open(url) } }
-                            if let host = (item.binary.hostTasks() as? [TETask])?.first {
+                            if let host = (item.binary.hostTasks())?.first {
                                 Button("Select Process") { store.select(pid: host.pid.intValue); dismiss() }
                             }
                         } label: { Image(systemName: "ellipsis.circle").accessibilityLabel("Actions") }

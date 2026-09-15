@@ -332,7 +332,7 @@ struct FlaggedItem: Identifiable, Hashable {
         self.path = binary.path
         self.vt = VTStatus.from(binary)
         self.isTaskBinary = binary.isTaskBinary
-        self.hosts = (binary.hostTasks() as? [TETask] ?? []).map { "\($0.binary.name ?? "?") (\($0.pid))" }
+        self.hosts = (binary.hostTasks() ?? []).map { "\($0.binary.name ?? "?") (\($0.pid.intValue))" }
     }
 }
 

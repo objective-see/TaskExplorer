@@ -1196,17 +1196,28 @@ bail:
     // ->extension exited/restarted: mark not monitoring, wait for it to come back, then re-enumerate (which re-arms monitoring)
     //   (scoped, as the block literal has a cleanup, which a 'goto' above may not jump over)
     {
+    //weak self
+    // ->the handler is retained by the xpc client (which self retains), so a strong capture would be a retain cycle
+    __weak __typeof(self) weakSelf = self;
     self.xpcClient.connectionLostHandler = ^{
 
+        //(re)strongify
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if(nil == strongSelf)
+        {
+            //bail
+            return;
+        }
+
         //unset
-        self.isMonitoring = NO;
+        strongSelf.isMonitoring = NO;
         notifyEnumerationState();
 
         //in background
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
             //wait for extension
-            if(YES != [self.xpcClient waitForExtension:120])
+            if(YES != [strongSelf.xpcClient waitForExtension:120])
             {
                 //err msg
                 os_log_error(logHandle, "ERROR: extension did not come back after connection loss");
@@ -1259,9 +1270,6 @@ bail:
 
     //pid
     NSNumber* pid = nil;
-
-    //task
-    Task* task = nil;
 
     //init
     connectionsByPID = [NSMutableDictionary dictionary];

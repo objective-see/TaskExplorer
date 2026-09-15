@@ -53,6 +53,9 @@
 //system settings: full disk access
 #define URL_SYSTEM_SETTINGS_FDA @"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"
 
+//system settings: apple intelligence & siri
+#define URL_SYSTEM_SETTINGS_APPLE_INTELLIGENCE @"x-apple.systempreferences:com.apple.Siri-Settings.extension"
+
 /* XPC KEYS: PROCESS */
 
 //pid
@@ -399,6 +402,10 @@ enum Signer{None, Apple, AppStore, DevID, AdHoc};
 //keychain attributes (services) for the assistant's api keys
 #define ANTHROPIC_API_KEYCHAIN_ATTR @"com.objective-see.taskexplorer.anthropicAPIKey"
 #define OPENAI_API_KEYCHAIN_ATTR @"com.objective-see.taskexplorer.openaiAPIKey"
+
+//where to get (assistant) api keys
+#define ANTHROPIC_API_KEY_URL @"https://console.anthropic.com/settings/keys"
+#define OPENAI_API_KEY_URL @"https://platform.openai.com/api-keys"
 
 //keychain account for api key
 #define VT_API_KEYCHAIN_ACCOUNT @"api_key"

@@ -1,35 +1,25 @@
 {
-  "images": [
+  "images" : [
     {
-      "idiom": "mac",
-      "filename": "darkMode.png"
+      "filename" : "lightMode.png",
+      "idiom" : "mac"
     },
     {
-      "idiom": "mac",
-      "filename": "darkMode.png",
-      "appearances": [
+      "appearances" : [
         {
-          "appearance": "luminosity",
-          "value": "light"
+          "appearance" : "luminosity",
+          "value" : "dark"
         }
-      ]
-    },
-    {
-      "idiom": "mac",
-      "filename": "darkMode.png",
-      "appearances": [
-        {
-          "appearance": "luminosity",
-          "value": "dark"
-        }
-      ]
+      ],
+      "filename" : "darkMode.png",
+      "idiom" : "mac"
     }
   ],
-  "info": {
-    "version": 1,
-    "author": "xcode"
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
   },
-  "properties": {
-    "preserves-vector-representation": true
+  "properties" : {
+    "preserves-vector-representation" : true
   }
 }

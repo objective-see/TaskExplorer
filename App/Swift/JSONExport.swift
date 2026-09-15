@@ -38,9 +38,9 @@ enum JSONExport {
         dict["arguments"] = (task.arguments as? [String]) ?? []
         if let started = task.startTime { dict["started"] = ISO8601DateFormatter().string(from: started) }
         dict["platformBinary"] = task.isPlatformBinary
-        dict["dylibs"] = (task.dylibsSnapshot() as? [Binary] ?? []).map { $0.path }
-        dict["files"] = (task.filesSnapshot() as? [File] ?? []).map { ["path": $0.path ?? "", "type": $0.type ?? FILE_TYPE_UNKNOWN] }
-        dict["connections"] = (task.connectionsSnapshot() as? [Connection] ?? []).map { connection($0) }
+        dict["dylibs"] = (task.dylibsSnapshot() ?? []).map { $0.path }
+        dict["files"] = (task.filesSnapshot() ?? []).map { ["path": $0.path ?? "", "type": $0.type ?? FILE_TYPE_UNKNOWN] }
+        dict["connections"] = (task.connectionsSnapshot() ?? []).map { connection($0) }
         return dict
     }
 
@@ -74,7 +74,7 @@ enum JSONExport {
         default: break
         }
         if hosts {
-            dict["loadedIn"] = (binary.hostTasks() as? [TETask] ?? []).map { $0.pid.intValue }
+            dict["loadedIn"] = (binary.hostTasks() ?? []).map { $0.pid.intValue }
         }
         return dict
     }

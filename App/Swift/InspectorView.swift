@@ -145,7 +145,7 @@ struct BinaryDetails: View {
         }
         Divider()
         BinarySigningDetails(binary: binary)
-        let hosts = (binary.hostTasks() as? [TETask]) ?? []
+        let hosts = binary.hostTasks() ?? []
         if !hosts.isEmpty {
             Divider()
             Text("Loaded in").font(.caption).foregroundStyle(.secondary)
@@ -265,7 +265,7 @@ struct FileDetails: View {
         if let owner = attributes[.ownerAccountName] as? String {
             DetailRow(label: "Owner", value: owner)
         }
-        let hosts = (item.file.hostTasks() as? [TETask]) ?? []
+        let hosts = item.file.hostTasks() ?? []
         if !hosts.isEmpty {
             Divider()
             Text("Open in").font(.caption).foregroundStyle(.secondary)

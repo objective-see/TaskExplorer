@@ -129,7 +129,7 @@ enum AssistantTools {
             if let parent = (enumerator.allTasks() as? [TETask])?.first(where: { $0.pid == task.ppid }) {
                 dict["parent"] = ["pid": parent.pid.intValue, "name": parent.binary.name ?? ""]
             }
-            dict["dylibs"] = (task.dylibsSnapshot() as? [Binary] ?? []).map { dylib($0) }
+            dict["dylibs"] = (task.dylibsSnapshot() ?? []).map { dylib($0) }
             dict["mismatchedDylibs"] = (task.mismatchedDylibs as? [Binary] ?? []).map { $0.path ?? "" }
             return dict
 
@@ -141,7 +141,7 @@ enum AssistantTools {
             var binaries: [Binary]
             if let pid = arguments["pid"] as? Int {
                 guard let task = (enumerator.allTasks() as? [TETask])?.first(where: { $0.pid.intValue == pid }) else { throw AssistantToolError(message: "no process with pid \(pid)") }
-                binaries = (task.dylibsSnapshot() as? [Binary]) ?? []
+                binaries = (task.dylibsSnapshot()) ?? []
             } else {
                 binaries = (enumerator.allDylibs() as? [Binary]) ?? []
             }
@@ -157,14 +157,14 @@ enum AssistantTools {
             var files: [File]
             if let pid = arguments["pid"] as? Int {
                 guard let task = (enumerator.allTasks() as? [TETask])?.first(where: { $0.pid.intValue == pid }) else { throw AssistantToolError(message: "no process with pid \(pid)") }
-                files = (task.filesSnapshot() as? [File]) ?? []
+                files = (task.filesSnapshot()) ?? []
             } else {
                 files = (enumerator.allFiles() as? [File]) ?? []
             }
             if !text.isEmpty { files = files.filter { ($0.path ?? "").localizedCaseInsensitiveContains(text) } }
             files.sort { ($0.path ?? "") < ($1.path ?? "") }
             return ["count": files.count, "files": files.prefix(limit).map { file in
-                ["path": file.path ?? "", "type": file.type ?? FILE_TYPE_UNKNOWN, "openIn": (file.hostTasks() as? [TETask] ?? []).map { ["pid": $0.pid.intValue, "name": $0.binary.name ?? ""] }]
+                ["path": file.path ?? "", "type": file.type ?? FILE_TYPE_UNKNOWN, "openIn": (file.hostTasks() ?? []).map { ["pid": $0.pid.intValue, "name": $0.binary.name ?? ""] }]
             }]
 
         case "list_connections":
@@ -172,7 +172,7 @@ enum AssistantTools {
             let tasks = (enumerator.allTasks() as? [TETask]) ?? []
             for task in tasks {
                 if let pid = arguments["pid"] as? Int, task.pid.intValue != pid { continue }
-                for c in (task.connectionsSnapshot() as? [Connection]) ?? [] { rows.append((task, c)) }
+                for c in task.connectionsSnapshot() ?? [] { rows.append((task, c)) }
             }
             if let state = (arguments["state"] as? String)?.lowercased(), !state.isEmpty {
                 rows = rows.filter { ($0.1.state ?? "").lowercased() == state }
@@ -271,7 +271,7 @@ enum AssistantTools {
     //dylib summary
     private static func dylib(_ binary: Binary) -> [String: Any] {
         var dict = JSONExport.binary(binary: binary, hosts: true)
-        dict["loadedIn"] = (binary.hostTasks() as? [TETask] ?? []).map { ["pid": $0.pid.intValue, "name": $0.binary.name ?? ""] }
+        dict["loadedIn"] = (binary.hostTasks() ?? []).map { ["pid": $0.pid.intValue, "name": $0.binary.name ?? ""] }
         return dict
     }
 

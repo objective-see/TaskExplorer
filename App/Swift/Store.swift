@@ -117,8 +117,38 @@ final class Store: ObservableObject {
 
     /* STATE */
 
-    //status (e.g. "starting system extension...")
-    @Published var status: String?
+    //status (e.g. "starting system extension..."), shown as an overlay
+    // ->only after a grace period (a fast start must not flash it), and then for a minimum time (no flicker)
+    @Published private(set) var status: String?
+    private var statusTask: _Concurrency.Task<Void, Never>?
+    private var statusShownAt: Date?
+    private static let statusGrace: TimeInterval = 0.5
+    private static let statusMinimum: TimeInterval = 1.0
+
+    //show/hide the status overlay (see 'status')
+    private func setStatus(_ new: String?) {
+        statusTask?.cancel()
+        statusTask = nil
+        if let new {
+            //already showing? just swap the text
+            if status != nil { withAnimation { status = new }; return }
+            statusTask = _Concurrency.Task { @MainActor [weak self] in
+                try? await _Concurrency.Task.sleep(nanoseconds: UInt64(Store.statusGrace * 1_000_000_000))
+                guard let self, !_Concurrency.Task.isCancelled else { return }
+                withAnimation { self.status = new }
+                self.statusShownAt = Date()
+            }
+        } else {
+            guard status != nil else { return }
+            let remaining = Store.statusMinimum - Date().timeIntervalSince(statusShownAt ?? .distantPast)
+            guard remaining > 0 else { withAnimation { status = nil }; return }
+            statusTask = _Concurrency.Task { @MainActor [weak self] in
+                try? await _Concurrency.Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+                guard let self, !_Concurrency.Task.isCancelled else { return }
+                withAnimation { self.status = nil }
+            }
+        }
+    }
 
     //enumeration state (ENUMERATION_STATE_*)
     @Published private(set) var enumerationState: Int = 0
@@ -283,40 +313,48 @@ final class Store: ObservableObject {
     private init() {
         let center = NotificationCenter.default
         installMouseMonitor()
+        //note: the observer closures aren't main-actor isolated (even with 'queue: .main'), so each hops back onto
+        //      the main actor via 'assumeIsolated' (safe: the queue guarantees they run on the main thread)
         observers.append(center.addObserver(forName: .TETasksChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.scheduleRebuild()
+            MainActor.assumeIsolated { self?.scheduleRebuild() }
         })
         observers.append(center.addObserver(forName: .TETaskChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.scheduleRebuild()
+            MainActor.assumeIsolated { self?.scheduleRebuild() }
         })
         observers.append(center.addObserver(forName: .TEBinaryChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.scheduleRebuild()
-            self?.scheduleItemsRebuild()
+            MainActor.assumeIsolated {
+                self?.scheduleRebuild()
+                self?.scheduleItemsRebuild()
+            }
         })
         observers.append(center.addObserver(forName: .TEItemsChanged, object: nil, queue: .main) { [weak self] note in
-            guard let self, let task = note.object as? TETask else { return }
-            //note: only the items pane; rebuilding the process list here made a click's own refresh churn the table
-            if task.pid.intValue == self.selectedPID {
-                let view = (note.userInfo?["view"] as? NSNumber)?.intValue ?? -1
-                if view == Int(self.itemsTab.modelView), self.itemsLoading {
-                    //end of an enumeration we were waiting on: rebuild now (not coalesced), then clear the flag,
-                    //so the list appears in the same pass (no 'nothing found' flash in between)
-                    self.rebuildItems()
-                    self.itemsLoading = false
-                    self.resolveSelectedItem(pid: task.pid.intValue)
-                } else {
-                    self.scheduleItemsRebuild()
+            MainActor.assumeIsolated {
+                guard let self, let task = note.object as? TETask else { return }
+                //note: only the items pane; rebuilding the process list here made a click's own refresh churn the table
+                if task.pid.intValue == self.selectedPID {
+                    let view = (note.userInfo?["view"] as? NSNumber)?.intValue ?? -1
+                    if view == Int(self.itemsTab.modelView), self.itemsLoading {
+                        //end of an enumeration we were waiting on: rebuild now (not coalesced), then clear the flag,
+                        //so the list appears in the same pass (no 'nothing found' flash in between)
+                        self.rebuildItems()
+                        self.itemsLoading = false
+                        self.resolveSelectedItem(pid: task.pid.intValue)
+                    } else {
+                        self.scheduleItemsRebuild()
+                    }
                 }
             }
         })
         observers.append(center.addObserver(forName: .TEStatusChanged, object: nil, queue: .main) { [weak self] note in
-            self?.status = note.object as? String
+            MainActor.assumeIsolated { self?.setStatus(note.object as? String) }
         })
         observers.append(center.addObserver(forName: .TEEnumerationStateChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.enumerationState = Int(taskEnumerator?.state ?? 0)
-            self?.isMonitoring = taskEnumerator?.isMonitoring ?? false
-            self?.cacheIndexing = taskEnumerator?.cacheIndexing ?? false
-            self?.cacheIndexProgress = (Int(taskEnumerator?.cacheIndexDone ?? 0), Int(taskEnumerator?.cacheIndexTotal ?? 0))
+            MainActor.assumeIsolated {
+                self?.enumerationState = Int(taskEnumerator?.state ?? 0)
+                self?.isMonitoring = taskEnumerator?.isMonitoring ?? false
+                self?.cacheIndexing = taskEnumerator?.cacheIndexing ?? false
+                self?.cacheIndexProgress = (Int(taskEnumerator?.cacheIndexDone ?? 0), Int(taskEnumerator?.cacheIndexTotal ?? 0))
+            }
         })
     }
 
@@ -476,10 +514,10 @@ final class Store: ObservableObject {
         if itemsTab == .dylibs, showCacheDylibs, itemsLoading, !task.cacheDylibsEnumerated, pid != 0 {
             dylibs = []
         } else {
-            dylibs = (task.dylibsSnapshot() as? [Binary] ?? []).map { DylibItem(binary: $0) }
+            dylibs = (task.dylibsSnapshot() ?? []).map { DylibItem(binary: $0) }
         }
-        files = (task.filesSnapshot() as? [File] ?? []).map { FileItem(file: $0) }
-        connections = (task.connectionsSnapshot() as? [Connection] ?? []).map { ConnectionItem(connection: $0, pid: pid) }
+        files = (task.filesSnapshot() ?? []).map { FileItem(file: $0) }
+        connections = (task.connectionsSnapshot() ?? []).map { ConnectionItem(connection: $0, pid: pid) }
 
         //selected item gone? fall back to the process (not while still loading: the lists are empty meanwhile)
         if !itemsLoading { resolveSelectedItem(pid: pid) }
@@ -639,6 +677,8 @@ final class Store: ObservableObject {
     func submitToVirusTotal(_ binary: Binary, completion: @escaping (String?) -> Void) {
         let name = (binary.path as NSString?)?.lastPathComponent ?? "this file"
         guard showAlert(.informational, "Upload “\(name)” to VirusTotal?", binary.path ?? "", ["Upload", "Cancel"]) == .alertFirstButtonReturn else { return }
+        //(objective-c) model object; the completion only touches it back on the main queue
+        nonisolated(unsafe) let binary = binary
         virusTotal?.submit(binary) { result in
             DispatchQueue.main.async {
                 if let error = result?[VT_ERROR] {

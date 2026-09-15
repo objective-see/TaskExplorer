@@ -5,7 +5,7 @@
 //  Created by Patrick Wardle on 9/12/26.
 //  Copyright (c) 2026 Objective-See. All rights reserved.
 //
-//  note: first-launch walkthru; welcome -> approve extension (if needed) -> full disk access (extension, if needed) -> virus total -> done
+//  note: first-launch walkthru; welcome -> approve extension (if needed) -> full disk access (extension, if needed) -> api keys (virus total, assistant) -> done
 
 import AppKit
 import Combine
@@ -32,6 +32,15 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         window.contentView = NSHostingView(rootView: WelcomeView(model: model))
         window.center()
 
+        #if DEBUG
+        //testing: jump to a page (launch w/ '-welcomeStep <n>'; e.g. 2 = api keys), so pages can be screenshotted without clicking through
+        if let step = WelcomeStep(rawValue: UserDefaults.standard.integer(forKey: "welcomeStep")), step != .welcome {
+            model.step = step
+            window.setContentSize(WelcomeView.size(for: step))
+            window.center()
+        }
+        #endif
+
         //resize (animated, keeping the center) when a page needs a different size
         stepObserver = model.$step.receive(on: DispatchQueue.main).sink { [weak self] step in
             guard let self, let window = self.window else { return }
@@ -57,7 +66,7 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
 //welcome steps
 enum WelcomeStep: Int, CaseIterable {
-    case welcome, permissions, virusTotal, done
+    case welcome, permissions, apiKeys, done
 }
 
 //state of one permission (system extension approval, full disk access)
@@ -77,6 +86,11 @@ final class WelcomeModel: ObservableObject {
     @Published var extensionState: PermissionState = .pending
     @Published var fdaState: PermissionState = .pending
     @Published var vtKey: String = ""
+    @Published var anthropicKey: String = ""
+    @Published var openAIKey: String = ""
+
+    //any key entered? (the primary button reads "Skip" otherwise)
+    var hasAnyKey: Bool { ![vtKey, anthropicKey, openAIKey].allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } }
 
     //both permissions in place?
     var permissionsGranted: Bool { extensionState == .granted && fdaState == .granted }
@@ -136,7 +150,8 @@ final class WelcomeModel: ObservableObject {
         guard !fdaPolling else { return }
         fdaPolling = true
         fdaState = .checking
-        let client = appDelegate?.xpcClient
+        //(objective-c) xpc client; safe to poll from the background queue
+        nonisolated(unsafe) let client = appDelegate?.xpcClient
         DispatchQueue.global().async { [weak self] in
             defer { DispatchQueue.main.async { self?.fdaPolling = false } }
             //poll (the user might need to find the setting, so wait a long time)
@@ -171,12 +186,22 @@ final class WelcomeModel: ObservableObject {
             activateExtension()
         case .permissions:
             //proceed (both granted), else retry whichever isn't
-            permissionsGranted ? (step = .virusTotal) : retryPermissions()
-        case .virusTotal:
-            let key = vtKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !key.isEmpty {
-                _ = saveKeychainItem(APIKeyService.virusTotal, key)
+            permissionsGranted ? (step = .apiKeys) : retryPermissions()
+        case .apiKeys:
+            //save whatever was entered (each is optional)
+            let vt = vtKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !vt.isEmpty {
+                _ = saveKeychainItem(APIKeyService.virusTotal, vt)
                 virusTotal?.reloadAPIKey()
+            }
+            let anthropic = anthropicKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !anthropic.isEmpty { _ = saveKeychainItem(APIKeyService.anthropic, anthropic) }
+            let openAI = openAIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !openAI.isEmpty { _ = saveKeychainItem(APIKeyService.openAI, openAI) }
+            //a key for a cloud provider, but no (usable) apple intelligence? make that provider the default
+            if !anthropic.isEmpty || !openAI.isEmpty {
+                if Assistant.appleUnavailableReason != nil { Assistant.shared.provider = anthropic.isEmpty ? .chatGPT : .claude }
+                Assistant.shared.reloadKey()
             }
             step = .done
         case .done:
@@ -215,8 +240,8 @@ struct WelcomeView: View {
                                    detail: "Dylibs, open files, and network connections for each process, updated as they change.")
                     WelcomeFeature(symbol: "checkmark.seal", color: .green, title: "Code signing & VirusTotal",
                                    detail: "Spot unsigned or ad-hoc code, Apple vs. third-party binaries, and known malware.")
-                    WelcomeFeature(symbol: "sparkles", color: .purple, title: "Built-in assistant",
-                                   detail: "Ask questions like “what's listening on the network?” using your own AI provider.")
+                    WelcomeFeature(symbol: "sparkles", color: .purple, title: "Built-in AI assistant",
+                                   detail: "Ask questions like “what's listening on the network?”: on-device via Apple Intelligence, or with your own Claude or ChatGPT key.")
                 }
                 .frame(maxWidth: 480)
             } else {
@@ -236,20 +261,21 @@ struct WelcomeView: View {
                 .padding(.top, 4)
             }
 
-            if model.step == .virusTotal {
-                VStack(alignment: .leading, spacing: 16) {
-                    WelcomeFeature(symbol: "checkmark.shield", color: .green, title: "Check binaries against VirusTotal",
+            if model.step == .apiKeys {
+                VStack(alignment: .leading, spacing: 14) {
+                    WelcomeFeature(symbol: "checkmark.shield", color: .green, title: "VirusTotal",
                                    detail: "Processes and dylibs are looked up by hash, using your own (free) VirusTotal API key.")
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text("API key:").font(.system(size: 14, weight: .semibold))
-                        VStack(alignment: .leading, spacing: 5) {
-                            APIKeyField(title: "API key", placeholder: "paste your (personal) VirusTotal API key", key: $model.vtKey, validate: APIKeyValidation.virusTotal, onSave: { _ in }, plain: true, labeled: false)
-                            Text("Optional: skip this and add a key later in Settings.").font(.system(size: 12)).foregroundStyle(.tertiary).frame(width: 354, alignment: .leading).padding(.leading, 6)
-                        }
-                    }
-                    .padding(.leading, 50)
+                    WelcomeKeyRow(label: "VirusTotal:", placeholder: "paste your (personal) VirusTotal API key", key: $model.vtKey, validate: APIKeyValidation.virusTotal,
+                                  linkTitle: "Get a free VirusTotal API key", url: VT_API_KEY_URL)
+                    WelcomeFeature(symbol: "sparkles", color: .purple, title: "AI Assistant",
+                                   detail: assistantDetail)
+                        .padding(.top, 22)
+                    WelcomeKeyRow(label: "Anthropic:", placeholder: "paste your Anthropic API key (sk-ant-…)", key: $model.anthropicKey, validate: APIKeyValidation.anthropic,
+                                  linkTitle: "Get an Anthropic API key", url: ANTHROPIC_API_KEY_URL)
+                    WelcomeKeyRow(label: "OpenAI:", placeholder: "paste your OpenAI API key (sk-…)", key: $model.openAIKey, validate: APIKeyValidation.openAI,
+                                  linkTitle: "Get an OpenAI API key", url: OPENAI_API_KEY_URL)
                 }
-                .frame(maxWidth: 520)
+                .frame(maxWidth: 540)
                 .padding(.top, 4)
             }
 
@@ -269,7 +295,6 @@ struct WelcomeView: View {
 
             HStack {
                 Spacer()
-                secondaryButton
                 Button(primaryTitle) { model.step == .done ? model.finish() : model.advance() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(primaryDisabled)
@@ -285,7 +310,7 @@ struct WelcomeView: View {
         switch step {
         case .welcome: return CGSize(width: 640, height: 600)
         case .permissions: return CGSize(width: 640, height: 480)
-        case .virusTotal: return CGSize(width: 640, height: 480)
+        case .apiKeys: return CGSize(width: 640, height: 670)
         case .done: return CGSize(width: 640, height: 600)
         }
     }
@@ -294,7 +319,7 @@ struct WelcomeView: View {
         switch model.step {
         case .welcome: return "Welcome to TaskExplorer"
         case .permissions: return "Permissions"
-        case .virusTotal: return "VirusTotal (Optional)"
+        case .apiKeys: return "API Keys (Optional)"
         case .done: return "All Set!"
         }
     }
@@ -305,8 +330,8 @@ struct WelcomeView: View {
             return "TaskExplorer explores and monitors all running processes, and their dylibs, files, and network connections.\n\nTo do so, it uses a system extension and needs a few permissions, which macOS asks you to grant in System Settings. The next steps walk you through this."
         case .permissions:
             return "To monitor and inspect processes, please approve TaskExplorer's system extension and grant it Full Disk Access."
-        case .virusTotal:
-            return "Let TaskExplorer flag known malware, using your own free VirusTotal account."
+        case .apiKeys:
+            return "Flag known malware via VirusTotal, and pick how the assistant runs. All keys are optional, stored in your keychain, and can be added later in Settings."
         case .done:
             return "TaskExplorer is free, open-source, and written by a single (Mac-loving) coder!\nPlease consider supporting Objective-See."
         }
@@ -314,7 +339,7 @@ struct WelcomeView: View {
 
     private var primaryTitle: String {
         switch model.step {
-        case .virusTotal: return model.vtKey.trimmingCharacters(in: .whitespaces).isEmpty ? "Skip" : "Next"
+        case .apiKeys: return model.hasAnyKey ? "Next" : "Skip"
         case .done: return "Start"
         case .permissions:
             if model.permissionsGranted { return "Next" }
@@ -338,11 +363,36 @@ struct WelcomeView: View {
         }
     }
 
-    @ViewBuilder private var secondaryButton: some View {
-        switch model.step {
-        case .virusTotal: Button("Get an API key") { model.openSettings(VT_API_KEY_URL) }
-        default: EmptyView()
+    //assistant blurb: depends on whether apple intelligence can run here
+    private var assistantDetail: String {
+        if Assistant.appleUnavailableReason == nil {
+            return "Runs on-device with Apple Intelligence (no key needed). To use Claude or ChatGPT instead, add your own API key."
         }
+        if Assistant.appleEligible {
+            return "Can run on-device once Apple Intelligence is turned on in System Settings. Or, to use Claude or ChatGPT, add your own API key."
+        }
+        return "Apple Intelligence isn't available on this Mac, so the assistant needs your own Claude (Anthropic) or ChatGPT (OpenAI) API key."
+    }
+}
+
+//an api key row on the api keys page: label (left aligned, fixed column so the fields line up), field, and a "get a key" link under it
+struct WelcomeKeyRow: View {
+    let label: String
+    let placeholder: String
+    @Binding var key: String
+    let validate: (String) async -> APIKeyCheck
+    let linkTitle: String
+    let url: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(label).font(.system(size: 14, weight: .semibold)).frame(width: 90, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                APIKeyField(title: label, placeholder: placeholder, key: $key, validate: validate, onSave: { _ in }, plain: true, labeled: false)
+                Link(linkTitle, destination: URL(string: url)!).font(.system(size: 12)).padding(.leading, 6)
+            }
+        }
+        .padding(.leading, 50)
     }
 }
 

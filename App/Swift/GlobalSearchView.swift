@@ -41,7 +41,7 @@ struct GlobalSearchView: View {
                         }
                     case .dylib(let d):
                         ResultRow(icon: d.icon, kind: "dylib", title: d.name, subtitle: "\(d.path) · loaded in \(d.hostCount)", flagged: d.vt.isFlagged) {
-                            if let host = (d.binary.hostTasks() as? [TETask])?.first {
+                            if let host = (d.binary.hostTasks())?.first {
                                 store.scope = .processes; store.select(pid: host.pid.intValue); store.itemsTab = .dylibs
                                 //note: after selecting (the toggle acts on the selected process)
                                 if d.inCache { store.showCacheDylibs = true }
@@ -52,7 +52,7 @@ struct GlobalSearchView: View {
                         }
                     case .file(let f):
                         ResultRow(icon: f.icon, kind: "file", title: f.name, subtitle: "\(f.path) · open in \(f.hostCount)", flagged: false) {
-                            if let host = (f.file.hostTasks() as? [TETask])?.first {
+                            if let host = (f.file.hostTasks())?.first {
                                 store.scope = .processes; store.select(pid: host.pid.intValue); store.itemsTab = .files; store.selectedItem = .file(f.id); store.showInspector = true
                             }
                         }

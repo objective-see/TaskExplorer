@@ -83,7 +83,8 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 final class MenuBuilder: NSObject {
 
     //install main menu
-    static func install() {
+    // ->main-actor, as it targets MenuActions and sets NSApp.mainMenu (called from the app delegate on the main thread)
+    @MainActor static func install() {
         //note: minimal menu (Patrick's call): no Edit (see TaskExplorerApplication for ⌘X/C/V/A), Window, or Help menus
         //no window tabbing (else AppKit injects 'Show Tab Bar' / 'Show All Tabs' into the View menu)
         NSWindow.allowsAutomaticWindowTabbing = false
@@ -131,9 +132,10 @@ final class MenuBuilder: NSObject {
         main.addItem(viewItem)
 
         //explicit target for the window-level actions
+        let menuActions = MenuActions.shared
         for menu in [fileMenu, viewMenu] {
-            for item in menu.items where item.action != nil && MenuActions.shared.responds(to: item.action!) {
-                item.target = MenuActions.shared
+            for item in menu.items where item.action != nil && menuActions.responds(to: item.action!) {
+                item.target = menuActions
             }
         }
 

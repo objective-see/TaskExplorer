@@ -5,7 +5,7 @@
 //  Created by Patrick Wardle on 9/12/26.
 //  Copyright (c) 2026 Objective-See. All rights reserved.
 //
-//  note: left (full height) panel; chat w/ an agent (Claude or ChatGPT, user's own API key)
+//  note: left (full height) panel; chat w/ an agent (Apple Intelligence on-device, or Claude/ChatGPT w/ the user's own API key)
 //        ...the assistant is given read-only query tools plus a few UI actions (see AssistantTools)
 
 import SwiftUI
@@ -25,7 +25,7 @@ struct AssistantPanel: View {
                     ForEach(AssistantProvider.allCases) { provider in Text(provider.label).tag(provider) }
                 }
                 .labelsHidden()
-                .frame(width: 120)
+                .frame(width: 160)
                 Spacer()
                 Button { assistant.clear() } label: { Image(systemName: "trash") }
                     .buttonStyle(.borderless)
@@ -68,11 +68,18 @@ struct AssistantPanel: View {
 
             //prompt
             VStack(spacing: 6) {
-                if !assistant.hasAPIKey {
-                    HStack(spacing: 6) {
-                        Image(systemName: "key").foregroundStyle(.secondary)
-                        Text("No \(assistant.provider.label) API key.").font(.callout).foregroundStyle(.secondary)
-                        Button("Settings…") { (NSApp.delegate as? AppDelegate)?.showPreferences(nil) }.controlSize(.small)
+                if !assistant.isReady {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Image(systemName: assistant.provider.isLocal ? "apple.intelligence" : "key").foregroundStyle(.secondary)
+                        Text(assistant.unavailableMessage ?? "\(assistant.provider.label) isn't available.").font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        if assistant.provider.isLocal {
+                            //note: only worth a button when the user can fix it (turn Apple Intelligence on)
+                            if Assistant.appleEligible {
+                                Button("System Settings…") { if let url = URL(string: URL_SYSTEM_SETTINGS_APPLE_INTELLIGENCE) { NSWorkspace.shared.open(url) } }.controlSize(.small)
+                            }
+                        } else {
+                            Button("Settings…") { (NSApp.delegate as? AppDelegate)?.showPreferences(nil) }.controlSize(.small)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -89,7 +96,7 @@ struct AssistantPanel: View {
                     } else {
                         Button { send() } label: { Image(systemName: "arrow.up.circle.fill").font(.title2) }
                             .buttonStyle(.borderless)
-                            .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !assistant.hasAPIKey)
+                            .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !assistant.isReady)
                             .keyboardShortcut(.return, modifiers: [.command])
                     }
                 }
@@ -99,7 +106,7 @@ struct AssistantPanel: View {
             }
             .padding(10)
         }
-        .navigationTitle("Assistant")
+        .navigationTitle("AI Assistant")
         .onAppear { assistant.reloadKey() }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in assistant.reloadKey() }
     }
@@ -121,17 +128,26 @@ struct AssistantPanel: View {
                         .background(RoundedRectangle(cornerRadius: 8).fill(Color.accentColor.opacity(0.12)))
                 }
                 .buttonStyle(.plain)
-                .disabled(!assistant.hasAPIKey)
+                .disabled(!assistant.isReady)
             }
-            Text("Uses your own API key (stored in your keychain). The assistant can query TaskExplorer's live data and drive the UI, but nothing else on your Mac. Whatever it queries (process names, paths, and command lines) is sent to the provider you select.").font(.caption).foregroundStyle(.tertiary).padding(.top, 6)
+            Text(privacyNote).font(.caption).foregroundStyle(.tertiary).padding(.top, 6)
         }
         .padding(.horizontal, 12)
+    }
+
+    //what happens to the data (per provider)
+    private var privacyNote: String {
+        let scope = "The assistant can query TaskExplorer's live data and drive the UI, but nothing else on your Mac."
+        if assistant.provider.isLocal {
+            return "Runs on-device with Apple Intelligence: no account, no key, and nothing leaves your Mac. \(scope) The on-device model is small, so keep questions focused (it works best with #keyword filters)."
+        }
+        return "Uses your own API key (stored in your keychain). \(scope) Whatever it queries (process names, paths, and command lines) is sent to the provider you select."
     }
 
     //send prompt
     private func send() {
         let text = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !assistant.isBusy, assistant.hasAPIKey else { return }
+        guard !text.isEmpty, !assistant.isBusy, assistant.isReady else { return }
         prompt = ""
         assistant.send(text)
         promptFocused = true

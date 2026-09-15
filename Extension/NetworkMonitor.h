@@ -26,7 +26,7 @@ typedef void *NStatSourceRef;
 typedef NSObject* NStatManagerRef;
 
 //function pointer types
-typedef NStatManagerRef (*NStatManagerCreate_t)(const struct __CFAllocator * _Nullable, dispatch_queue_t, void (^)(void * _Nullable, void * _Nullable));
+typedef NStatManagerRef _Nullable (*NStatManagerCreate_t)(const struct __CFAllocator * _Nullable, dispatch_queue_t, void (^)(void * _Nullable, void * _Nullable));
 typedef void (*NStatSourceSetDescriptionBlock_t)(NStatSourceRef arg, void (^)(NSDictionary*));
 typedef void (*NStatSourceSetRemovedBlock_t)(NStatSourceRef arg, void (^)(void));
 typedef void (*NStatManagerAddAll_t)(NStatManagerRef manager);

@@ -497,9 +497,6 @@ NSString* getProcessPath(pid_t pid)
     //status
     int status = -1;
 
-    //(process) arguments
-    NSMutableArray* arguments = nil;
-
     //get task's path via 'proc_pidpath()'
     status = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
     if(0 != status)
