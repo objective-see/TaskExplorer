@@ -101,8 +101,8 @@ lipo -info "$EXT_PATH/Contents/MacOS/$EXTENSION_ID"
 [[ "$VERSION ($BUILD)" == "$EXT_VERSION ($EXT_BUILD)" ]] \
     || fail "app ($VERSION/$BUILD) and extension ($EXT_VERSION/$EXT_BUILD) versions differ"
 
-# fail early, before notarizing, if this version was already packaged
-[[ -e "$FINAL_ZIP" ]] && fail "$FINAL_ZIP already exists, move it first"
+# a previous zip of this version is replaced (say so, before the wait for notarization)
+[[ -e "$FINAL_ZIP" ]] && log "note: $FINAL_ZIP exists and will be overwritten"
 
 # --- verify signatures ----------------------------------------------------
 
@@ -164,6 +164,7 @@ grep -q "source=Notarized Developer ID" <<< "$SPCTL_INFO" \
 
 log "packaging final zip"
 mkdir -p "$OUTPUT_DIR"
+rm -f "$FINAL_ZIP"
 ditto -c -k --keepParent "$APP_PATH" "$FINAL_ZIP"
 
 log "done: $FINAL_ZIP"
