@@ -279,20 +279,6 @@ final class MCPServer {
             return
         }
 
-        //test hook: ask the in-app assistant (async: waits for the answer, then returns the new transcript rows)
-        // ->not listed in tools/list; only for driving the assistant (Apple Intelligence / Claude / ChatGPT) from a test script
-        if messages.count == 1, let message = messages.first, message["method"] as? String == "tools/call",
-           let params = message["params"] as? [String: Any], params["name"] as? String == "assistant_ask" {
-            let id = message["id"] ?? NSNull()
-            let arguments = (params["arguments"] as? [String: Any]) ?? [:]
-            _Concurrency.Task { @MainActor in
-                let result = await self.askAssistant(arguments)
-                let response: [String: Any] = ["jsonrpc": "2.0", "id": id, "result": result]
-                completion(HTTPResponse(status: 200, body: (try? JSONSerialization.data(withJSONObject: response)) ?? Data()))
-            }
-            return
-        }
-
         //dispatch on main (model access)
         DispatchQueue.main.async {
             var responses: [[String: Any]] = []
@@ -354,28 +340,6 @@ final class MCPServer {
             return ["jsonrpc": "2.0", "id": id, "error": ["code": -32601, "message": "method not found: \(method)"]]
         }
         return ["jsonrpc": "2.0", "id": id, "result": result]
-    }
-
-    //(test hook) send a prompt to the assistant & wait for it to finish
-    // ->arguments: prompt (required), provider ("apple" | "claude" | "chatgpt"; optional), timeout (seconds; default 180)
-    @MainActor private func askAssistant(_ arguments: [String: Any]) async -> [String: Any] {
-        let assistant = Assistant.shared
-        switch (arguments["provider"] as? String)?.lowercased() {
-        case "apple": assistant.provider = .apple
-        case "claude": assistant.provider = .claude
-        case "chatgpt": assistant.provider = .chatGPT
-        default: break
-        }
-        guard let prompt = arguments["prompt"] as? String, !prompt.isEmpty else {
-            return ["content": [["type": "text", "text": "missing prompt"]], "isError": true]
-        }
-        let before = assistant.messages.count
-        assistant.send(prompt)
-        let deadline = Date().addingTimeInterval(TimeInterval((arguments["timeout"] as? Int) ?? 180))
-        while assistant.isBusy, Date() < deadline { try? await _Concurrency.Task.sleep(nanoseconds: 250_000_000) }
-        let rows = assistant.messages.dropFirst(before).map { "[\($0.role)] \($0.text)" }
-        let failed = assistant.isBusy || assistant.messages.last?.role == .error
-        return ["content": [["type": "text", "text": (["provider: \(assistant.provider.label)"] + rows).joined(separator: "\n")]], "isError": failed]
     }
 
     //json-rpc error (data)

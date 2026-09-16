@@ -72,9 +72,6 @@ struct ProcessTable: View {
                 if selection != new { selection = new }
             }
             .onAppear {
-                #if DEBUG
-                MainThreadWatchdog.start()
-                #endif
                 recomputeRows()
                 //a selection made while this table wasn't showing (e.g. from the 'Everything' results)
                 if let request = store.scrollTarget { DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { reveal(request.pid) } }
@@ -516,27 +513,3 @@ struct VTMenuItems: View {
         }
     }
 }
-
-
-#if DEBUG
-//logs when the main thread stops servicing its queue for more than 300 ms (debug builds only)
-enum MainThreadWatchdog {
-    private static var started = false
-    static func start() {
-        guard !started else { return }
-        started = true
-        DispatchQueue.global(qos: .utility).async {
-            while true {
-                let sent = Date()
-                let done = DispatchSemaphore(value: 0)
-                DispatchQueue.main.async { done.signal() }
-                if done.wait(timeout: .now() + 0.3) == .timedOut {
-                    done.wait()
-                    uiLog.debug("STALL: main thread blocked for \(Int(Date().timeIntervalSince(sent) * 1000)) ms")
-                }
-                Thread.sleep(forTimeInterval: 0.1)
-            }
-        }
-    }
-}
-#endif
