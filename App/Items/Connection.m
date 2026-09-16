@@ -340,7 +340,7 @@ bail:
     connectionInterface = (nil != self.interface) ? self.interface : @"";
 
     //init json
-    json = [NSString stringWithFormat:@"\"protocol\": \"%@\", \"family\": \"%@\", \"interface\": \"%@\", \"local address\": \"%@\", \"local port\": \"%d\", \"remote address\": \"%@\", \"remote port\": \"%d\", \"state\": \"%@\", \"bytes up\": \"%llu\", \"bytes down\": \"%llu\"", jsonEscape(self.proto), jsonEscape(self.family), jsonEscape(connectionInterface), jsonEscape(self.localIPAddr), [self.localPort unsignedShortValue], jsonEscape(self.remoteIPAddr), [self.remotePort unsignedShortValue], jsonEscape(connectionState), self.bytesUp, self.bytesDown];
+    json = [NSString stringWithFormat:@"\"protocol\": \"%@\", \"family\": \"%@\", \"interface\": \"%@\", \"local address\": \"%@\", \"local port\": %d, \"remote address\": \"%@\", \"remote port\": %d, \"state\": \"%@\", \"bytes up\": %llu, \"bytes down\": %llu", jsonEscape(self.proto), jsonEscape(self.family), jsonEscape(connectionInterface), jsonEscape(self.localIPAddr), [self.localPort unsignedShortValue], jsonEscape(self.remoteIPAddr), [self.remotePort unsignedShortValue], jsonEscape(connectionState), self.bytesUp, self.bytesDown];
 
     return json;
 }

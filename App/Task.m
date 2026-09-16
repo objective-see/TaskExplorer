@@ -301,6 +301,17 @@ bail:
 
     //include dyld shared cache dylibs?
     // ->via vmmap (in extension); union w/ the (file-backed) mappings
+    //   ...never for an endpoint security client: vmmap suspends its target, and a suspended ES client is killed by the
+    //   kernel once it misses an auth deadline (the extension refuses too; this saves the round trip)
+    if( (YES == includeCache) &&
+        (YES == self.isESClient) )
+    {
+        //dbg msg
+        os_log_debug(logHandle, "not enumerating shared cache dylibs for %{public}@ (endpoint security client)", self.pid);
+
+        //skip
+        includeCache = NO;
+    }
     if(YES == includeCache)
     {
         //all (incl. cache)
@@ -1078,6 +1089,12 @@ bail:
     return listening;
 }
 
+//endpoint security client (per ES / csops)
+-(BOOL)isESClient
+{
+    return [self.info[KEY_PROCESS_ES_CLIENT] boolValue];
+}
+
 //platform binary (per ES)
 // ->falls back to apple check
 -(BOOL)isPlatformBinary
@@ -1384,14 +1401,14 @@ bail:
         }
 
         //init json
-        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d, \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", jsonEscape(self.binary.name), jsonEscape(self.binary.path), self.pid, jsonEscape(taskCommandLine), fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound, dylibsJSON, filesJSON, connectionsJSON];
+        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": %@, \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %s, \"packed\": %s, \"not found\": %s, \"dylibs\": [%@], \"files\": [%@], \"connections\": [%@]", jsonEscape(self.binary.name), jsonEscape(self.binary.path), self.pid, jsonEscape(taskCommandLine), fileHashes, fileSigs, vtDetectionRatio, (YES == self.binary.isEncrypted) ? "true" : "false", (YES == self.binary.isPacked) ? "true" : "false", (YES == self.binary.notFound) ? "true" : "false", dylibsJSON, filesJSON, connectionsJSON];
     }
 
     //basic
     else
     {
         //init json
-        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": \"%@\", \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"not found\": %d", jsonEscape(self.binary.name), jsonEscape(self.binary.path), self.pid, jsonEscape(taskCommandLine), fileHashes, fileSigs, vtDetectionRatio, self.binary.isEncrypted, self.binary.isPacked, self.binary.notFound];
+        json = [NSString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"pid\": %@, \"command line\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %s, \"packed\": %s, \"not found\": %s", jsonEscape(self.binary.name), jsonEscape(self.binary.path), self.pid, jsonEscape(taskCommandLine), fileHashes, fileSigs, vtDetectionRatio, (YES == self.binary.isEncrypted) ? "true" : "false", (YES == self.binary.isPacked) ? "true" : "false", (YES == self.binary.notFound) ? "true" : "false"];
     }
 
     return json;

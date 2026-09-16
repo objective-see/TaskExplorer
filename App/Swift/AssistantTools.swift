@@ -259,6 +259,7 @@ enum AssistantTools {
                                    "signer": task.binary.isApple ? "Apple" : (SignerKind(rawValue: task.binary.signer?.intValue ?? 0) ?? .none).label,
                                    "teamID": task.teamID ?? "",
                                    "platformBinary": task.isPlatformBinary,
+                                   "esClient": task.isESClient,
                                    "dylibs": task.dylibsSnapshot().count,
                                    "connections": task.connectionsSnapshot().count]
         if case .known(let positives, let total, let url) = vt { dict["virusTotal"] = ["positives": positives, "total": total, "report": url] }

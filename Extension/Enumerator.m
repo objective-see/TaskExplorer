@@ -22,7 +22,86 @@
 
 //code signing ops (private)
 #define CS_OPS_STATUS 0
+#define CS_OPS_ENTITLEMENTS_BLOB 7
 extern int csops(pid_t pid, unsigned int ops, void* useraddr, size_t usersize);
+
+//is process an endpoint security client? (has the ES entitlement)
+// ->via csops, as the ES message flag ('is_es_client') is only available for processes seen via ES events
+//   note: an ES client that is suspended (e.g. by vmmap) can miss its auth deadlines, and the kernel then kills it
+BOOL isESClient(pid_t pid)
+{
+    //flag
+    BOOL esClient = NO;
+
+    //blob (8-byte header: magic, length; then a plist)
+    NSMutableData* blob = nil;
+
+    //entitlements
+    NSDictionary* entitlements = nil;
+
+    //kernel, launchd: never
+    if(pid <= 1)
+    {
+        goto bail;
+    }
+
+    //fetch blob (grow on ERANGE)
+    for(size_t size = 32 * 1024; size <= 1024 * 1024; size *= 2)
+    {
+        blob = [NSMutableData dataWithLength:size];
+        if(0 == csops(pid, CS_OPS_ENTITLEMENTS_BLOB, blob.mutableBytes, size))
+        {
+            break;
+        }
+        blob = nil;
+        if(ERANGE != errno)
+        {
+            break;
+        }
+    }
+    if( (nil == blob) ||
+        (blob.length < 8) )
+    {
+        goto bail;
+    }
+
+    //length (big endian) from header
+    uint32_t length = ntohl(*(uint32_t*)((uint8_t*)blob.bytes + 4));
+    if( (length <= 8) ||
+        (length > blob.length) )
+    {
+        goto bail;
+    }
+
+    //parse plist
+    entitlements = [NSPropertyListSerialization propertyListWithData:[blob subdataWithRange:NSMakeRange(8, length - 8)] options:NSPropertyListImmutable format:NULL error:NULL];
+    if(YES != [entitlements isKindOfClass:[NSDictionary class]])
+    {
+        goto bail;
+    }
+
+    //3rd-party ES clients
+    if(YES == [entitlements[@"com.apple.developer.endpoint-security.client"] boolValue])
+    {
+        esClient = YES;
+        goto bail;
+    }
+
+    //apple's own ES clients
+    for(NSString* key in entitlements)
+    {
+        if( (YES == [key isKindOfClass:[NSString class]]) &&
+            (YES == [key hasPrefix:@"com.apple.private.endpoint-security"]) )
+        {
+            esClient = YES;
+            goto bail;
+        }
+    }
+
+bail:
+
+    return esClient;
+}
 
 /* GLOBALS */
 
@@ -217,6 +296,9 @@ bail:
         //add platform binary
         info[KEY_PROCESS_PLATFORM_BINARY] = [NSNumber numberWithBool:(0 != (csFlags & CS_PLATFORM_BINARY))];
     }
+
+    //add es client
+    info[KEY_PROCESS_ES_CLIENT] = [NSNumber numberWithBool:isESClient(pid)];
 
     //add rpid
     if(NULL != getRPID)
@@ -541,6 +623,20 @@ bail:
     if(pid <= 0)
     {
         //bail
+        goto bail;
+    }
+
+    //never suspend launchd, or an endpoint security client (vmmap suspends its target; an ES client that misses
+    //its auth deadlines while suspended is killed by the kernel) ...the app skips these too; this is the backstop
+    if( (1 == pid) ||
+        (YES == isESClient(pid)) )
+    {
+        //dbg msg
+        os_log_debug(logHandle, "not running vmmap on pid %d (launchd, or an endpoint security client)", pid);
+
+        //empty (not nil: 'none', not 'failed')
+        results = nil;
+        dylibs = [NSMutableOrderedSet orderedSet];
         goto bail;
     }
 

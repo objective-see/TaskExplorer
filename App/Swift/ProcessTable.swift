@@ -253,7 +253,8 @@ struct TableScroller: NSViewRepresentable {
             table.layoutSubtreeIfNeeded()
             let rowRect = table.rect(ofRow: index)
             let clip = scrollView.contentView
-            let y = max(0, min(rowRect.midY - clip.bounds.height / 2, table.bounds.height - clip.bounds.height))
+            let (minY, maxY) = Coordinator.scrollRange(table: table, clip: clip)
+            let y = max(minY, min(rowRect.midY - clip.bounds.height / 2, maxY))
             clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: y))
             scrollView.reflectScrolledClipView(clip)
         }
@@ -312,10 +313,24 @@ struct TableScroller: NSViewRepresentable {
             guard let anchorID, let index = ids.firstIndex(of: anchorID), index < table.numberOfRows else { return }
             table.layoutSubtreeIfNeeded()
             let rowRect = table.rect(ofRow: index)
-            let y = max(0, min(rowRect.minY - anchorOffset, max(0, table.bounds.height - clip.bounds.height)))
+            let (minY, maxY) = Coordinator.scrollRange(table: table, clip: clip)
+            let y = max(minY, min(rowRect.minY - anchorOffset, maxY))
             guard abs(y - clip.bounds.minY) > 0.5 else { return }
+            uiLog.debug("anchor: scrolling \(clip.bounds.minY) -> \(y) (range \(minY)...\(maxY), rows=\(table.numberOfRows))")
             clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: y))
             scrollView.reflectScrolledClipView(clip)
+        }
+
+        //valid scroll offsets (clip bounds origin y) for the table
+        // ->note: the table's scroll view extends under the toolbar (and the header): "scrolled to top" is a NEGATIVE
+        //   origin (-contentInsets.top, e.g. -80, or -116 with the search scope bar). Clamping to 0 dragged the rows up
+        //   under the toolbar on every rows change: invisible with hundreds of rows, but a filtered handful vanished
+        static func scrollRange(table: NSTableView, clip: NSClipView) -> (CGFloat, CGFloat) {
+            let insets = clip.contentInsets
+            let minY = -insets.top
+            let contentHeight = table.numberOfRows > 0 ? table.rect(ofRow: table.numberOfRows - 1).maxY : 0
+            let maxY = max(minY, contentHeight + insets.bottom - clip.bounds.height)
+            return (minY, maxY)
         }
     }
 

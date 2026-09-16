@@ -474,6 +474,9 @@ bail:
     //add platform binary
     info[KEY_PROCESS_PLATFORM_BINARY] = [NSNumber numberWithBool:process->is_platform_binary];
 
+    //es client (has the ES entitlement)
+    info[KEY_PROCESS_ES_CLIENT] = [NSNumber numberWithBool:process->is_es_client];
+
     //add cd hash
     // as hex string
     cdHash = [NSMutableString string];

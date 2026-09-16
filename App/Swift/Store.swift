@@ -281,9 +281,15 @@ final class Store: ObservableObject {
         return item.task.cacheDylibsEnumerated
     }
 
+    //selected task is an endpoint security client? (its shared cache dylibs are never enumerated; see Task)
+    var selectionIsESClient: Bool {
+        guard let pid = selectedPID, let item = processesByPID[pid] else { return false }
+        return item.task.isESClient
+    }
+
     //make sure the selected task's shared cache dylibs are enumerated (vmmap), if the user wants to see them
     func ensureCacheDylibs() {
-        guard showCacheDylibs, let pid = selectedPID, pid != 0, let item = processesByPID[pid], !item.task.cacheDylibsEnumerated else { return }
+        guard showCacheDylibs, let pid = selectedPID, pid != 0, let item = processesByPID[pid], !item.task.cacheDylibsEnumerated, !item.task.isESClient else { return }
         item.task.includeCacheDylibs = true
         if itemsTab == .dylibs { refreshSelectedItems() }
     }
@@ -511,7 +517,7 @@ final class Store: ObservableObject {
         let task = item.task
         //dylibs: while the shared cache dylibs are being enumerated (vmmap) for display, keep the list empty
         // ->so the pane shows 'enumerating' rather than the (disk-only) list, then a jump to the full one
-        if itemsTab == .dylibs, showCacheDylibs, itemsLoading, !task.cacheDylibsEnumerated, pid != 0 {
+        if itemsTab == .dylibs, showCacheDylibs, itemsLoading, !task.cacheDylibsEnumerated, !task.isESClient, pid != 0 {
             dylibs = []
         } else {
             dylibs = (task.dylibsSnapshot() ?? []).map { DylibItem(binary: $0) }

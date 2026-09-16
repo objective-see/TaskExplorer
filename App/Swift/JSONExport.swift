@@ -20,7 +20,7 @@ enum JSONExport {
         for task in tasks.sorted(by: { $0.pid.intValue < $1.pid.intValue }) {
             processes.append(process(task))
         }
-        let dylibs = ((enumerator.allDylibs() as? [Binary]) ?? []).sorted { $0.path < $1.path }.map { binary(binary: $0, hosts: true) }
+        let dylibs = ((enumerator.allDylibs() as? [Binary]) ?? []).sorted { ($0.path ?? "") < ($1.path ?? "") }.map { binary(binary: $0, hosts: true) }
         return ["generated": ISO8601DateFormatter().string(from: Date()),
                 "version": getAppVersion() ?? "",
                 "virusTotalEnabled": virusTotal?.isEnabled() ?? false,
@@ -38,6 +38,7 @@ enum JSONExport {
         dict["arguments"] = (task.arguments as? [String]) ?? []
         if let started = task.startTime { dict["started"] = ISO8601DateFormatter().string(from: started) }
         dict["platformBinary"] = task.isPlatformBinary
+        dict["esClient"] = task.isESClient
         dict["dylibs"] = (task.dylibsSnapshot() ?? []).map { $0.path }
         dict["files"] = (task.filesSnapshot() ?? []).map { ["path": $0.path ?? "", "type": $0.type ?? FILE_TYPE_UNKNOWN] }
         dict["connections"] = (task.connectionsSnapshot() ?? []).map { connection($0) }
@@ -106,7 +107,10 @@ enum JSONExport {
             //build & write in the background (tens of thousands of dylibs with the shared cache indexed; the model accessors are lock-protected)
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
-                    let data = try JSONSerialization.data(withJSONObject: snapshot(), options: [.prettyPrinted, .sortedKeys])
+                    let object = snapshot()
+                    //note: an object JSONSerialization can't encode raises an ObjC exception (not a Swift error), i.e. a crash
+                    guard JSONSerialization.isValidJSONObject(object) else { throw NSError(domain: "TaskExplorer", code: 1, userInfo: [NSLocalizedDescriptionKey: "the results contain a value that can't be encoded as JSON"]) }
+                    let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys])
                     try data.write(to: url)
                 } catch {
                     DispatchQueue.main.async { showAlert(.warning, "Failed to save", error.localizedDescription, ["OK"]) }

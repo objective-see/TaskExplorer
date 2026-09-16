@@ -939,8 +939,9 @@ bail:
         //collect
         for(Task* task in [self allTasks])
         {
-            //skip kernel, and those already done
+            //skip kernel, endpoint security clients (never suspended; see Task), and those already done
             if( (0 == task.pid.intValue) ||
+                (YES == task.isESClient) ||
                 (YES == task.cacheDylibsEnumerated) )
             {
                 //skip
@@ -1132,6 +1133,7 @@ bail:
                 //index on, but this task's shared cache dylibs not (yet) enumerated?
                 // ->add them in the background, so the click itself stays instant
                 if( (YES != task.cacheDylibsEnumerated) &&
+                    (YES != task.isESClient) &&
                     (YES == getPreferenceBool(PREF_INDEX_CACHE_DYLIBS)) )
                 {
                     //in background

@@ -102,11 +102,17 @@ bail:
     NSString* taskName = nil;
 
     //try to get name from bundle
-    // ->key 'CFBundleName'
+    // ->key 'CFBundleName' (some system frameworks, e.g. MLCompilerRuntime, set it to an empty string; treat as unset)
     if(nil != self.bundle)
     {
         //extract name
         taskName = [self.bundle infoDictionary][@"CFBundleName"];
+        if( (YES != [taskName isKindOfClass:[NSString class]]) ||
+            (0 == [taskName length]) )
+        {
+            //unset
+            taskName = nil;
+        }
     }
 
     //no bundle/ or bundle lookup failed
@@ -617,14 +623,14 @@ bail:
     vtDetectionRatio = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.vtInfo[VT_RESULTS_POSITIVES] unsignedIntegerValue], (unsigned long)[self.vtInfo[VT_RESULTS_TOTAL] unsignedIntegerValue]];
 
     //init json
-    json = [NSMutableString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %d, \"packed\": %d, \"deleted\": %d", jsonEscape(self.name), jsonEscape(self.path), fileHashes, fileSigs, vtDetectionRatio, self.isEncrypted, self.isPacked, self.notFound];
+    json = [NSMutableString stringWithFormat:@"\"name\": \"%@\", \"path\": \"%@\", \"hashes\": %@, \"signature(s)\": %@, \"VT detection\": \"%@\", \"encrypted\": %s, \"packed\": %s, \"deleted\": %s", jsonEscape(self.name), jsonEscape(self.path), fileHashes, fileSigs, vtDetectionRatio, (YES == self.isEncrypted) ? "true" : "false", (YES == self.isPacked) ? "true" : "false", (YES == self.notFound) ? "true" : "false"];
 
     //dylibs
     // add tasks they are loaded in
     if(YES != self.isTaskBinary)
     {
         //add
-        [json appendString:[NSString stringWithFormat:@", \"loaded in\": \"%@\"", tasks]];
+        [json appendString:[NSString stringWithFormat:@", \"loaded in\": %@", (nil != tasks) ? tasks : @"[]"]];
     }
 
     return json;

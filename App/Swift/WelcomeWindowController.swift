@@ -36,6 +36,8 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         //testing: jump to a page (launch w/ '-welcomeStep <n>'; e.g. 2 = api keys), so pages can be screenshotted without clicking through
         if let step = WelcomeStep(rawValue: UserDefaults.standard.integer(forKey: "welcomeStep")), step != .welcome {
             model.step = step
+            //'-welcomeGranted 1': show the permissions page with both permissions granted (no extension needed)
+            if UserDefaults.standard.bool(forKey: "welcomeGranted") { model.extensionState = .granted; model.fdaState = .granted }
             window.setContentSize(WelcomeView.size(for: step))
             window.center()
         }

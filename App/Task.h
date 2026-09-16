@@ -90,6 +90,10 @@ NS_SWIFT_NAME(TETask)
 //platform binary (per ES)
 @property(nonatomic, readonly)BOOL isPlatformBinary;
 
+//endpoint security client (per ES / csops)
+// ->its shared cache dylibs are never enumerated (vmmap would suspend it; a suspended ES client gets killed)
+@property(nonatomic, readonly)BOOL isESClient;
+
 //team id (from ES, or signing info)
 @property(nonatomic, readonly)NSString* teamID;
 

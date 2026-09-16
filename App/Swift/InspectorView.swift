@@ -99,6 +99,7 @@ struct ProcessDetails: View {
             DetailRow(label: "Dylibs", value: "\(item.dylibCount)")
             DetailRow(label: "Connections", value: "\(item.connectionCount)")
             DetailRow(label: "Platform Binary", value: item.isPlatformBinary ? "yes" : "no")
+            if item.isESClient { DetailRow(label: "Endpoint Security", value: "client") }
         }
         let mismatched = (item.task.mismatchedDylibs as? [Binary]) ?? []
         if !mismatched.isEmpty {

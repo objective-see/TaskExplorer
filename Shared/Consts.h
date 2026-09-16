@@ -94,6 +94,9 @@
 //platform binary (from ES)
 #define KEY_PROCESS_PLATFORM_BINARY @"platformBinary"
 
+//process: endpoint security client (has the ES entitlement; per ES message, or csops)
+#define KEY_PROCESS_ES_CLIENT @"esClient"
+
 //cd hash (from ES)
 #define KEY_PROCESS_CDHASH @"cdHash"
 

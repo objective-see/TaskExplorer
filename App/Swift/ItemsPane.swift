@@ -30,7 +30,12 @@ struct ItemsPane: View {
                         .fixedSize()
                         .layoutPriority(1)
                         .padding(.leading, 14)
+                        .disabled(store.selectionIsESClient)
                         .help("Also list dylibs loaded from the dyld shared cache (enumerated via vmmap for this process; enable indexing for all processes in Settings › Dylibs)")
+                    if store.selectionIsESClient {
+                        Text("not for Endpoint Security clients (vmmap would suspend it)").font(.caption).foregroundStyle(.secondary).fixedSize()
+                            .help("vmmap suspends the process it inspects; an Endpoint Security client that misses an auth deadline while suspended is killed by the kernel. Dylibs mapped from disk are still listed.")
+                    }
                 }
 
                 Spacer()

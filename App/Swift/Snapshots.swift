@@ -125,6 +125,7 @@ struct ProcessItem: Identifiable, Hashable {
     let startTime: Date?
     let arguments: [String]
     let isPlatformBinary: Bool
+    let isESClient: Bool
     let dylibCount: Int
     let connectionCount: Int
     let notFound: Bool
@@ -172,6 +173,7 @@ struct ProcessItem: Identifiable, Hashable {
         self.startTime = task.startTime
         self.arguments = (task.arguments as? [String]) ?? []
         self.isPlatformBinary = task.isPlatformBinary
+        self.isESClient = task.isESClient
         self.dylibCount = Int(task.dylibCount())
         self.connectionCount = task.connectionsSnapshot().count
         self.notFound = task.binary.notFound
