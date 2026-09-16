@@ -66,6 +66,9 @@ final class Assistant: ObservableObject {
     @Published private(set) var isReady = false
     @Published private(set) var unavailableMessage: String?
 
+    //first load (keychain) still in flight? (nothing to report yet)
+    @Published private(set) var isLoading = true
+
     //current task
     private var task: _Concurrency.Task<Void, Never>?
 
@@ -102,13 +105,53 @@ final class Assistant: ObservableObject {
     }
 
     //(re)load api key from keychain (or, for Apple Intelligence, re-check its availability)
+    // ->off the main thread: SecItemCopyMatching can block for a long time (securityd busy, keychain locked, or an
+    //   access prompt pending), and this runs at launch and on every window activation; 'send' loads synchronously if needed
     func reloadKey() {
-        guard let service = provider.keychainService else {
-            //apple intelligence: no key; available?
-            unavailableMessage = Assistant.appleUnavailableReason
-            isReady = (unavailableMessage == nil)
+        loadGeneration += 1
+        let generation = loadGeneration
+        let provider = self.provider
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let loaded = Assistant.load(provider)
+            DispatchQueue.main.async {
+                guard let self, generation == self.loadGeneration, provider == self.provider else { return }
+                self.apply(loaded, provider: provider)
+            }
+        }
+    }
+
+    //load synchronously (blocking)
+    private func reloadKeyNow() {
+        loadGeneration += 1
+        apply(Assistant.load(provider), provider: provider)
+    }
+
+    //what a load yields
+    private struct Loaded {
+        var key = ""
+        var unavailable: String?
+    }
+
+    //load (any thread): the provider's key, or apple intelligence's availability
+    private nonisolated static func load(_ provider: AssistantProvider) -> Loaded {
+        var loaded = Loaded()
+        if let service = provider.keychainService {
+            loaded.key = loadKeychainItem(service)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            loaded.unavailable = loaded.key.isEmpty ? "No \(provider.label) API key." : nil
+        } else {
+            loaded.unavailable = Assistant.appleUnavailableReason
+        }
+        return loaded
+    }
+
+    //apply what was loaded (main thread)
+    private func apply(_ loaded: Loaded, provider: AssistantProvider) {
+        isLoading = false
+        unavailableMessage = loaded.unavailable
+        isReady = (loaded.unavailable == nil)
+        guard provider.keychainService != nil else {
+            //apple intelligence: (re)build the client on a provider switch, or once the model becomes available
             loadedKey = ""
-            //(re)build the client on a provider switch, or once the model becomes available
             if loadedProvider != provider || (client == nil && isReady) {
                 loadedProvider = provider
                 client = nil
@@ -118,9 +161,7 @@ final class Assistant: ObservableObject {
             }
             return
         }
-        let key = loadKeychainItem(service)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        isReady = !key.isEmpty
-        unavailableMessage = key.isEmpty ? "No \(provider.label) API key." : nil
+        let key = loaded.key
         //unchanged? keep the client (it holds the conversation history)
         if key == loadedKey, loadedProvider == provider, (client != nil) == !key.isEmpty { return }
         loadedKey = key
@@ -131,6 +172,9 @@ final class Assistant: ObservableObject {
         case .chatGPT: client = key.isEmpty ? nil : OpenAIClient(apiKey: key)
         }
     }
+
+    //load generation (a stale background load must not overwrite a newer one)
+    private var loadGeneration = 0
 
     //what the current client was built with
     private var loadedKey: String = ""
@@ -154,7 +198,8 @@ final class Assistant: ObservableObject {
 
     //send user prompt
     func send(_ text: String) {
-        reloadKey()
+        //nothing loaded (yet)? load now (blocking, but only in this rare case)
+        if client == nil { reloadKeyNow() }
         guard let client else {
             messages.append(AssistantMessage(role: .error, text: unavailableMessage ?? "\(provider.label) isn't available."))
             return

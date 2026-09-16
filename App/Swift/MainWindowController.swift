@@ -28,7 +28,13 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.titlebarAppearsTransparent = false
         window.toolbarStyle = .unified
         window.minSize = NSSize(width: 900, height: 560)
+        //saved frame? else (first launch) wide enough for the inspector (sidebar + detail minimum + inspector; see
+        //MainView), but well within the screen (small laptops), so a window that grows for the inspector stays movable
+        let restored = window.setFrameUsingName("TaskExplorerMainWindow")
         window.setFrameAutosaveName("TaskExplorerMainWindow")
+        if !restored, let visible = (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame {
+            window.setContentSize(NSSize(width: min(1360, visible.width - 120), height: min(760, visible.height - 80)))
+        }
         window.isReleasedWhenClosed = false
         super.init(window: window)
         window.delegate = self

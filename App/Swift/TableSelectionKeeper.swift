@@ -71,11 +71,12 @@ struct TableSelectionKeeper<ID: Hashable>: NSViewRepresentable {
         deinit { if let clickMonitor { NSEvent.removeMonitor(clickMonitor) } }
 
         func attach(_ table: NSTableView) {
+            //new table? fit its columns once (NOT on every rows change: that snapped user-resized columns back)
             if self.table !== table {
                 uiLog.debug("selection keeper attached to table with \(table.numberOfRows) rows (\(table.tableColumns.first?.title ?? "?")), model has \(self.ids.count) ids")
+                fitColumns(table)
             }
             self.table = table
-            fitColumns(table)
             installClickMonitor()
         }
 

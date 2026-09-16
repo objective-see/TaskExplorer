@@ -29,10 +29,28 @@ struct ProcessTable: View {
     private func recomputeRows() {
         //note: pid as final tiebreaker, so rows w/ equal keys (e.g. same name) keep a stable order across rebuilds
         let flat = store.visibleProcesses.sorted(using: sortOrder + [KeyPathComparator(\.id)])
-        if flat != rows { rows = flat }
+        if flat != rows {
+            //a large change (the initial fill, a mass exit) is rebuilt, not diffed: SwiftUI's Table diff has AppKit
+            //tear down and re-create hosted row views one by one, which took up to 47 s for ~800 rows (a fresh table
+            //only builds the visible rows)
+            let old = Set(rows.map(\.id)), new = Set(flat.map(\.id))
+            let changed = new.subtracting(old).count + old.subtracting(new).count
+            if changed > 100 {
+                uiLog.debug("rows: \(rows.count) -> \(flat.count) (\(changed) changed): rebuilding table")
+                reloadToken += 1
+            }
+            rows = flat
+        }
         let tree = (store.viewMode == .tree && !store.isFiltering) ? store.visibleTreeRows : []
         if tree != treeRows { treeRows = tree }
     }
+
+    //bumped to rebuild the table (see recomputeRows)
+    @State private var reloadToken = 0
+
+    //column layout (widths), kept across the table's rebuilds (filter changes, large row changes)
+    // ->in memory only: persisting it (AppStorage) once re-applied a width from a much wider window
+    @State private var columnLayout = TableColumnCustomization<ProcessItem>()
 
     //row to reveal (index into the current rows) + a token so repeated reveals of the same row still fire
     @State private var revealIndex: Int?
@@ -54,6 +72,9 @@ struct ProcessTable: View {
                 if selection != new { selection = new }
             }
             .onAppear {
+                #if DEBUG
+                MainThreadWatchdog.start()
+                #endif
                 recomputeRows()
                 //a selection made while this table wasn't showing (e.g. from the 'Everything' results)
                 if let request = store.scrollTarget { DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { reveal(request.pid) } }
@@ -68,6 +89,10 @@ struct ProcessTable: View {
             .onChange(of: store.scrollTarget) { _, request in
                 guard let request else { return }
                 reveal(request.pid)
+            }
+            .onChange(of: tableKey) { _, _ in
+                //a rebuilt table: give it a layout pass once it's up (see Store.nudgeLayout)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { store.nudgeLayout() }
             }
             .onChange(of: structureKey) { _, _ in
                 //view mode / tokens changed (table is rebuilt): keep the selected row in view
@@ -97,19 +122,22 @@ struct ProcessTable: View {
             if store.viewMode == .tree, !store.isFiltering {
                 //note: flattened (w/ depth + chevrons) rather than SwiftUI's outline table, so it can start fully expanded
                 //note: sort headers are inert in tree view (rows keep their tree order)
-                Table(treeRows, selection: $selection, sortOrder: .constant(sortOrder)) { columns }
+                Table(treeRows, selection: $selection, sortOrder: .constant(sortOrder), columnCustomization: $columnLayout) { columns }
                     .contextMenu {
                         Button("Expand All") { store.expandAll() }
                         Button("Collapse All") { store.collapseAll() }
                     }
             } else {
-                Table(rows, selection: $selection, sortOrder: sortBinding) { columns }
+                Table(rows, selection: $selection, sortOrder: sortBinding, columnCustomization: $columnLayout) { columns }
             }
         }
         //note: a filter change swaps (nearly) the whole row set; diffing that as row insert/removes is very slow
         //      (AppKit tears down every hosted cell view), so key the table on the filter to force a (fast) reload instead
         .id(tableKey)
         .tableStyle(.inset(alternatesRowBackgrounds: true))
+        //pinned left & clipped: narrower than its columns' minimum, a table must be cut off on the right, not shifted
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .clipped()
         .contextMenu(forSelectionType: ProcessItem.ID.self) { pids in
             if let pid = pids.first, let item = store.process(pid) { ProcessMenuItems(item: item) }
         } primaryAction: { pids in
@@ -117,7 +145,10 @@ struct ProcessTable: View {
         }
         .overlay {
             if store.processes.isEmpty, store.status == nil {
-                ContentUnavailableView("Enumerating Processes…", systemImage: "cpu")
+                VStack(spacing: 12) {
+                    ProgressView().controlSize(.large)
+                    Text("Enumerating Processes…").font(.title3).foregroundStyle(.secondary)
+                }
             } else if store.isFiltering, rows.isEmpty {
                 ContentUnavailableView("No Matches", systemImage: "magnifyingglass", description: Text("No processes match \(store.filterDescription)."))
             }
@@ -127,7 +158,7 @@ struct ProcessTable: View {
     //table identity (view mode + filter)
     // ->the (debounced) applied query, so typing doesn't rebuild the table per keystroke
     private var tableKey: String {
-        "\(store.viewMode.rawValue)|\(store.tokens.map { $0.keyword }.joined(separator: ","))|\(store.appliedQuery.trimmingCharacters(in: .whitespaces))"
+        "\(store.viewMode.rawValue)|\(store.tokens.map { $0.keyword }.joined(separator: ","))|\(store.appliedQuery.trimmingCharacters(in: .whitespaces))|\(reloadToken)"
     }
 
     //structure key (no text): a change here is worth scrolling the selection back into view
@@ -173,36 +204,43 @@ struct ProcessTable: View {
                 }
                 Image(nsImage: item.icon ?? NSWorkspace.shared.icon(for: .unixExecutable))
                     .resizable().frame(width: 20, height: 20)
+                //red: flagged by VirusTotal, or loads a flagged dylib
+                let flagged = item.vt.isFlagged || store.flaggedHostPIDs.contains(item.id)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(item.name)
-                        .foregroundStyle(item.vt.isFlagged ? Color.red : Color.primary)
-                        .fontWeight(item.vt.isFlagged ? .semibold : .regular)
+                        .foregroundStyle(flagged ? Color.red : Color.primary)
+                        .fontWeight(flagged ? .semibold : .regular)
                     Text(item.path).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 }
             }
             .help(item.path)
         }
-        .width(min: 160, ideal: 380)
+        .width(min: 160, ideal: 300, max: 900)
+        .customizationID("process")
 
         TableColumn("PID", value: \.id) { item in
             Text(String(item.id)).monospacedDigit()
         }
         .width(min: 50, ideal: 64, max: 90)
+        .customizationID("pid")
 
         TableColumn("User", value: \.user) { item in
             Text(item.user)
         }
         .width(min: 60, ideal: 90, max: 160)
+        .customizationID("user")
 
         TableColumn("Signing", value: \.signer) { item in
             SignerLabel(signer: item.signer, isApple: item.isApple, notFound: item.notFound, error: item.signingError, pending: item.signingPending, isProcess: true)
         }
         .width(min: 80, ideal: 120, max: 160)
+        .customizationID("signing")
 
         TableColumn("VirusTotal", value: \.vt) { item in
             if store.vtEnabled { VTLabel(status: item.vt) } else { VTOffLabel(reason: store.vtDisabledReason) }
         }
         .width(min: 60, ideal: 84, max: 110)
+        .customizationID("vt")
 
         TableColumn("") { item in
             Menu { ProcessMenuItems(item: item) } label: { Image(systemName: "ellipsis.circle").accessibilityLabel("Actions") }
@@ -211,6 +249,7 @@ struct ProcessTable: View {
                 .fixedSize()
         }
         .width(28)
+        .customizationID("info")
     }
 }
 
@@ -312,6 +351,10 @@ struct TableScroller: NSViewRepresentable {
             defer { if anchorID == nil || !ids.contains(anchorID!) { recordAnchor(table: table, clip: clip) } }
             guard let anchorID, let index = ids.firstIndex(of: anchorID), index < table.numberOfRows else { return }
             table.layoutSubtreeIfNeeded()
+            //note: rect(ofRow:) makes AppKit measure (i.e. build a hosted view for) every row up to it: only worth it
+            //      near the rows already on screen; a far anchor (rows inserted above it) is simply dropped
+            let visible = table.rows(in: clip.bounds)
+            guard abs(index - visible.location) < 100 else { self.anchorID = nil; return }
             let rowRect = table.rect(ofRow: index)
             let (minY, maxY) = Coordinator.scrollRange(table: table, clip: clip)
             let y = max(minY, min(rowRect.minY - anchorOffset, maxY))
@@ -325,11 +368,12 @@ struct TableScroller: NSViewRepresentable {
         // ->note: the table's scroll view extends under the toolbar (and the header): "scrolled to top" is a NEGATIVE
         //   origin (-contentInsets.top, e.g. -80, or -116 with the search scope bar). Clamping to 0 dragged the rows up
         //   under the toolbar on every rows change: invisible with hundreds of rows, but a filtered handful vanished
+        //   note: the content height is the table's frame, NOT rect(ofRow: last): with automatic row heights that
+        //   makes AppKit materialize and measure every (SwiftUI-hosted) row, i.e. a multi-second hang on ~800 rows
         static func scrollRange(table: NSTableView, clip: NSClipView) -> (CGFloat, CGFloat) {
             let insets = clip.contentInsets
             let minY = -insets.top
-            let contentHeight = table.numberOfRows > 0 ? table.rect(ofRow: table.numberOfRows - 1).maxY : 0
-            let maxY = max(minY, contentHeight + insets.bottom - clip.bounds.height)
+            let maxY = max(minY, table.frame.height + insets.bottom - clip.bounds.height)
             return (minY, maxY)
         }
     }
@@ -472,3 +516,27 @@ struct VTMenuItems: View {
         }
     }
 }
+
+
+#if DEBUG
+//logs when the main thread stops servicing its queue for more than 300 ms (debug builds only)
+enum MainThreadWatchdog {
+    private static var started = false
+    static func start() {
+        guard !started else { return }
+        started = true
+        DispatchQueue.global(qos: .utility).async {
+            while true {
+                let sent = Date()
+                let done = DispatchSemaphore(value: 0)
+                DispatchQueue.main.async { done.signal() }
+                if done.wait(timeout: .now() + 0.3) == .timedOut {
+                    done.wait()
+                    uiLog.debug("STALL: main thread blocked for \(Int(Date().timeIntervalSince(sent) * 1000)) ms")
+                }
+                Thread.sleep(forTimeInterval: 0.1)
+            }
+        }
+    }
+}
+#endif

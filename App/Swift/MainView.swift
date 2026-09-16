@@ -19,9 +19,14 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: $columns) {
             AssistantPanel()
-                .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 520)
+                .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 520)
         } detail: {
+            //note: a minimum width, the widest table's minimum: narrower, SwiftUI doesn't shrink or scroll the (AppKit)
+            //      tables but shifts them sideways, partly under the inspector (see also ItemsPane's header row)
+            //      ...SwiftUI adds the sidebar's ideal width (300) to this minimum, so 260 yields the 560 wanted
             content
+                .frame(minWidth: 260)
+                .padding(.trailing, store.layoutNudge)
                 .inspector(isPresented: $store.showInspector) {
                     InspectorView()
                         .inspectorColumnWidth(min: 280, ideal: 340, max: 520)
@@ -36,18 +41,18 @@ struct MainView: View {
             // ->otherwise the search field stays active, and the next click (e.g. on a row) is swallowed just to end the search
             NSApp.keyWindow?.makeFirstResponder(nil)
         }
-        .searchScopes($store.scope, activation: .onTextEntry) {
-            ForEach(SearchScope.allCases) { scope in Text(scope.rawValue).tag(scope) }
-        }
         .onChange(of: store.query) { _, newValue in
             //typing a complete keyword? convert to token
             let text = newValue.trimmingCharacters(in: .whitespaces)
-            if text.hasPrefix("#"), store.filter.isKeyword(text), !store.tokens.contains(where: { $0.keyword == text.lowercased() }) {
+            if text.hasPrefix("#"), store.isKeyword(text), !store.tokens.contains(where: { $0.keyword == text.lowercased() }) {
                 store.tokens.append(FilterToken(keyword: text.lowercased()))
                 store.query = ""
             }
         }
         .onChange(of: store.showAssistant) { _, show in columns = show ? .all : .detailOnly }
+        //the inspector (un)folding resizes the detail column; near its minimum width the tables end up shifted
+        //sideways until a layout pass with a changed size (see Store.nudgeLayout)
+        .onChange(of: store.showInspector) { _, _ in DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.nudgeLayout() } }
         .onChange(of: columns) { _, visibility in store.showAssistant = (visibility != .detailOnly) }
         .onExitCommand { store.clearFilter(); NSApp.keyWindow?.makeFirstResponder(nil) }
         .toolbar { toolbarContent }
@@ -81,7 +86,7 @@ struct MainView: View {
         //      that also swallows the next click elsewhere
         guard text.hasPrefix("#") else { return [] }
         let tokens = store.tokens
-        let keywords = store.keywords.filter { keyword in !tokens.contains(where: { $0.keyword == keyword }) }
+        let keywords = ([Store.everythingKeyword] + store.keywords).filter { keyword in !tokens.contains(where: { $0.keyword == keyword }) }
         return keywords.filter { $0.hasPrefix(text) }.map { FilterToken(keyword: $0) }
     }
 
@@ -96,29 +101,24 @@ struct MainView: View {
             .disabled(store.isFiltering)
             .help(store.isFiltering ? "Tree view is unavailable while filtering" : "Flat or hierarchical (tree) view of processes")
 
-            Button { store.showFlagged = true } label: {
-                HStack(spacing: 3) {
-                    Image(systemName: store.flagged.isEmpty ? "flag" : "flag.fill")
-                        .foregroundStyle(store.flagged.isEmpty ? Color.primary : Color.red)
-                    if !store.flagged.isEmpty {
-                        Text(String(store.flagged.count)).font(.caption2.bold()).foregroundStyle(.red)
-                    }
-                }
-            }
-            .help("Flagged items (VirusTotal)")
-            .accessibilityLabel(store.flagged.isEmpty ? "Flagged items" : "\(store.flagged.count) flagged items")
-
+            //note: no flagged-items button: flagged processes are red in the list, '#flagged' filters them, and the
+            //      assistant can list them (View › Flagged Items… remains)
             Button { store.showInspector.toggle() } label: { Image(systemName: "sidebar.trailing") }
                 .help("Show/hide inspector")
                 .accessibilityLabel(store.showInspector ? "Hide inspector" : "Show inspector")
 
+
             //keyword filters
             // ->a menu (rather than a suggestions popover on an empty search field, which swallowed the next click)
             Menu {
+                //scope: everything (a token, so it shows in the field)
+                Toggle(isOn: Binding(get: { store.scope == .everything }, set: { store.scope = $0 ? .everything : .processes })) {
+                    Text(verbatim: Store.everythingKeyword + "  —  " + Store.everythingDescription)
+                }
+                Divider()
                 ForEach(store.keywords, id: \.self) { keyword in
                     Button {
                         if !store.tokens.contains(where: { $0.keyword == keyword }) {
-                            store.scope = .processes
                             store.tokens.append(FilterToken(keyword: keyword))
                         }
                     } label: {
@@ -134,6 +134,7 @@ struct MainView: View {
             }
             .help("Keyword filters (or type # in the filter box)")
             .accessibilityLabel("Keyword filters")
+
         }
     }
 
@@ -225,6 +226,10 @@ struct BottomBar: View {
                 .accessibilityLabel(store.isMonitoring ? "Monitoring" : "Not monitoring")
             Text(statusText).font(.callout).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail).layoutPriority(-1)
                 .help(store.cacheIndexing ? "Indexing dyld shared cache dylibs for all processes (via vmmap)" : "")
+            //spinner while the (initial) enumeration or the shared cache index runs
+            if isEnumerating || store.cacheIndexing {
+                ProgressView().controlSize(.small)
+            }
             Spacer()
             Button {
                 JSONExport.save(window: NSApp.keyWindow)
@@ -237,6 +242,11 @@ struct BottomBar: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(.bar)
+    }
+
+    //initial enumeration (processes, dylibs, files, network) in progress?
+    private var isEnumerating: Bool {
+        [Int(ENUMERATION_STATE_TASKS), Int(ENUMERATION_STATE_DYLIBS), Int(ENUMERATION_STATE_FILES), Int(ENUMERATION_STATE_NETWORK)].contains(store.enumerationState)
     }
 
     private var statusText: String {

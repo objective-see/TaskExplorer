@@ -20,18 +20,24 @@ struct GlobalSearchView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(verbatim: "\(results.count) results").font(.callout).foregroundStyle(.secondary)
+                Text(verbatim: "Everything matching \(store.filterDescription) · \(results.count) result\(results.count == 1 ? "" : "s")")
+                    .font(.callout).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 Spacer()
                 if !store.cacheIndexEnabled {
                     Text("Shared cache dylibs are not indexed (Settings › Dylibs)").font(.caption).foregroundStyle(.tertiary)
                 }
+                //the default button (return), so a search is dismissed from the keyboard
                 Button("Done") { store.scope = .processes }
+                    .keyboardShortcut(.defaultAction)
             }
-            .padding(.horizontal, 12).padding(.vertical, 6)
+            //note: the height of the process table's column header (which the sidebar's header lines up with too)
+            .padding(.horizontal, 12).padding(.top, 1).padding(.bottom, 2)
             .background(.bar)
-            Divider()
+            Rectangle().fill(Color(nsColor: .separatorColor)).frame(height: 1)
             if results.isEmpty {
                 ContentUnavailableView("No Matches", systemImage: "magnifyingglass", description: Text("Nothing matches \(store.filterDescription)."))
+                    //fill the view (else its content is centered vertically, and the header drifts down)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(results) { result in
                     switch result {

@@ -13,6 +13,11 @@ struct ItemsPane: View {
 
     @EnvironmentObject var store: Store
 
+    //column layouts (widths), kept across tab switches & the tables' rebuilds (in memory only; see ProcessTable)
+    @State private var dylibColumns = TableColumnCustomization<DylibItem>()
+    @State private var fileColumns = TableColumnCustomization<FileItem>()
+    @State private var connectionColumns = TableColumnCustomization<ConnectionItem>()
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -32,9 +37,9 @@ struct ItemsPane: View {
                         .padding(.leading, 14)
                         .disabled(store.selectionIsESClient)
                         .help("Also list dylibs loaded from the dyld shared cache (enumerated via vmmap for this process; enable indexing for all processes in Settings › Dylibs)")
-                    if store.selectionIsESClient {
-                        Text("not for Endpoint Security clients (vmmap would suspend it)").font(.caption).foregroundStyle(.secondary).fixedSize()
-                            .help("vmmap suspends the process it inspects; an Endpoint Security client that misses an auth deadline while suspended is killed by the kernel. Dylibs mapped from disk are still listed.")
+                    if let note = store.selectionCacheUnavailable {
+                        Text(note).font(.caption).foregroundStyle(.secondary).fixedSize()
+                            .help("vmmap suspends the process it inspects: a suspended Endpoint Security client can miss its deadlines and be killed by the kernel, and suspending TaskExplorer would freeze its UI. Dylibs mapped from disk are still listed.")
                     }
                 }
 
@@ -64,6 +69,10 @@ struct ItemsPane: View {
             }
             .padding(.leading, 16)
             .padding(.trailing, 8)
+            //note: this row's fixed-size controls must not set the detail column's minimum width: SwiftUI centers an
+            //      overflowing column, shifting the tables sideways; let the row clip instead
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            .clipped()
             .padding(.vertical, 6)
             .background(.bar)
 
@@ -71,11 +80,13 @@ struct ItemsPane: View {
 
             if store.selectedPID == nil {
                 ContentUnavailableView("Select a Process", systemImage: "arrow.up", description: Text("Its dylibs, files, and network connections will be shown here."))
+                    //fill the pane (else the whole pane's content is centered vertically, and the tab row drifts down)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 switch store.itemsTab {
-                case .dylibs: DylibTable()
-                case .files: FileTable()
-                case .network: ConnectionTable()
+                case .dylibs: DylibTable(columnLayout: $dylibColumns)
+                case .files: FileTable(columnLayout: $fileColumns)
+                case .network: ConnectionTable(columnLayout: $connectionColumns)
                 }
             }
         }
@@ -85,6 +96,7 @@ struct ItemsPane: View {
 //dylibs
 struct DylibTable: View {
     @EnvironmentObject var store: Store
+    @Binding var columnLayout: TableColumnCustomization<DylibItem>
     @State private var sortOrder: [KeyPathComparator<DylibItem>] = [KeyPathComparator(\.name, comparator: .localizedStandard)]
 
     var body: some View {
@@ -94,7 +106,7 @@ struct DylibTable: View {
             if !store.vtEnabled, new.first?.keyPath == \DylibItem.vt { return }
             sortOrder = new
         })
-        Table(rows, selection: $selection, sortOrder: sortBinding) {
+        Table(rows, selection: $selection, sortOrder: sortBinding, columnCustomization: $columnLayout) {
             TableColumn("Dylib", value: \.name) { item in
                 HStack(spacing: 8) {
                     Image(nsImage: item.icon ?? NSWorkspace.shared.icon(for: .unixExecutable)).resizable().frame(width: 18, height: 18)
@@ -105,26 +117,35 @@ struct DylibTable: View {
                 }
                 .help(item.path)
             }
-            .width(min: 240, ideal: 420)
+            .width(min: 180, ideal: 420)
+            .customizationID("dylib")
             TableColumn("Signing", value: \.signer) { item in
                 SignerLabel(signer: item.signer, isApple: item.isApple, notFound: item.notFound, error: item.signingError, pending: item.signingPending)
             }
             .width(min: 90, ideal: 120, max: 160)
+            .customizationID("signing")
             TableColumn("Team ID", value: \.teamID) { item in Text(item.teamID).font(.callout).foregroundStyle(.secondary) }
                 .width(min: 80, ideal: 100, max: 140)
+            .customizationID("team")
             TableColumn("Loaded in", value: \.hostCount) { item in Text(String(item.hostCount)).monospacedDigit() }
                 .width(min: 60, ideal: 70, max: 90)
+            .customizationID("loadedIn")
             TableColumn("VirusTotal", value: \.vt) { item in
                 if store.vtEnabled { VTLabel(status: item.vt) } else { VTOffLabel(reason: store.vtDisabledReason) }
             }
             .width(min: 70, ideal: 84, max: 110)
+            .customizationID("vt")
             TableColumn("") { item in
                 Menu { DylibMenuItems(item: item) } label: { Image(systemName: "ellipsis.circle").accessibilityLabel("Actions") }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             }
             .width(28)
+            .customizationID("info")
         }
         .tableStyle(.inset(alternatesRowBackgrounds: true))
+        //pinned left & clipped: narrower than its columns' minimum, a table must be cut off on the right, not shifted
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
         .onAppear { selection = storeSelection }
         .onChange(of: selection) { _, new in
@@ -167,11 +188,12 @@ struct DylibMenuItems: View {
 //files
 struct FileTable: View {
     @EnvironmentObject var store: Store
+    @Binding var columnLayout: TableColumnCustomization<FileItem>
     @State private var sortOrder: [KeyPathComparator<FileItem>] = [KeyPathComparator(\.name, comparator: .localizedStandard)]
 
     var body: some View {
         let rows = store.visibleFiles.sorted(using: sortOrder + [KeyPathComparator(\.id)])
-        Table(rows, selection: $selection, sortOrder: $sortOrder) {
+        Table(rows, selection: $selection, sortOrder: $sortOrder, columnCustomization: $columnLayout) {
             TableColumn("File", value: \.name) { item in
                 HStack(spacing: 8) {
                     Image(nsImage: item.icon ?? NSWorkspace.shared.icon(for: .data)).resizable().frame(width: 18, height: 18)
@@ -182,13 +204,16 @@ struct FileTable: View {
                 }
                 .help(item.path)
             }
-            .width(min: 240, ideal: 520)
+            .width(min: 180, ideal: 520)
+            .customizationID("file")
             TableColumn("Type", value: \.typeLabel) { item in
                 Text(item.typeLabel).foregroundStyle(item.type == FILE_TYPE_FILE ? .primary : .secondary)
             }
             .width(min: 60, ideal: 80, max: 100)
+            .customizationID("type")
             TableColumn("Open in", value: \.hostCount) { item in Text(String(item.hostCount)).monospacedDigit() }
                 .width(min: 60, ideal: 70, max: 90)
+            .customizationID("openIn")
             TableColumn("") { item in
                 Menu {
                     Button("More Info") { store.selectedItem = .file(item.id); store.showInspector = true }
@@ -198,8 +223,12 @@ struct FileTable: View {
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             }
             .width(28)
+            .customizationID("info")
         }
         .tableStyle(.inset(alternatesRowBackgrounds: true))
+        //pinned left & clipped: narrower than its columns' minimum, a table must be cut off on the right, not shifted
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
         .onAppear { selection = storeSelection }
         .onChange(of: selection) { _, new in
@@ -231,17 +260,21 @@ struct FileTable: View {
 //network connections
 struct ConnectionTable: View {
     @EnvironmentObject var store: Store
+    @Binding var columnLayout: TableColumnCustomization<ConnectionItem>
     @State private var sortOrder: [KeyPathComparator<ConnectionItem>] = [KeyPathComparator(\.proto), KeyPathComparator(\.local)]
 
     var body: some View {
         let rows = store.visibleConnections.sorted(using: sortOrder + [KeyPathComparator(\.id)])
-        Table(rows, selection: $selection, sortOrder: $sortOrder) {
+        Table(rows, selection: $selection, sortOrder: $sortOrder, columnCustomization: $columnLayout) {
             TableColumn("Proto", value: \.proto) { item in Text(item.proto).font(.callout) }
                 .width(min: 50, ideal: 60, max: 80)
+            .customizationID("proto")
             TableColumn("Local", value: \.local) { item in Text(item.local).font(.callout).monospacedDigit() }
-                .width(min: 140, ideal: 200)
+                .width(min: 100, ideal: 200)
+            .customizationID("local")
             TableColumn("Remote", value: \.remote) { item in Text(item.remote).font(.callout).monospacedDigit() }
-                .width(min: 140, ideal: 200)
+                .width(min: 100, ideal: 200)
+            .customizationID("remote")
             TableColumn("State", value: \.state) { item in
                 HStack(spacing: 4) {
                     Image(systemName: stateSymbol(item.state)).foregroundStyle(stateColor(item.state))
@@ -249,15 +282,22 @@ struct ConnectionTable: View {
                 }
                 .font(.callout)
             }
-            .width(min: 90, ideal: 110, max: 140)
+            .width(min: 70, ideal: 110, max: 140)
+            .customizationID("state")
             TableColumn("Interface", value: \.interface) { item in Text(item.interface).font(.callout).foregroundStyle(.secondary) }
-                .width(min: 60, ideal: 70, max: 100)
+                .width(min: 50, ideal: 70, max: 100)
+            .customizationID("interface")
             TableColumn("Sent", value: \.bytesUp) { item in Text(ByteCountFormatter.string(fromByteCount: Int64(item.bytesUp), countStyle: .file)).font(.callout).monospacedDigit() }
-                .width(min: 60, ideal: 80, max: 110)
+                .width(min: 50, ideal: 80, max: 110)
+            .customizationID("sent")
             TableColumn("Received", value: \.bytesDown) { item in Text(ByteCountFormatter.string(fromByteCount: Int64(item.bytesDown), countStyle: .file)).font(.callout).monospacedDigit() }
-                .width(min: 60, ideal: 80, max: 110)
+                .width(min: 50, ideal: 80, max: 110)
+            .customizationID("received")
         }
         .tableStyle(.inset(alternatesRowBackgrounds: true))
+        //pinned left & clipped: narrower than its columns' minimum, a table must be cut off on the right, not shifted
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
         .onAppear { selection = storeSelection }
         .onChange(of: selection) { _, new in

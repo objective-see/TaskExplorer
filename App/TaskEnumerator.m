@@ -939,9 +939,12 @@ bail:
         //collect
         for(Task* task in [self allTasks])
         {
-            //skip kernel, endpoint security clients (never suspended; see Task), and those already done
+            //skip kernel, ourselves (vmmap would suspend the UI), endpoint security clients (never suspended; see Task),
+            //and those already done
             if( (0 == task.pid.intValue) ||
+                (getpid() == task.pid.intValue) ||
                 (YES == task.isESClient) ||
+                (YES == isProtectedSystemProcess(task.binary.path)) ||
                 (YES == task.cacheDylibsEnumerated) )
             {
                 //skip
@@ -1134,6 +1137,8 @@ bail:
                 // ->add them in the background, so the click itself stays instant
                 if( (YES != task.cacheDylibsEnumerated) &&
                     (YES != task.isESClient) &&
+                    (getpid() != task.pid.intValue) &&
+                    (YES != isProtectedSystemProcess(task.binary.path)) &&
                     (YES == getPreferenceBool(PREF_INDEX_CACHE_DYLIBS)) )
                 {
                     //in background

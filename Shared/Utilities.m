@@ -66,6 +66,16 @@ NSBundle* findAppBundle(NSString* binaryPath)
     do
     {
         //try to load app's bundle
+        //only directories that look like a bundle (Foo.app, Bar.framework, Baz.xpc, ...): NSBundle on every other
+        //ancestor (Versions/A, /usr/bin, ...) costs a plist lookup each, which dominated the initial enumeration
+        if( (appPath != binaryPath) &&
+            (0 == appPath.pathExtension.length) )
+        {
+            //next
+            appPath = [appPath stringByDeletingLastPathComponent];
+            continue;
+        }
+
         appBundle = [NSBundle bundleWithPath:appPath];
 
         //check for match
@@ -94,6 +104,21 @@ NSBundle* findAppBundle(NSString* binaryPath)
     return appBundle;
 }
 
+
+//is this a core system process that must never be suspended (e.g. by vmmap)?
+// ->suspending these stalls or destabilizes the whole system (the window server, login, endpoint security, ...)
+BOOL isProtectedSystemProcess(NSString* path)
+{
+    //protected (by executable name)
+    static NSSet* protected = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        protected = [NSSet setWithArray:@[@"launchd", @"kernel_task", @"WindowServer", @"loginwindow", @"endpointsecurityd",
+                                          @"sysextd", @"securityd", @"opendirectoryd", @"kernelmanagerd", @"watchdogd"]];
+    });
+
+    return (0 != path.length) && [protected containsObject:path.lastPathComponent];
+}
 
 //escape a string for embedding in (hand-built) JSON
 // ->via NSJSONSerialization, so quotes, backslashes, control chars, etc are handled

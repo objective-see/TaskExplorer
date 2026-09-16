@@ -214,8 +214,11 @@ final class WelcomeModel: ObservableObject {
     //finish
     func finish() {
         //note: main window first, then close this one (the app quits when its last window closes)
+        // ->grab the controller first: 'completeInitialization' releases the delegate's reference, so closing via
+        //   the delegate afterwards was a no-op (the welcome window stayed open behind the main window)
+        let welcome = appDelegate?.welcomeWindowController
         appDelegate?.completeInitialization()
-        (NSApp.delegate as? AppDelegate)?.welcomeWindowController?.close()
+        welcome?.close()
     }
 
     func openSettings(_ url: String) {

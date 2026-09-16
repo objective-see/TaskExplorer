@@ -115,6 +115,20 @@ final class Store: ObservableObject {
 
     @Published private(set) var flagged: [FlaggedItem] = []
 
+    //pids of processes that have a flagged dylib loaded
+    @Published private(set) var flaggedHostPIDs: Set<Int> = []
+
+    //layout nudge: a 1pt padding pulse on the detail content, i.e. a "resize" (see nudgeLayout)
+    @Published private(set) var layoutNudge: CGFloat = 0
+
+    //re-run the detail column's layout, as a window resize would
+    // ->a (re)built table sometimes comes up shifted sideways when the column is near its minimum width; only a
+    //   resize (a layout pass with a changed size) puts it where it belongs, so fake one
+    func nudgeLayout() {
+        layoutNudge = 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.layoutNudge = 0 }
+    }
+
     /* STATE */
 
     //status (e.g. "starting system extension..."), shown as an overlay
@@ -239,9 +253,31 @@ final class Store: ObservableObject {
         if appliedQuery != query { appliedQuery = query }
     }
     @Published var tokens: [FilterToken] = [] {
-        didSet { if tokens != oldValue { filterChanged() } }
+        didSet {
+            if tokens != oldValue { filterChanged() }
+            //the scope follows its token
+            let everything = tokens.contains { $0.keyword == Store.everythingKeyword }
+            if scope != (everything ? .everything : .processes) { scope = everything ? .everything : .processes }
+        }
     }
-    @Published var scope: SearchScope = .processes
+
+    //search scope: 'everything' (processes, dylibs, files & connections) is a token in the filter field, so it's
+    //visibly part of the search; setting the scope adds/removes that token
+    static let everythingKeyword = "#everything"
+    static let everythingDescription = "search dylibs, files, and connections too"
+    @Published var scope: SearchScope = .processes {
+        didSet {
+            let hasToken = tokens.contains { $0.keyword == Store.everythingKeyword }
+            if scope == .everything, !hasToken { tokens.append(FilterToken(keyword: Store.everythingKeyword)) }
+            if scope == .processes, hasToken { tokens.removeAll { $0.keyword == Store.everythingKeyword } }
+        }
+    }
+
+    //filter tokens (the scope token isn't one)
+    var filterTokens: [FilterToken] { tokens.filter { $0.keyword != Store.everythingKeyword } }
+
+    //a keyword (filter, or the scope token)?
+    func isKeyword(_ text: String) -> Bool { text.lowercased() == Store.everythingKeyword || filter.isKeyword(text) }
     @Published var itemsQuery: String = "" {
         didSet {
             itemsQueryDebounce?.cancel()
@@ -281,15 +317,19 @@ final class Store: ObservableObject {
         return item.task.cacheDylibsEnumerated
     }
 
-    //selected task is an endpoint security client? (its shared cache dylibs are never enumerated; see Task)
-    var selectionIsESClient: Bool {
-        guard let pid = selectedPID, let item = processesByPID[pid] else { return false }
-        return item.task.isESClient
+    //why the selected task's shared cache dylibs can't be enumerated (nil: they can); see Task
+    var selectionCacheUnavailable: String? {
+        guard let pid = selectedPID, let item = processesByPID[pid] else { return nil }
+        if item.task.isESClient { return "n/a for Endpoint Security clients" }
+        if pid == Int(getpid()) { return "n/a for TaskExplorer itself" }
+        if isProtectedSystemProcess(item.task.binary.path) { return "n/a for core system processes" }
+        return nil
     }
+    var selectionIsESClient: Bool { selectionCacheUnavailable != nil }
 
     //make sure the selected task's shared cache dylibs are enumerated (vmmap), if the user wants to see them
     func ensureCacheDylibs() {
-        guard showCacheDylibs, let pid = selectedPID, pid != 0, let item = processesByPID[pid], !item.task.cacheDylibsEnumerated, !item.task.isESClient else { return }
+        guard showCacheDylibs, let pid = selectedPID, pid != 0, let item = processesByPID[pid], !item.task.cacheDylibsEnumerated, selectionCacheUnavailable == nil else { return }
         item.task.includeCacheDylibs = true
         if itemsTab == .dylibs { refreshSelectedItems() }
     }
@@ -486,6 +526,9 @@ final class Store: ObservableObject {
         let flaggedBinaries = (enumerator.flaggedItemsSnapshot() as? [Binary]) ?? []
         let newFlagged = flaggedBinaries.map { FlaggedItem(binary: $0) }
         if flagged != newFlagged { flagged = newFlagged }
+        //processes that load a flagged dylib (shown red, like flagged processes)
+        let newHosts = Set(flaggedBinaries.filter { !$0.isTaskBinary }.flatMap { ($0.hostTasks() ?? []).map { $0.pid.intValue } })
+        if flaggedHostPIDs != newHosts { flaggedHostPIDs = newHosts }
 
         //selection gone?
         if let pid = selectedPID, byPID[pid] == nil {
@@ -517,7 +560,7 @@ final class Store: ObservableObject {
         let task = item.task
         //dylibs: while the shared cache dylibs are being enumerated (vmmap) for display, keep the list empty
         // ->so the pane shows 'enumerating' rather than the (disk-only) list, then a jump to the full one
-        if itemsTab == .dylibs, showCacheDylibs, itemsLoading, !task.cacheDylibsEnumerated, !task.isESClient, pid != 0 {
+        if itemsTab == .dylibs, showCacheDylibs, itemsLoading, !task.cacheDylibsEnumerated, selectionCacheUnavailable == nil, pid != 0 {
             dylibs = []
         } else {
             dylibs = (task.dylibsSnapshot() ?? []).map { DylibItem(binary: $0) }
@@ -567,7 +610,7 @@ final class Store: ObservableObject {
 
     //does task match (text + tokens)?
     func matches(_ item: ProcessItem) -> Bool {
-        for token in tokens where !filter.taskFulfillsKeyword(token.keyword, task: item.task) { return false }
+        for token in filterTokens where !filter.taskFulfillsKeyword(token.keyword, task: item.task) { return false }
         let text = appliedQuery.trimmingCharacters(in: .whitespaces)
         if text.isEmpty { return true }
         //a #keyword (or one still being typed: '#', '#ad'...): match by keyword, or don't filter on text yet
@@ -576,11 +619,11 @@ final class Store: ObservableObject {
     }
 
     //filtering active?
-    var isFiltering: Bool { !tokens.isEmpty || !appliedQuery.trimmingCharacters(in: .whitespaces).isEmpty }
+    var isFiltering: Bool { !filterTokens.isEmpty || !appliedQuery.trimmingCharacters(in: .whitespaces).isEmpty }
 
     //(human readable) description of the current filter, e.g. '#adhoc "foo"'
     var filterDescription: String {
-        var parts = tokens.map { $0.keyword }
+        var parts = filterTokens.map { $0.keyword }
         let text = appliedQuery.trimmingCharacters(in: .whitespaces)
         if !text.isEmpty { parts.append("“\(text)”") }
         return parts.joined(separator: " ")
@@ -622,7 +665,7 @@ final class Store: ObservableObject {
         let allDylibs = (enumerator.allDylibs() as? [Binary]) ?? []
         for binary in allDylibs {
             var ok = true
-            for token in tokens where !filter.binaryFulfillsKeyword(token.keyword, binary: binary) { ok = false; break }
+            for token in filterTokens where !filter.binaryFulfillsKeyword(token.keyword, binary: binary) { ok = false; break }
             guard ok else { continue }
             if keywordOnly {
                 if filter.isKeyword(text), !filter.binaryFulfillsKeyword(text, binary: binary) { continue }

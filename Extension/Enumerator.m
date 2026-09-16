@@ -626,13 +626,15 @@ bail:
         goto bail;
     }
 
-    //never suspend launchd, or an endpoint security client (vmmap suspends its target; an ES client that misses
-    //its auth deadlines while suspended is killed by the kernel) ...the app skips these too; this is the backstop
+    //never suspend launchd, core system daemons, or an endpoint security client (vmmap suspends its target; an ES
+    //client that misses its auth deadlines while suspended is killed by the kernel) ...the app skips these too; this
+    //is the backstop
     if( (1 == pid) ||
+        (YES == isProtectedSystemProcess(getProcessPath(pid))) ||
         (YES == isESClient(pid)) )
     {
         //dbg msg
-        os_log_debug(logHandle, "not running vmmap on pid %d (launchd, or an endpoint security client)", pid);
+        os_log_debug(logHandle, "not running vmmap on pid %d (launchd, a core system daemon, or an endpoint security client)", pid);
 
         //empty (not nil: 'none', not 'failed')
         results = nil;

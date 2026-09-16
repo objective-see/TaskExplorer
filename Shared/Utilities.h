@@ -23,6 +23,9 @@ extern bool _dyld_shared_cache_contains_path(const char* path);
 NSBundle* findAppBundle(NSString* binaryPath);
 
 //hash (sha1/md5) a file
+//is this a core system process that must never be suspended (e.g. by vmmap)?
+BOOL isProtectedSystemProcess(NSString* path);
+
 //escape a string for embedding in (hand-built) JSON
 NSString* jsonEscape(NSString* string);
 

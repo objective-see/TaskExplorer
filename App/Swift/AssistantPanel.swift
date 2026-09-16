@@ -32,9 +32,13 @@ struct AssistantPanel: View {
                     .help("Clear conversation")
                     .disabled(assistant.messages.isEmpty)
             }
-            .padding(.horizontal, 12).padding(.vertical, 8)
+            //note: sized & pulled up (the sidebar column gets a top inset the detail column doesn't) so the divider
+            //      lines up with the bottom of the process table's column header
+            .padding(.horizontal, 12).padding(.vertical, 5)
+            .padding(.top, -7)
 
-            Divider()
+            //a 1pt line (Divider is 0.5pt): the same weight as the table's column header border it continues
+            Rectangle().fill(Color(nsColor: .separatorColor)).frame(height: 1)
 
             //transcript
             ScrollViewReader { proxy in
@@ -68,7 +72,7 @@ struct AssistantPanel: View {
 
             //prompt
             VStack(spacing: 6) {
-                if !assistant.isReady {
+                if !assistant.isReady, !assistant.isLoading {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Image(systemName: assistant.provider.isLocal ? "apple.intelligence" : "key").foregroundStyle(.secondary)
                         Text(assistant.unavailableMessage ?? "\(assistant.provider.label) isn't available.").font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -115,10 +119,10 @@ struct AssistantPanel: View {
     private var intro: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Ask the assistant about what's running.").font(.callout).foregroundStyle(.secondary)
-            ForEach(["Which processes are ad-hoc signed, or not signed by Apple?",
-                     "List non-Apple dylibs loaded into Apple processes",
-                     "What's listening on the network?",
-                     "Is anything flagged by VirusTotal?"], id: \.self) { suggestion in
+            ForEach(["What processes are running as root?",
+                     "What processes are using the network?",
+                     "What 3rd-party processes are running?",
+                     "What processes are flagged by VirusTotal?"], id: \.self) { suggestion in
                 Button {
                     prompt = suggestion
                     send()
