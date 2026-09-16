@@ -296,18 +296,13 @@ struct WelcomeView: View {
         }
         .padding(24)
         .frame(width: WelcomeView.size(for: model.step).width, height: WelcomeView.size(for: model.step).height)
-        .animation(.easeInOut(duration: 0.25), value: model.step)
+        //note: no transition animation: pages switch in place
     }
 
     //page size: the splash and the last page (sponsor logos) are taller
-    static func size(for step: WelcomeStep) -> CGSize {
-        switch step {
-        case .welcome: return CGSize(width: 640, height: 600)
-        case .permissions: return CGSize(width: 640, height: 480)
-        case .apiKeys: return CGSize(width: 640, height: 670)
-        case .done: return CGSize(width: 640, height: 600)
-        }
-    }
+    //note: one size for every page (the tallest, the API keys page): the window never resizes, and the icon, title,
+    //      and buttons stay put from page to page, rather than sliding around as the layout re-flows
+    static func size(for step: WelcomeStep) -> CGSize { CGSize(width: 640, height: 670) }
 
     private var title: String {
         switch model.step {
