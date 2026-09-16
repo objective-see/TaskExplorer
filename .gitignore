@@ -31,3 +31,6 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+
+## release zips
+Releases/

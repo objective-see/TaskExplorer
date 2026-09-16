@@ -114,14 +114,15 @@ void usage(void)
     //usage
     printf("\nTASKEXPLORER USAGE:\n");
     printf(" -h or -help  display this usage info\n");
-    printf(" -scan        scan all tasks and dylibs \n");
-    printf(" -explore     enumerate all tasks and dylibs\n");
+    printf(" -explore     enumerate all tasks and dylibs (JSON)\n");
+    printf(" -scan        list tasks and dylibs flagged by VirusTotal (JSON; requires an API key)\n");
     printf("\noptions:\n");
-    printf(" -pretty      json output is 'pretty-printed'\n");
-    printf(" -pid [pid]   just scan/explore the specified task\n");
-    printf(" -skipVT      do not query VirusTotal (when '-explore' is specified)\n");
-    printf(" -key [key]   VirusTotal API key (default: key saved via app's preferences)\n");
-    printf(" -detailed    for each task; include dylibs, files, & network connections\n");
+    printf(" -pid [pid]   just the specified task\n");
+    printf(" -detailed    for each task, include its dylibs, files, & network connections\n");
+    printf(" -apple       include Apple (platform) tasks in '-explore' output (default: 3rd-party only)\n");
+    printf(" -key [key]   VirusTotal API key (default: the key saved via the app's Settings)\n");
+    printf(" -skipVT      don't query VirusTotal ('-explore' only)\n");
+    printf(" -pretty      pretty-print the JSON\n");
     printf("\nnote: requires TaskExplorer's system extension to be installed & approved (run the app once)\n\n");
 
     return;
@@ -227,6 +228,18 @@ void cmdlineInterface(void)
             //skip
             skipVirusTotal = YES;
         }
+    }
+
+    //'-scan' (flagged items) is a VirusTotal query: without VirusTotal there is nothing to scan, so bail right away
+    // ->rather than enumerating (and hashing) everything just to print an empty list
+    if( (YES == [arguments containsObject:@"-scan"]) &&
+        (YES == skipVirusTotal) )
+    {
+        //err msg
+        printf("{\"ERROR\": \"'-scan' requires VirusTotal: specify an API key via '-key' (or save one via the app's preferences), and don't pass '-skipVT'\"}\n");
+
+        //bail
+        goto bail;
     }
 
     //be nice
