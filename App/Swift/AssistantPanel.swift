@@ -5,7 +5,7 @@
 //  Created by Patrick Wardle on 9/12/26.
 //  Copyright (c) 2026 Objective-See. All rights reserved.
 //
-//  note: left (full height) panel; chat w/ an agent (Apple Intelligence on-device, or Claude/ChatGPT w/ the user's own API key)
+//  note: left (full height) panel; chat w/ an agent (Apple Intelligence on-device, a local model via Ollama, or Claude/ChatGPT w/ the user's own API key)
 //        ...the assistant is given read-only query tools plus a few UI actions (see AssistantTools)
 
 import SwiftUI
@@ -74,14 +74,20 @@ struct AssistantPanel: View {
             VStack(spacing: 6) {
                 if !assistant.isReady, !assistant.isLoading {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Image(systemName: assistant.provider.isLocal ? "apple.intelligence" : "key").foregroundStyle(.secondary)
+                        Image(systemName: assistant.provider == .apple ? "apple.intelligence" : (assistant.provider == .ollama ? "desktopcomputer" : "key")).foregroundStyle(.secondary)
                         Text(assistant.unavailableMessage ?? "\(assistant.provider.label) isn't available.").font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                        if assistant.provider.isLocal {
+                        switch assistant.provider {
+                        case .apple:
                             //note: only worth a button when the user can fix it (turn Apple Intelligence on)
                             if Assistant.appleEligible {
                                 Button("System Settings…") { if let url = URL(string: URL_SYSTEM_SETTINGS_APPLE_INTELLIGENCE) { NSWorkspace.shared.open(url) } }.controlSize(.small)
                             }
-                        } else {
+                        case .ollama:
+                            //note: running, but no models? the message says what to do (pull one)
+                            if assistant.unavailableMessage == Assistant.ollamaNotRunning {
+                                Button("Get Ollama…") { if let url = URL(string: OLLAMA_DOWNLOAD_URL) { NSWorkspace.shared.open(url) } }.controlSize(.small)
+                            }
+                        case .claude, .chatGPT:
                             Button("Settings…") { (NSApp.delegate as? AppDelegate)?.showPreferences(nil) }.controlSize(.small)
                         }
                     }
@@ -142,8 +148,13 @@ struct AssistantPanel: View {
     //what happens to the data (per provider)
     private var privacyNote: String {
         let scope = "The assistant can query TaskExplorer's live data and drive the UI, but nothing else on your Mac."
-        if assistant.provider.isLocal {
+        switch assistant.provider {
+        case .apple:
             return "Runs on-device with Apple Intelligence: no account, no key, and nothing leaves your Mac. \(scope) The on-device model is small, so keep questions focused (it works best with #keyword filters)."
+        case .ollama:
+            return "Runs locally via Ollama: no account, no key, and nothing leaves your Mac. \(scope) Pick the model in Settings; it must support tool calling, and bigger models give better answers."
+        case .claude, .chatGPT:
+            break
         }
         return "Uses your own API key (stored in your keychain). \(scope) Whatever it queries (process names, paths, and command lines) is sent to the provider you select."
     }

@@ -42,6 +42,9 @@ struct APIKeyField: View {
     //show the label (LabeledContent) or just the field
     var labeled: Bool = true
 
+    //'get a key' link (shown under the field, on the right)
+    var link: (title: String, url: URL)? = nil
+
     //reveal?
     @State private var revealed = false
 
@@ -65,8 +68,8 @@ struct APIKeyField: View {
                     //field's center instead (13pt system text: baseline sits ~4.5pt below center)
                     .alignmentGuide(.firstTextBaseline) { d in d[VerticalAlignment.center] + 4.5 }
 
-                //status (under the field)
-                if status != .none {
+                //status (under the field, left) & link (right, under the field's edge)
+                if status != .none || link != nil {
                     HStack(spacing: 5) {
                         switch status {
                         case .checking:
@@ -84,7 +87,12 @@ struct APIKeyField: View {
                         case .none:
                             EmptyView()
                         }
+                        if let link {
+                            Spacer(minLength: 8)
+                            Link(link.title, destination: link.url)
+                        }
                     }
+                    .frame(width: plain ? 360 : 340)
                     .font(.callout)
                     .transition(.opacity)
                 }

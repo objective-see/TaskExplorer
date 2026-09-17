@@ -493,8 +493,17 @@ enum Signer{None, Apple, AppStore, DevID, AdHoc};
 //mcp server (default) port
 #define MCP_DEFAULT_PORT 7373
 
-//assistant provider (0: claude, 1: chatgpt)
+//assistant provider (0: claude, 1: chatgpt, 2: apple intelligence, 3: ollama)
 #define PREF_ASSISTANT_PROVIDER @"assistantProvider"
+
+//assistant: ollama model (name, as listed by ollama)
+#define PREF_OLLAMA_MODEL @"ollamaModel"
+
+//ollama (local server, default port)
+#define OLLAMA_URL @"http://localhost:11434"
+
+//ollama download
+#define OLLAMA_DOWNLOAD_URL @"https://ollama.com/download"
 
 //output file
 #define OUTPUT_FILE @"kkFindings.txt"

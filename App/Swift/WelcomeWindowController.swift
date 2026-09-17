@@ -360,7 +360,7 @@ struct WelcomeView: View {
         if Assistant.appleEligible {
             return "Can run on-device once Apple Intelligence is turned on in System Settings. Or, to use Claude or ChatGPT, add your own API key."
         }
-        return "Apple Intelligence isn't available on this Mac, so the assistant needs your own Claude (Anthropic) or ChatGPT (OpenAI) API key."
+        return "Apple Intelligence isn't available on this Mac, so the assistant needs your own Claude (Anthropic) or ChatGPT (OpenAI) API key, or a local model via Ollama."
     }
 }
 

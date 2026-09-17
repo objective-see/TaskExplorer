@@ -5,7 +5,7 @@
 //  Created by Patrick Wardle on 9/12/26.
 //  Copyright (c) 2026 Objective-See. All rights reserved.
 //
-//  note: preferences; VirusTotal (api key, enable/disable) & assistant (Apple Intelligence status, api keys)
+//  note: preferences; VirusTotal (api key, enable/disable) & assistant (Apple Intelligence status, Ollama model, api keys)
 //        ...all keys are stored in the keychain
 
 import AppKit
@@ -50,6 +50,10 @@ struct PreferencesView: View {
     @State private var anthropicKey: String = loadKeychainItem(APIKeyService.anthropic) ?? ""
     @State private var openAIKey: String = loadKeychainItem(APIKeyService.openAI) ?? ""
 
+    //ollama (nil: not running; checked on appear)
+    @State private var ollamaModels: [String]?
+    @State private var ollamaModel: String = UserDefaults.standard.string(forKey: PREF_OLLAMA_MODEL) ?? ""
+
     //shared cache index
     @State private var indexCache: Bool = getPreferenceBool(PREF_INDEX_CACHE_DYLIBS)
 
@@ -66,32 +70,58 @@ struct PreferencesView: View {
                     .font(.callout)
             }
             Section("AI Assistant") {
+                //note: statuses are as wide as a key row (field + its two buttons, see APIKeyField) & leading-aligned,
+                //      so they line up with the fields below
                 LabeledContent("Apple Intelligence") {
-                    if let reason = Assistant.appleUnavailableReason {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Label("Not available", systemImage: "xmark.circle").foregroundStyle(.secondary)
-                            Text(reason).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                            if Assistant.appleEligible {
-                                Link("Open System Settings…", destination: URL(string: URL_SYSTEM_SETTINGS_APPLE_INTELLIGENCE)!).font(.callout)
+                    Group {
+                        if let reason = Assistant.appleUnavailableReason {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Label("Not available", systemImage: "xmark.circle").foregroundStyle(.secondary)
+                                Text(reason).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                                if Assistant.appleEligible {
+                                    Link("Open System Settings…", destination: URL(string: URL_SYSTEM_SETTINGS_APPLE_INTELLIGENCE)!).font(.callout)
+                                }
+                            }
+                        } else {
+                            Label("Available (on-device)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                        }
+                    }
+                    .frame(width: 386, alignment: .leading)
+                }
+                LabeledContent("Ollama") {
+                    Group {
+                        if let models = ollamaModels, !models.isEmpty {
+                            //note: no saved choice (or it's gone)? the first installed model is what the assistant uses
+                            Picker("", selection: $ollamaModel) {
+                                ForEach(models, id: \.self) { Text($0).tag($0) }
+                            }
+                            .labelsHidden()
+                            .onChange(of: ollamaModel) { _, model in
+                                setPreference(PREF_OLLAMA_MODEL, model)
+                                Assistant.shared.reloadKey()
+                            }
+                            .onAppear { if !models.contains(ollamaModel) { ollamaModel = models[0] } }
+                        } else {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Label(ollamaModels == nil ? "Not running" : "No models", systemImage: "xmark.circle").foregroundStyle(.secondary)
+                                Text(ollamaModels == nil ? "Install and start Ollama, then pull a model that supports tools (e.g. llama3.2)." : "Pull a model that supports tools (e.g. ollama pull llama3.2).")
+                                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                                if ollamaModels == nil {
+                                    Link("Get Ollama…", destination: URL(string: OLLAMA_DOWNLOAD_URL)!).font(.callout)
+                                }
                             }
                         }
-                    } else {
-                        Label("Available (on-device)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                     }
+                    .frame(width: 386, alignment: .leading)
                 }
-                APIKeyField(title: "Anthropic API key", placeholder: "paste your Anthropic API key (sk-ant-…)", key: $anthropicKey, validate: APIKeyValidation.anthropic) { new in
+                APIKeyField(title: "Anthropic API key", placeholder: "paste your Anthropic API key (sk-ant-…)", key: $anthropicKey, validate: APIKeyValidation.anthropic, onSave: { new in
                     _ = saveKeychainItem(APIKeyService.anthropic, new); Assistant.shared.reloadKey()
-                }
-                APIKeyField(title: "OpenAI API key", placeholder: "paste your OpenAI API key (sk-…)", key: $openAIKey, validate: APIKeyValidation.openAI) { new in
+                }, link: ("Get an Anthropic API key", URL(string: ANTHROPIC_API_KEY_URL)!))
+                APIKeyField(title: "OpenAI API key", placeholder: "paste your OpenAI API key (sk-…)", key: $openAIKey, validate: APIKeyValidation.openAI, onSave: { new in
                     _ = saveKeychainItem(APIKeyService.openAI, new); Assistant.shared.reloadKey()
-                }
-                Text("Apple Intelligence runs on-device (no key; nothing leaves your Mac). To use Claude or ChatGPT instead, add your own API key and pick the provider in the assistant panel. Keys are stored in your keychain and only sent to the provider you select.")
+                }, link: ("Get an OpenAI API key", URL(string: OPENAI_API_KEY_URL)!))
+                Text("Apple Intelligence and Ollama run on your Mac (no key; nothing leaves it). To use Claude or ChatGPT instead, add your own API key and pick the provider in the assistant panel. Keys are stored in your keychain and only sent to the provider you select.")
                     .font(.callout).foregroundStyle(.secondary)
-                HStack(spacing: 16) {
-                    Link("Get an Anthropic API key", destination: URL(string: ANTHROPIC_API_KEY_URL)!)
-                    Link("Get an OpenAI API key", destination: URL(string: OPENAI_API_KEY_URL)!)
-                }
-                .font(.callout)
             }
             Section("Dylibs") {
                 Toggle("Index dyld shared cache dylibs for all processes", isOn: $indexCache)
@@ -106,6 +136,13 @@ struct PreferencesView: View {
         .formStyle(.grouped)
         .frame(width: 620)
         .padding(.bottom, 8)
+        .onAppear {
+            //ollama: ask (off the main thread) what's installed
+            DispatchQueue.global(qos: .userInitiated).async {
+                let models = Assistant.ollamaModels()
+                DispatchQueue.main.async { ollamaModels = models }
+            }
+        }
     }
 
     //save virus total prefs

@@ -14,11 +14,12 @@ import Foundation
 //provider
 // ->declared in menu order (raw values are what's persisted, so they never change)
 enum AssistantProvider: Int, CaseIterable, Identifiable {
-    case apple = 2, claude = 0, chatGPT = 1
+    case apple = 2, ollama = 3, claude = 0, chatGPT = 1
     var id: Int { rawValue }
     var label: String {
         switch self {
         case .apple: return "Apple Intelligence"
+        case .ollama: return "Ollama"
         case .claude: return "Claude"
         case .chatGPT: return "ChatGPT"
         }
@@ -26,13 +27,13 @@ enum AssistantProvider: Int, CaseIterable, Identifiable {
     //keychain service for the API key (nil: no key needed)
     var keychainService: String? {
         switch self {
-        case .apple: return nil
+        case .apple, .ollama: return nil
         case .claude: return APIKeyService.anthropic
         case .chatGPT: return APIKeyService.openAI
         }
     }
     //runs on this Mac (nothing sent anywhere)?
-    var isLocal: Bool { self == .apple }
+    var isLocal: Bool { self == .apple || self == .ollama }
 
     //default: Apple Intelligence where it can work (macOS 26+, Apple silicon), else Claude
     static var `default`: AssistantProvider { Assistant.appleEligible ? .apple : .claude }
@@ -104,6 +105,33 @@ final class Assistant: ObservableObject {
         return "Apple Intelligence needs macOS 26 or later."
     }
 
+    //ollama: not running (the one case a 'get ollama' button helps)
+    static let ollamaNotRunning = "Ollama isn't running."
+
+    //ollama: installed models (nil: server not running), via its (local) REST api
+    // ->blocking, w/ a short timeout (it's localhost: either it answers right away, or nothing is listening)
+    nonisolated static func ollamaModels() -> [String]? {
+        var request = URLRequest(url: URL(string: OLLAMA_URL + "/api/tags")!)
+        request.timeoutInterval = 2
+        let semaphore = DispatchSemaphore(value: 0)
+        var models: [String]?
+        URLSession.shared.dataTask(with: request) { data, response, _ in
+            defer { semaphore.signal() }
+            guard let data, (response as? HTTPURLResponse)?.statusCode == 200,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let list = json["models"] as? [[String: Any]] else { return }
+            models = list.compactMap { $0["name"] as? String }.sorted()
+        }.resume()
+        semaphore.wait()
+        return models
+    }
+
+    //ollama: the model to use (the saved choice if it's installed, else the first installed one)
+    nonisolated static func ollamaModel(from models: [String]) -> String? {
+        if let saved = UserDefaults.standard.string(forKey: PREF_OLLAMA_MODEL), models.contains(saved) { return saved }
+        return models.first
+    }
+
     //(re)load api key from keychain (or, for Apple Intelligence, re-check its availability)
     // ->off the main thread: SecItemCopyMatching can block for a long time (securityd busy, keychain locked, or an
     //   access prompt pending), and this runs at launch and on every window activation; 'send' loads synchronously if needed
@@ -132,14 +160,19 @@ final class Assistant: ObservableObject {
         var unavailable: String?
     }
 
-    //load (any thread): the provider's key, or apple intelligence's availability
+    //load (any thread): the provider's key, apple intelligence's availability, or ollama's model (its 'key')
     private nonisolated static func load(_ provider: AssistantProvider) -> Loaded {
         var loaded = Loaded()
-        if let service = provider.keychainService {
-            loaded.key = loadKeychainItem(service)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            loaded.unavailable = loaded.key.isEmpty ? "No \(provider.label) API key." : nil
-        } else {
+        switch provider {
+        case .apple:
             loaded.unavailable = Assistant.appleUnavailableReason
+        case .ollama:
+            guard let models = ollamaModels() else { loaded.unavailable = Assistant.ollamaNotRunning; break }
+            guard let model = ollamaModel(from: models) else { loaded.unavailable = "Ollama has no models (run: ollama pull <model>)."; break }
+            loaded.key = model
+        case .claude, .chatGPT:
+            loaded.key = loadKeychainItem(provider.keychainService!)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            loaded.unavailable = loaded.key.isEmpty ? "No \(provider.label) API key." : nil
         }
         return loaded
     }
@@ -149,7 +182,7 @@ final class Assistant: ObservableObject {
         isLoading = false
         unavailableMessage = loaded.unavailable
         isReady = (loaded.unavailable == nil)
-        guard provider.keychainService != nil else {
+        guard provider != .apple else {
             //apple intelligence: (re)build the client on a provider switch, or once the model becomes available
             loadedKey = ""
             if loadedProvider != provider || (client == nil && isReady) {
@@ -168,6 +201,7 @@ final class Assistant: ObservableObject {
         loadedProvider = provider
         switch provider {
         case .apple: client = nil
+        case .ollama: client = key.isEmpty ? nil : OllamaClient(model: key)
         case .claude: client = key.isEmpty ? nil : ClaudeClient(apiKey: key)
         case .chatGPT: client = key.isEmpty ? nil : OpenAIClient(apiKey: key)
         }
@@ -309,6 +343,7 @@ func postJSON(_ url: URL, headers: [String: String], body: [String: Any]) async 
     guard (200..<300).contains(status) else {
         var message = "HTTP \(status)"
         if let error = json["error"] as? [String: Any], let text = error["message"] as? String { message += ": \(text)" }
+        else if let text = json["error"] as? String { message += ": \(text)" }
         else if let text = String(data: data, encoding: .utf8), !text.isEmpty { message += ": \(text.prefix(300))" }
         throw LLMError(message: message)
     }
