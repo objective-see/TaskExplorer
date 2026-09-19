@@ -283,6 +283,14 @@ bail:
     {
         //add ppid
         info[KEY_PROCESS_PPID] = [NSNumber numberWithInt:getParentID(pid)];
+
+        //PROC_PIDTBSDINFO can fail for a process that is exiting even though
+        //KERN_PROC_PID still exposes its credentials (as tools such as ps do)
+        uid_t userID = getProcessUserID(pid);
+        if((uid_t)-1 != userID)
+        {
+            info[KEY_PROCESS_UID] = [NSNumber numberWithUnsignedInt:userID];
+        }
     }
 
     //code signing flags

@@ -509,6 +509,33 @@ pid_t getParentID(int pid)
     return parentID;
 }
 
+//given a pid, get its effective user id
+// ->fallback for short-lived/exiting processes where PROC_PIDTBSDINFO fails,
+//   but KERN_PROC_PID can still return the process credentials
+uid_t getProcessUserID(int pid)
+{
+    //user id (unknown by default)
+    uid_t userID = (uid_t)-1;
+
+    //kinfo_proc struct
+    struct kinfo_proc processStruct = {0};
+
+    //size
+    size_t procBufferSize = sizeof(processStruct);
+
+    //init mib
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid};
+
+    //make syscall and save effective uid
+    if( (STATUS_SUCCESS == sysctl(mib, sizeof(mib)/sizeof(*mib), &processStruct, &procBufferSize, NULL, 0)) &&
+        (0 != procBufferSize) )
+    {
+        userID = processStruct.kp_eproc.e_ucred.cr_uid;
+    }
+
+    return userID;
+}
+
 //given a pid, get its path
 // via 'proc_pidpath()', or if that fails, via task's args ('KERN_PROCARGS2')
 NSString* getProcessPath(pid_t pid)
@@ -1209,4 +1236,3 @@ bail:
 
     return fd;
 }
-
