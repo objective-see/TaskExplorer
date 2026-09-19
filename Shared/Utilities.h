@@ -45,6 +45,10 @@ NSString* getProcessExecPath(pid_t pid);
 //given a pid, get its parent (ppid)
 pid_t getParentID(int pid);
 
+//given a pid, get its effective user id
+// ->returns (uid_t)-1 if the process no longer exists / can't be queried
+uid_t getProcessUserID(int pid);
+
 //given a pid, get its path
 NSString* getProcessPath(pid_t pid);
 

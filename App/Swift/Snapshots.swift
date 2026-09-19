@@ -364,6 +364,10 @@ func signingFailed(_ binary: Binary) -> Bool {
 private var userNames: [uid_t: String] = [:]
 private let userNamesLock = NSLock()
 func userName(for uid: uid_t) -> String {
+    //Task uses uid_t(-1) when the extension couldn't retrieve a process UID.
+    //Do not expose that unsigned sentinel as the misleading user "4294967295".
+    if uid == uid_t.max { return TASK_PATH_UNKNOWN }
+
     userNamesLock.lock(); defer { userNamesLock.unlock() }
     if let cached = userNames[uid] { return cached }
     var name = "\(uid)"
