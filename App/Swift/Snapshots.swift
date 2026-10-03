@@ -364,6 +364,9 @@ func signingFailed(_ binary: Binary) -> Bool {
 private var userNames: [uid_t: String] = [:]
 private let userNamesLock = NSLock()
 func userName(for uid: uid_t) -> String {
+    //unknown (the extension couldn't get it)? don't render the unsigned sentinel
+    if uid == uid_t.max { return TASK_PATH_UNKNOWN }
+
     userNamesLock.lock(); defer { userNamesLock.unlock() }
     if let cached = userNames[uid] { return cached }
     var name = "\(uid)"

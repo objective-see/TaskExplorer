@@ -244,6 +244,19 @@ bail:
     //bsd info
     struct proc_bsdinfo bsdInfo = {0};
 
+    //get bsd info
+    // gives ppid, uid, start time, etc
+    if(PROC_PIDTBSDINFO_SIZE != proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &bsdInfo, PROC_PIDTBSDINFO_SIZE))
+    {
+        //dbg msg
+        // ->as we run as root, this (only) fails for a process that is exiting
+        //   it's gone (or about to be), so don't report a partial task for it
+        os_log_debug(logHandle, "skipping pid %d: proc_pidinfo(PROC_PIDTBSDINFO) failed (exiting?)", pid);
+
+        //bail
+        return nil;
+    }
+
     //get path
     path = getProcessPath(pid);
     if(0 == path.length)
@@ -264,26 +277,14 @@ bail:
     //add path
     info[KEY_PROCESS_PATH] = path;
 
-    //get bsd info
-    // gives ppid, uid, start time, etc
-    if(PROC_PIDTBSDINFO_SIZE == proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &bsdInfo, PROC_PIDTBSDINFO_SIZE))
-    {
-        //add ppid
-        info[KEY_PROCESS_PPID] = [NSNumber numberWithInt:bsdInfo.pbi_ppid];
+    //add ppid
+    info[KEY_PROCESS_PPID] = [NSNumber numberWithInt:bsdInfo.pbi_ppid];
 
-        //add uid
-        info[KEY_PROCESS_UID] = [NSNumber numberWithUnsignedInt:bsdInfo.pbi_uid];
+    //add uid
+    info[KEY_PROCESS_UID] = [NSNumber numberWithUnsignedInt:bsdInfo.pbi_uid];
 
-        //add start time
-        info[KEY_PROCESS_START] = [NSDate dateWithTimeIntervalSince1970:bsdInfo.pbi_start_tvsec];
-    }
-    //fallback
-    // get ppid via sysctl
-    else
-    {
-        //add ppid
-        info[KEY_PROCESS_PPID] = [NSNumber numberWithInt:getParentID(pid)];
-    }
+    //add start time
+    info[KEY_PROCESS_START] = [NSDate dateWithTimeIntervalSince1970:bsdInfo.pbi_start_tvsec];
 
     //code signing flags
     // ->also gives 'platform binary', matching what ES provides for live processes

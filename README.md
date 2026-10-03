@@ -22,14 +22,14 @@ Full details and usage instructions can be found [here](https://objective-see.co
 
 * **Live, via Endpoint Security:** a system extension monitors the system, so processes appear the moment they start, vanish when they exit, and their dylibs, files, and connections are refreshed as they change. No password prompt.
 * **Code signing & VirusTotal:** spot unsigned or ad-hoc signed code, Apple vs. third-party binaries, and (with your own free VirusTotal API key) known malware, shown in red.
-* **Built-in AI assistant:** ask "what's listening on the network?" or "which processes are ad-hoc signed?". It queries TaskExplorer's live data and can drive the UI. Runs on-device via Apple Intelligence, or with your own Claude or ChatGPT API key.
+* **Built-in AI assistant:** ask "what's listening on the network?" or "which processes are ad-hoc signed?". It queries TaskExplorer's live data and can drive the UI. Runs on-device via Apple Intelligence, locally via [Ollama](https://ollama.com), or with your own Claude or ChatGPT API key.
 * **Search & filter:** text and `#keyword` filters (`#3rdparty`, `#adhoc`, `#flagged`, `#listening`, `#root`, …); add `#everything` to search dylibs, files, and connections too.
 * **Shared cache dylibs:** dylibs that live in the dyld shared cache, per process or indexed for all.
 * **Export:** save everything as JSON, from the app or the command line.
 
 ## Requirements
 
-macOS 14 (Sonoma) or newer, Apple silicon or Intel. The on-device assistant needs macOS 26 with Apple Intelligence enabled; elsewhere it works with a Claude or ChatGPT key. [TaskExplorer 2.1.0](https://github.com/objective-see/TaskExplorer/releases/tag/v2.1.0) supports macOS 11–13.
+macOS 14 (Sonoma) or newer, Apple silicon or Intel. The on-device assistant needs macOS 26 with Apple Intelligence enabled; elsewhere it works with a local model via Ollama (one that supports tool calling, e.g. `llama3.1`), or with a Claude or ChatGPT key. [TaskExplorer 2.1.0](https://github.com/objective-see/TaskExplorer/releases/tag/v2.1.0) supports macOS 11–13.
 
 ## Command line
 
