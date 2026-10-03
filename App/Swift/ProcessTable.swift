@@ -212,7 +212,9 @@ struct ProcessTable: View {
             }
             .help(item.path)
         }
-        .width(min: 160, ideal: 300, max: 900)
+        //no max: the other columns are capped, so this one absorbs any extra table width
+        // ->otherwise, on a wide display (or when the inspector hides), a gap opens after the last column
+        .width(min: 160, ideal: 300)
         .customizationID("process")
 
         TableColumn("PID", value: \.id) { item in
