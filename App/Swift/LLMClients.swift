@@ -192,15 +192,37 @@ show, select, or filter something.
 //note: same shape as chat completions (ollama's native api; tool call arguments arrive as an object, not a string)
 //      ...local models are small-ish (typically 3-14B params), so, as for the on-device model, tool results are compact
 //      (one line per row) & paged, and the context is set explicitly (ollama's default, 4K, is too small for tool use)
+//note: ollama never errors on an oversized prompt: it silently drops the oldest messages (keeping the system one) until
+//      the rest fits, so the model can end up answering from a bare tool result with the question itself gone
+//      ...so the context is sized to the model, old tool results are elided between questions, and a prompt that
+//      (by our estimate) wouldn't fit is refused rather than sent
 @MainActor final class OllamaClient: LLMClient {
 
     private let model: String
     private let endpoint = URL(string: OLLAMA_URL + "/api/chat")!
+    private let showEndpoint = URL(string: OLLAMA_URL + "/api/show")!
 
-    //context (tokens) & tool result caps
-    private let contextTokens = 16384
+    //context (tokens): the model's trained length (via /api/show), capped
+    // ->the cap: the KV cache of a 7B model at 32K is already a few GB; the default applies if the model's isn't known
+    private static let defaultContextTokens = 16384
+    private static let maxContextTokens = 32768
+    private var contextTokens: Int?
+
+    //tool result cap & page size
     private let maxToolResultBytes = 12 * 1024
     private let defaultLimit = 30
+
+    //max tool rounds per message
+    // ->a third of the cloud models': each (full) result is ~1/5 of a 16K context
+    private let maxRounds = 8
+
+    //tokens kept free for the model's reply (the context holds prompt + reply)
+    private let replyReserve = 1024
+
+    //prompt size estimate: bytes per token
+    // ->rough, erring on the side of refusing a prompt that might just fit (compact tool output, mostly paths & numbers,
+    //   measured ~3.6 bytes/token on a qwen2 model; other tokenizers do worse on paths)
+    private let bytesPerToken = 3
 
     //conversation history (system message first)
     private var history: [[String: Any]] = []
@@ -222,12 +244,23 @@ show, select, or filter something.
     func run(userMessage: String, systemPrompt: String, onEvent: @escaping (LLMEvent) async -> Void) async throws {
         //note: the (cloud) system prompt is ignored in favor of the small-model one (see smallModelInstructions)
         if history.isEmpty { history.append(["role": "system", "content": smallModelInstructions]) }
+        let contextTokens = await resolveContextTokens()
         //note: any failure rolls the whole exchange back (see ClaudeClient.run)
         let checkpoint = history.count
         history.append(["role": "user", "content": userMessage])
+        let tools = self.tools
         var rounds = 0
         while true {
             do { try _Concurrency.Task.checkCancellation() } catch { history.removeSubrange(checkpoint...); throw error }
+
+            //wouldn't fit? refuse (ollama would silently trim it instead)
+            // ->before the first round, the (elided) earlier conversation is what's too big: a new one fixes that
+            let estimated = estimatedTokens(tools)
+            if estimated > contextTokens - replyReserve {
+                history.removeSubrange(checkpoint...)
+                throw LLMError(message: (0 == rounds) ? OllamaClient.conversationTooLong : OllamaClient.tooBig)
+            }
+
             let body: [String: Any] = ["model": model, "tools": tools, "messages": history, "stream": false, "options": ["num_ctx": contextTokens]]
             let response: [String: Any]
             do {
@@ -239,15 +272,28 @@ show, select, or filter something.
             guard let message = response["message"] as? [String: Any] else {
                 throw LLMError(message: "unexpected response from Ollama")
             }
+
+            //(still) trimmed? the estimate was off; the answer was made from a partial prompt, so drop it
+            // ->ollama reports (only) what it evaluated, which is the whole prompt (cached or not) unless it dropped
+            //   messages or cut one down (to ~half the context, in testing); a count far below the estimate means it did
+            if let evaluated = response["prompt_eval_count"] as? Int, evaluated < estimated / 2 {
+                history.removeSubrange(checkpoint...)
+                throw LLMError(message: OllamaClient.tooBig)
+            }
+
             history.append(message)
             if response["done_reason"] as? String == "length" { await onEvent(.text("(response truncated)")) }
 
             if let text = message["content"] as? String, !text.isEmpty { await onEvent(.text(text)) }
 
             let calls = (message["tool_calls"] as? [[String: Any]]) ?? []
-            guard !calls.isEmpty else { return }
+            guard !calls.isEmpty else {
+                //answered: elide this question's tool results (they're the bulk of the context)
+                prune()
+                return
+            }
             rounds += 1
-            guard rounds <= maxToolRounds else {
+            guard rounds <= maxRounds else {
                 history.removeSubrange(checkpoint...)
                 throw LLMError(message: "too many tool calls; try a narrower question")
             }
@@ -263,6 +309,37 @@ show, select, or filter something.
             }
         }
     }
+
+    //the context to request: min(model's trained length, cap), resolved once (via /api/show)
+    // ->an older ollama (no model_info) or a failed lookup falls back to the default
+    private func resolveContextTokens() async -> Int {
+        if let contextTokens { return contextTokens }
+        var resolved = OllamaClient.defaultContextTokens
+        if let info = (try? await postJSON(showEndpoint, headers: [:], body: ["model": model]))?["model_info"] as? [String: Any],
+           let length = info.first(where: { $0.key.hasSuffix(".context_length") })?.value as? Int, length > 0 {
+            resolved = min(length, OllamaClient.maxContextTokens)
+        }
+        contextTokens = resolved
+        return resolved
+    }
+
+    //estimated prompt size (tokens) of the next request: history + tool schemas (both are sent every round)
+    private func estimatedTokens(_ tools: [[String: Any]]) -> Int {
+        let bytes = JSON.string(history).utf8.count + JSON.string(tools).utf8.count
+        return bytes / bytesPerToken
+    }
+
+    //elide tool results, keeping the conversation (instructions, questions, tool calls, answers)
+    // ->the calls stay, so the model keeps calling tools rather than answering from a now-missing result
+    private func prune() {
+        for (index, message) in history.enumerated() where message["role"] as? String == "tool" {
+            history[index]["content"] = "(result elided)"
+        }
+    }
+
+    //too much for the model's context
+    static let tooBig = "That's too much data for the local model's context; ask a narrower question (or use a #keyword filter)."
+    static let conversationTooLong = "This conversation is too long for the local model's context; start a new one."
 }
 
 /* APPLE INTELLIGENCE (ON-DEVICE) */
