@@ -13,6 +13,15 @@ import os
 //ui log
 let uiLog = Logger(subsystem: "com.objective-see.taskexplorer", category: "ui")
 
+//is a change to a table's rows large (a fill, a mass exit/unload)?
+// ->such a change must rebuild the table (via its .id), not diff it: SwiftUI's Table diff has AppKit build, and later
+//   tear down, hosted cell views for every affected row (not just the visible ones), and each teardown rescans the
+//   window's observer lists, so a diff of ~800 rows took up to 47 s; a fresh table only builds the visible rows
+func isLargeRowChange<T: Identifiable>(_ old: [T], _ new: [T]) -> Bool {
+    let oldIDs = Set(old.map(\.id)), newIDs = Set(new.map(\.id))
+    return newIDs.subtracting(oldIDs).count + oldIDs.subtracting(newIDs).count > 100
+}
+
 struct ProcessTable: View {
 
     @EnvironmentObject var store: Store
@@ -30,13 +39,9 @@ struct ProcessTable: View {
         //note: pid as final tiebreaker, so rows w/ equal keys (e.g. same name) keep a stable order across rebuilds
         let flat = store.visibleProcesses.sorted(using: sortOrder + [KeyPathComparator(\.id)])
         if flat != rows {
-            //a large change (the initial fill, a mass exit) is rebuilt, not diffed: SwiftUI's Table diff has AppKit
-            //tear down and re-create hosted row views one by one, which took up to 47 s for ~800 rows (a fresh table
-            //only builds the visible rows)
-            let old = Set(rows.map(\.id)), new = Set(flat.map(\.id))
-            let changed = new.subtracting(old).count + old.subtracting(new).count
-            if changed > 100 {
-                uiLog.debug("rows: \(rows.count) -> \(flat.count) (\(changed) changed): rebuilding table")
+            //a large change (the initial fill, a mass exit) is rebuilt, not diffed (see isLargeRowChange)
+            if isLargeRowChange(rows, flat) {
+                uiLog.debug("rows: \(rows.count) -> \(flat.count): rebuilding table")
                 reloadToken += 1
             }
             rows = flat

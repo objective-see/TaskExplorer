@@ -75,7 +75,8 @@ struct AssistantPanel: View {
                 if !assistant.isReady, !assistant.isLoading {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Image(systemName: assistant.provider == .apple ? "apple.intelligence" : (assistant.provider == .ollama ? "desktopcomputer" : "key")).foregroundStyle(.secondary)
-                        Text(assistant.unavailableMessage ?? "\(assistant.provider.label) isn't available.").font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        //note: no fixedSize(vertical:); it made the window's minimum height balloon when the sidebar was shown
+                        Text(assistant.unavailableMessage ?? "\(assistant.provider.label) isn't available.").font(.callout).foregroundStyle(.secondary)
                         switch assistant.provider {
                         case .apple:
                             //note: only worth a button when the user can fix it (turn Apple Intelligence on)

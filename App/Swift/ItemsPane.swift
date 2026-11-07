@@ -99,8 +99,23 @@ struct DylibTable: View {
     @Binding var columnLayout: TableColumnCustomization<DylibItem>
     @State private var sortOrder: [KeyPathComparator<DylibItem>] = [KeyPathComparator(\.name, comparator: .localizedStandard)]
 
+    //rows, cached (recomputed when their inputs change; see ProcessTable)
+    @State private var rows: [DylibItem] = []
+
+    //bumped to rebuild the table on a large rows change (see isLargeRowChange)
+    @State private var reloadToken = 0
+
+    private func recomputeRows() {
+        let fresh = store.visibleDylibs.sorted(using: sortOrder + [KeyPathComparator(\.id)])
+        guard fresh != rows else { return }
+        if isLargeRowChange(rows, fresh) {
+            uiLog.debug("dylibs rows: \(rows.count) -> \(fresh.count): rebuilding table")
+            reloadToken += 1
+        }
+        rows = fresh
+    }
+
     var body: some View {
-        let rows = store.visibleDylibs.sorted(using: sortOrder + [KeyPathComparator(\.id)])
         let sortBinding = Binding<[KeyPathComparator<DylibItem>]>(get: { sortOrder }, set: { new in
             //ignore sorting by VirusTotal while VT is off
             if !store.vtEnabled, new.first?.keyPath == \DylibItem.vt { return }
@@ -147,16 +162,21 @@ struct DylibTable: View {
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
-        .onAppear { selection = storeSelection }
+        .onAppear { recomputeRows(); selection = storeSelection }
+        .onChange(of: store.dylibs) { _, _ in recomputeRows() }
+        .onChange(of: store.showCacheDylibs) { _, _ in recomputeRows() }
+        .onChange(of: store.appliedItemsQuery) { _, _ in recomputeRows() }
+        .onChange(of: sortOrder) { _, _ in recomputeRows() }
         .onChange(of: selection) { _, new in
             uiLog.debug("dylibs table selection -> \(new == nil ? "nil" : "row")")
             let wanted: SelectedItem? = new.map { .dylib($0) } ?? store.selectedPID.map { .process($0) }
             if store.selectedItem != wanted { store.selectedItem = wanted }
         }
         .onChange(of: store.selectedItem) { _, _ in if selection != storeSelection { selection = storeSelection } }
-        //note: keyed, so a new selection / cache toggle / filter reloads the table rather than diffing ~1000 row inserts
-        //      (which stalls the main thread for seconds); live updates for the same selection still diff incrementally
-        .id("dylibs|\(store.selectedPID ?? 0)|\(store.showCacheDylibs)|\(store.appliedItemsQuery)")
+        //note: keyed, so a new selection / cache toggle / filter, or a large rows change (the list arriving after an
+        //      enumeration), reloads the table rather than diffing ~1000 row inserts (which stalls the main thread for
+        //      seconds, as does the later teardown of all those rows); small live updates still diff incrementally
+        .id("dylibs|\(store.selectedPID ?? 0)|\(store.showCacheDylibs)|\(store.appliedItemsQuery)|\(reloadToken)")
         .contextMenu(forSelectionType: DylibItem.ID.self) { ids in
             if let id = ids.first, let item = rows.first(where: { $0.id == id }) { DylibMenuItems(item: item) }
         } primaryAction: { ids in
@@ -191,8 +211,23 @@ struct FileTable: View {
     @Binding var columnLayout: TableColumnCustomization<FileItem>
     @State private var sortOrder: [KeyPathComparator<FileItem>] = [KeyPathComparator(\.name, comparator: .localizedStandard)]
 
+    //rows, cached (recomputed when their inputs change; see ProcessTable)
+    @State private var rows: [FileItem] = []
+
+    //bumped to rebuild the table on a large rows change (see isLargeRowChange)
+    @State private var reloadToken = 0
+
+    private func recomputeRows() {
+        let fresh = store.visibleFiles.sorted(using: sortOrder + [KeyPathComparator(\.id)])
+        guard fresh != rows else { return }
+        if isLargeRowChange(rows, fresh) {
+            uiLog.debug("files rows: \(rows.count) -> \(fresh.count): rebuilding table")
+            reloadToken += 1
+        }
+        rows = fresh
+    }
+
     var body: some View {
-        let rows = store.visibleFiles.sorted(using: sortOrder + [KeyPathComparator(\.id)])
         Table(rows, selection: $selection, sortOrder: $sortOrder, columnCustomization: $columnLayout) {
             TableColumn("File", value: \.name) { item in
                 HStack(spacing: 8) {
@@ -230,14 +265,17 @@ struct FileTable: View {
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
-        .onAppear { selection = storeSelection }
+        .onAppear { recomputeRows(); selection = storeSelection }
+        .onChange(of: store.files) { _, _ in recomputeRows() }
+        .onChange(of: store.appliedItemsQuery) { _, _ in recomputeRows() }
+        .onChange(of: sortOrder) { _, _ in recomputeRows() }
         .onChange(of: selection) { _, new in
             uiLog.debug("files table selection -> \(new == nil ? "nil" : "row")")
             let wanted: SelectedItem? = new.map { .file($0) } ?? store.selectedPID.map { .process($0) }
             if store.selectedItem != wanted { store.selectedItem = wanted }
         }
         .onChange(of: store.selectedItem) { _, _ in if selection != storeSelection { selection = storeSelection } }
-        .id("files|\(store.selectedPID ?? 0)|\(store.appliedItemsQuery)")
+        .id("files|\(store.selectedPID ?? 0)|\(store.appliedItemsQuery)|\(reloadToken)")
         .contextMenu(forSelectionType: FileItem.ID.self) { ids in
             if let id = ids.first, let item = rows.first(where: { $0.id == id }) {
                 Button("Show in Finder") { store.showInFinder(item.path) }
@@ -263,8 +301,23 @@ struct ConnectionTable: View {
     @Binding var columnLayout: TableColumnCustomization<ConnectionItem>
     @State private var sortOrder: [KeyPathComparator<ConnectionItem>] = [KeyPathComparator(\.proto), KeyPathComparator(\.local)]
 
+    //rows, cached (recomputed when their inputs change; see ProcessTable)
+    @State private var rows: [ConnectionItem] = []
+
+    //bumped to rebuild the table on a large rows change (see isLargeRowChange)
+    @State private var reloadToken = 0
+
+    private func recomputeRows() {
+        let fresh = store.visibleConnections.sorted(using: sortOrder + [KeyPathComparator(\.id)])
+        guard fresh != rows else { return }
+        if isLargeRowChange(rows, fresh) {
+            uiLog.debug("connections rows: \(rows.count) -> \(fresh.count): rebuilding table")
+            reloadToken += 1
+        }
+        rows = fresh
+    }
+
     var body: some View {
-        let rows = store.visibleConnections.sorted(using: sortOrder + [KeyPathComparator(\.id)])
         Table(rows, selection: $selection, sortOrder: $sortOrder, columnCustomization: $columnLayout) {
             TableColumn("Proto", value: \.proto) { item in Text(item.proto).font(.callout) }
                 .width(min: 50, ideal: 60, max: 80)
@@ -299,14 +352,17 @@ struct ConnectionTable: View {
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .clipped()
         .background(TableSelectionKeeper(ids: rows.map(\.id), selectedID: selection, select: { id in selection = id }))
-        .onAppear { selection = storeSelection }
+        .onAppear { recomputeRows(); selection = storeSelection }
+        .onChange(of: store.connections) { _, _ in recomputeRows() }
+        .onChange(of: store.appliedItemsQuery) { _, _ in recomputeRows() }
+        .onChange(of: sortOrder) { _, _ in recomputeRows() }
         .onChange(of: selection) { _, new in
             uiLog.debug("connections table selection -> \(new == nil ? "nil" : "row")")
             let wanted: SelectedItem? = new.map { .connection($0) } ?? store.selectedPID.map { .process($0) }
             if store.selectedItem != wanted { store.selectedItem = wanted }
         }
         .onChange(of: store.selectedItem) { _, _ in if selection != storeSelection { selection = storeSelection } }
-        .id("net|\(store.selectedPID ?? 0)|\(store.appliedItemsQuery)")
+        .id("net|\(store.selectedPID ?? 0)|\(store.appliedItemsQuery)|\(reloadToken)")
         .contextMenu(forSelectionType: ConnectionItem.ID.self) { ids in
             if let id = ids.first, let item = rows.first(where: { $0.id == id }) {
                 Button("Copy") { NSPasteboard.general.clearContents(); NSPasteboard.general.setString("\(item.proto) \(item.endpoints)", forType: .string) }
